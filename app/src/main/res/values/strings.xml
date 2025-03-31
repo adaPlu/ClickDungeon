@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">ClickDungeon</string>
+    <string name="play">Play</string>
+    <string name="Continue">Continue</string>
+    <string name="settings">Settings</string>
+    <string name="shop">Shop</string>
+    <string name="achievements">Achievements</string>
+    <string name="gold_display">Gold: 0</string>
+    <string name="refresh_shop">Refresh Shop</string>
+    <string name="achievements_title">Your Achievements</string>
+    <string name="back_to_menu">Back to Menu</string>
+    <string name="gold_display_dynamic">Gold: %1$d</string>
+    <string name="not_enough_gold">Not enough gold!</string>
+    <string name="purchase_successful">Purchased: %1$s</string>
+</resources>
