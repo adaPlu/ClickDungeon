@@ -108,5 +108,5 @@ This project is licensed for commercial use. Redistribution, sublicensing, or mo
 
 > © 2025 ClickDungeon Studios. All rights reserved.
 
-For licensing inquiries, please contact: `your-email@example.com`
+For licensing inquiries, please contact: `ClickDungeon@gmail.com`
 
