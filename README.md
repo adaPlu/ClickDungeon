@@ -69,7 +69,7 @@ ClickDungeon/
 
 1. Clone this repository:
    ```bash
-   git clone https://github.com/yourusername/ClickDungeon.git
+   git clone https://github.com/adaplu/ClickDungeon.git
    ```
 2. Open in Android Studio
 3. Build & run on an emulator or physical device
