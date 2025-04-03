@@ -40,5 +40,16 @@ public class GameStateManager {
     public static void clearState(Context context) {
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit().clear().apply();
     }
+
+    public static void saveFloor(Context context, int floor) {
+        SharedPreferences prefs = context.getSharedPreferences("player_prefs", Context.MODE_PRIVATE);
+        prefs.edit().putInt("floor", floor).apply();
+    }
+
+    public static int loadFloor(Context context) {
+        SharedPreferences prefs = context.getSharedPreferences("player_prefs", Context.MODE_PRIVATE);
+        return prefs.getInt("floor", 1);
+    }
+
 }
 

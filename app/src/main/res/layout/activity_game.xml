@@ -1,20 +1,61 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     android:padding="8dp">
 
-    <TextView
-        android:id="@+id/textGoldCounter"
-        android:layout_width="wrap_content"
+    <!-- Top bar for gold and HP -->
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Gold: 0"
-        android:textStyle="bold"
-        android:textSize="18sp"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginBottom="8dp" />
+        android:orientation="horizontal"
+        android:gravity="space_between"
+        android:weightSum="3">
 
+        <TextView
+            android:id="@+id/textGoldCounter"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Gold: 0"
+            android:textStyle="bold"
+            android:textSize="18sp"
+            android:padding="4dp" />
+
+        <TextView
+            android:id="@+id/textHpCounter"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="HP: 10/10"
+            android:textStyle="bold"
+            android:textSize="18sp"
+            android:gravity="center"
+            android:padding="4dp" />
+
+        <TextView
+            android:id="@+id/textFloor"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Floor 1"
+            android:textSize="18sp"
+            android:gravity="end"
+            android:padding="4dp" />
+    </LinearLayout>
+
+    <!-- Status effect indicator -->
+    <TextView
+        android:id="@+id/textStatus"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:textStyle="italic"
+        android:textColor="#88000000"
+        android:paddingTop="6dp" />
+
+    <!-- Dungeon grid -->
     <GridLayout
         android:id="@+id/gridDungeon"
         android:layout_width="match_parent"
@@ -23,5 +64,15 @@
         android:columnCount="5"
         android:rowCount="5"
         android:alignmentMode="alignMargins"
-        android:useDefaultMargins="true" />
+        android:useDefaultMargins="true"
+        android:paddingTop="8dp" />
+
+    <!-- Class ability button -->
+    <Button
+        android:id="@+id/btnClassAbility"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Use Ability"
+        android:layout_marginTop="8dp"
+        android:visibility="gone" />
 </LinearLayout>

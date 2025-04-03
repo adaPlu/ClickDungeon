@@ -7,7 +7,7 @@ import com.example.clickdungeon.model.Achievement;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-
+import android.widget.Toast;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,5 +28,13 @@ public class AchievementManager {
         String json = prefs.getString(ACHIEVEMENTS_KEY, null);
         Type type = new TypeToken<List<Achievement>>() {}.getType();
         return json != null ? new Gson().fromJson(json, type) : new ArrayList<>();
+    }
+
+    public static void unlock(Context context, String key) {
+        SharedPreferences prefs = context.getSharedPreferences("achievements", Context.MODE_PRIVATE);
+        if (!prefs.getBoolean(key, false)) {
+            prefs.edit().putBoolean(key, true).apply();
+            Toast.makeText(context, "Achievement unlocked: " + key, Toast.LENGTH_SHORT).show();
+        }
     }
 }

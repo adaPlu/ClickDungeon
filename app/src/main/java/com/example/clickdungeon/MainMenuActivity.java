@@ -1,6 +1,7 @@
 package com.example.clickdungeon;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -8,45 +9,49 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.clickdungeon.model.Tile;
-import com.example.clickdungeon.util.GameStateManager;
-
 public class MainMenuActivity extends AppCompatActivity {
 
-    private Button playButton, continueButton, settingsButton, shopButton, achievementsButton;
+    private Button btnNewGame, btnContinue, btnAchievements, btnShop, btnSettings;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_menu);
 
-        playButton = findViewById(R.id.btnPlay);
-        continueButton = findViewById(R.id.btnContinue);
-        settingsButton = findViewById(R.id.btnSettings);
-        shopButton = findViewById(R.id.btnShop);
-        achievementsButton = findViewById(R.id.btnAchievements);
-
-        playButton.setOnClickListener(v -> {
-            GameStateManager.clearState(this); // clear previous progress
-            startActivity(new Intent(this, GameActivity.class));
+        btnNewGame = findViewById(R.id.btnNewGame);
+        btnContinue = findViewById(R.id.btnContinue);
+        btnAchievements = findViewById(R.id.btnAchievements);
+        btnShop = findViewById(R.id.btnShop);
+        btnSettings = findViewById(R.id.btnSettings);
+        btnNewGame.setOnClickListener(v -> {
+            Intent intent = new Intent(MainMenuActivity.this, ClassSelectionActivity.class);
+            startActivity(intent);
         });
 
-        continueButton.setOnClickListener(v -> {
-            Tile[][] savedGrid = GameStateManager.loadGrid(this);
-            if (savedGrid != null) {
-                startActivity(new Intent(this, GameActivity.class));
+        btnContinue.setOnClickListener(v -> {
+            SharedPreferences prefs = getSharedPreferences("player_profile", MODE_PRIVATE);
+            String profile = prefs.getString("slot_1", null);
+            if (profile != null) {
+                Intent intent = new Intent(MainMenuActivity.this, GameActivity.class);
+                startActivity(intent);
             } else {
-                Toast.makeText(this, "No game in progress", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "No saved game found.", Toast.LENGTH_SHORT).show();
             }
         });
 
-        settingsButton.setOnClickListener(v ->
-                startActivity(new Intent(this, SettingsActivity.class)));
+        btnAchievements.setOnClickListener(v -> {
+            Intent intent = new Intent(MainMenuActivity.this, AchievementsActivity.class);
+            startActivity(intent);
+        });
 
-        shopButton.setOnClickListener(v ->
-                startActivity(new Intent(this, ShopActivity.class)));
+        btnShop.setOnClickListener(v -> {
+            Intent intent = new Intent(MainMenuActivity.this, ShopActivity.class);
+            startActivity(intent);
+        });
 
-        achievementsButton.setOnClickListener(v ->
-                startActivity(new Intent(this, AchievementsActivity.class)));
+        btnSettings.setOnClickListener(v -> {
+            Intent intent = new Intent(MainMenuActivity.this, SettingsActivity.class);
+            startActivity(intent);
+        });
     }
 }

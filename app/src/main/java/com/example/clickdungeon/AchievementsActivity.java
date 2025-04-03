@@ -1,4 +1,5 @@
 package com.example.clickdungeon;
+
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -22,6 +23,7 @@ public class AchievementsActivity extends AppCompatActivity {
 
     private RecyclerView recyclerView;
     private Button btnBackToMenu;
+    private List<Achievement> achievementList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,12 +35,20 @@ public class AchievementsActivity extends AppCompatActivity {
         btnBackToMenu = findViewById(R.id.btnBackToMenu);
 
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        recyclerView.setAdapter(new AchievementAdapter(getMockAchievements()));
+
+        // Load saved achievements if available
+        List<Achievement> saved = loadAchievements();
+        if (saved != null && !saved.isEmpty()) {
+            achievementList = saved;
+        } else {
+            achievementList = getMockAchievements();
+        }
+
+        recyclerView.setAdapter(new AchievementAdapter(achievementList));
 
         btnBackToMenu.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                // Go back to main menu
                 Intent intent = new Intent(AchievementsActivity.this, MainMenuActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(intent);
@@ -46,6 +56,13 @@ public class AchievementsActivity extends AppCompatActivity {
             }
         });
     }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        saveAchievements(achievementList);
+    }
+
     private void saveAchievements(List<Achievement> list) {
         SharedPreferences prefs = getSharedPreferences("player_prefs", MODE_PRIVATE);
         String json = new Gson().toJson(list);
@@ -61,10 +78,10 @@ public class AchievementsActivity extends AppCompatActivity {
 
     private List<Achievement> getMockAchievements() {
         List<Achievement> list = new ArrayList<>();
-        list.add(new Achievement("First Blood", "Defeat your first enemy."));
-        list.add(new Achievement("Dungeon Explorer", "Reveal 50 dungeon tiles."));
-        list.add(new Achievement("Gold Hoarder", "Collect 1000 gold."));
-        list.add(new Achievement("Boss Slayer", "Defeat a dungeon boss."));
+        list.add(new Achievement("First Blood", "Defeat your first enemy.", false));
+        list.add(new Achievement("Dungeon Explorer", "Reveal 50 dungeon tiles.", false));
+        list.add(new Achievement("Gold Hoarder", "Collect 1000 gold.", false));
+        list.add(new Achievement("Boss Slayer", "Defeat a dungeon boss.", false));
         return list;
     }
 }
