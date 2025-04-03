@@ -23,7 +23,6 @@ public class AchievementsActivity extends AppCompatActivity {
 
     private RecyclerView recyclerView;
     private Button btnBackToMenu;
-    private List<Achievement> achievementList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,16 +34,7 @@ public class AchievementsActivity extends AppCompatActivity {
         btnBackToMenu = findViewById(R.id.btnBackToMenu);
 
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-
-        // Load saved achievements if available
-        List<Achievement> saved = loadAchievements();
-        if (saved != null && !saved.isEmpty()) {
-            achievementList = saved;
-        } else {
-            achievementList = getMockAchievements();
-        }
-
-        recyclerView.setAdapter(new AchievementAdapter(achievementList));
+        recyclerView.setAdapter(new AchievementAdapter(loadAchievements()));
 
         btnBackToMenu.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -57,23 +47,11 @@ public class AchievementsActivity extends AppCompatActivity {
         });
     }
 
-    @Override
-    protected void onPause() {
-        super.onPause();
-        saveAchievements(achievementList);
-    }
-
-    private void saveAchievements(List<Achievement> list) {
-        SharedPreferences prefs = getSharedPreferences("player_prefs", MODE_PRIVATE);
-        String json = new Gson().toJson(list);
-        prefs.edit().putString("achievements", json).apply();
-    }
-
     private List<Achievement> loadAchievements() {
         SharedPreferences prefs = getSharedPreferences("player_prefs", MODE_PRIVATE);
         String json = prefs.getString("achievements", null);
         Type type = new TypeToken<List<Achievement>>(){}.getType();
-        return json != null ? new Gson().fromJson(json, type) : new ArrayList<>();
+        return json != null ? new Gson().fromJson(json, type) : getMockAchievements();
     }
 
     private List<Achievement> getMockAchievements() {
@@ -82,6 +60,8 @@ public class AchievementsActivity extends AppCompatActivity {
         list.add(new Achievement("Dungeon Explorer", "Reveal 50 dungeon tiles.", false));
         list.add(new Achievement("Gold Hoarder", "Collect 1000 gold.", false));
         list.add(new Achievement("Boss Slayer", "Defeat a dungeon boss.", false));
+        list.add(new Achievement("Low HP Survivor", "Win with 1 HP remaining.", false));
+        list.add(new Achievement("Trap Dodger", "Survive a trap without damage.", false));
         return list;
     }
 }

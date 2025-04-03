@@ -1,45 +1,62 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="16dp"
-    android:gravity="center">
+    android:layout_height="match_parent">
 
-    <EditText
-        android:id="@+id/editCharacterName"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Enter Character Name"
-        android:inputType="textPersonName"
-        android:padding="12dp"
-        android:layout_marginBottom="24dp" />
+        android:orientation="vertical"
+        android:padding="16dp">
 
-    <Button
-        android:id="@+id/btnKnight"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Knight (HP: 10)"
-        android:layout_marginBottom="12dp" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Character Selection"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:layout_gravity="center_horizontal"
+            android:paddingBottom="16dp" />
 
-    <Button
-        android:id="@+id/btnThief"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Thief (HP: 6)"
-        android:layout_marginBottom="12dp" />
+        <EditText
+            android:id="@+id/editCharacterName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/enter_name"
+            android:inputType="textPersonName"
+            android:layout_marginBottom="16dp" />
 
-    <Button
-        android:id="@+id/btnWizard"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Wizard (HP: 4)"
-        android:layout_marginBottom="24dp" />
+        <RadioGroup
+            android:id="@+id/radioClassGroup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
 
-    <Button
-        android:id="@+id/btnBackToMenu"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Back to Menu" />
+            <RadioButton
+                android:id="@+id/radioKnight"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/knight_option" />
 
-</LinearLayout>
+            <RadioButton
+                android:id="@+id/radioThief"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/thief_option" />
+
+            <RadioButton
+                android:id="@+id/radioWizard"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/wizard_option" />
+        </RadioGroup>
+
+        <Button
+            android:id="@+id/btnStartGame"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/start_game"
+            android:layout_marginTop="24dp" />
+
+    </LinearLayout>
+</ScrollView>

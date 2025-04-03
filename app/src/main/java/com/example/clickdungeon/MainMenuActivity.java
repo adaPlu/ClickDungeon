@@ -1,5 +1,6 @@
 package com.example.clickdungeon;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -53,5 +54,9 @@ public class MainMenuActivity extends AppCompatActivity {
             Intent intent = new Intent(MainMenuActivity.this, SettingsActivity.class);
             startActivity(intent);
         });
+    }
+    private boolean hasSavedGame() {
+        SharedPreferences prefs = getSharedPreferences("player_prefs", Context.MODE_PRIVATE);
+        return prefs.contains("grid");
     }
 }

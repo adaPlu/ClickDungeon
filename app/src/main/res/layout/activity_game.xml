@@ -5,12 +5,12 @@
     android:layout_height="match_parent"
     android:padding="8dp">
 
-    <!-- Top bar for gold and HP -->
+    <!-- Top bar for gold, HP, and floor -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:gravity="space_between"
+        android:gravity="center_horizontal"
         android:weightSum="3">
 
         <TextView
@@ -18,7 +18,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Gold: 0"
+            android:text="@string/gold_display"
             android:textStyle="bold"
             android:textSize="18sp"
             android:padding="4dp" />
@@ -72,7 +72,7 @@
         android:id="@+id/btnClassAbility"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Use Ability"
+        android:text="@string/use_ability"
         android:layout_marginTop="8dp"
         android:visibility="gone" />
 </LinearLayout>

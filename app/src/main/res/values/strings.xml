@@ -1,17 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Click Dungeon</string>
-    <string name="play">Play</string>
-    <string name="btn_new_game">btnNewGame</string>
-    <string name="btn_continue">Continue</string>
-    <string name="settings">Settings</string>
-    <string name="shop">Shop</string>
-    <string name="achievements">Achievements</string>
-    <string name="gold_display">Gold: 0</string>
-    <string name="refresh_shop">Refresh Shop</string>
-    <string name="achievements_title">Your Achievements</string>
-    <string name="back_to_menu">Back to Menu</string>
-    <string name="gold_display_dynamic">Gold: %1$d</string>
-    <string name="hp_display_dynamic">HP: %1$d/%2$d</string>
-    <string name="not_enough_gold">Not enough gold!</string>
-    <string name="purchase_successful">Purchased: %1$s</string>
+<string name="app_name">ClickDungeon</string>
+
+<!-- Main Menu -->
+<string name="play">Play</string>
+<string name="btn_new_game">btnNewGame</string>
+<string name="btn_continue">Continue</string>
+<string name="settings">Settings</string>
+<string name="shop">Shop</string>
+<string name="achievements">Achievements</string>
+<string name="achievements_title">Your Achievements</string>
+<string name="back_to_menu">Back to Menu</string>
+<string name="no_game_in_progress">No game in progress</string>
+
+<!-- Shop -->
+<string name="purchase_successful">Purchased: %1$s</string>
+<string name="not_enough_gold">Not enough gold!</string>
+<string name="gold_display">Gold:</string>
+<string name="gold_display_dynamic">Gold: %1$d</string>
+<string name="refresh_shop">Refresh Shop</string>
+
+<!-- Game -->
+<string name="hp_display_dynamic">HP: %1$d/%2$d</string>
+<string name="victory_title">Victory!</string>
+<string name="victory_message">You revealed all safe tiles. Well done!</string>
+<string name="defeat_title">Game Over</string>
+<string name="defeat_message">You clicked on an enemy! What would you like to do?</string>
+<string name="restart">Restart</string>
+<string name="main_menu">Main Menu</string>
+<string name="play_again">Play Again</string>
+<string name="use_ability">Use Ability</string>
+
+<!-- Character Selection -->
+<string name="enter_name">Enter character name</string>
+<string name="knight_option">Knight (HP: 10)</string>
+<string name="thief_option">Thief (HP: 6)</string>
+<string name="wizard_option">Wizard (HP: 4)</string>
+<string name="start_game">Start Game</string>
+<string name="choose_name_and_class">Enter name and select a class.</string>
+
+<!-- Status -->
+<string name="frozen_status">Frozen: %1$d turns</string>
+<string name="poison_status">Poisoned: %1$d turns</string>
 </resources>
