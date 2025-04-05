@@ -1,4 +1,3 @@
-// Finalized GameActivity.java with class abilities, traps, multi-floor support
 package com.example.clickdungeon;
 
 import android.content.Context;
@@ -22,9 +21,9 @@ import com.example.clickdungeon.model.InventoryItem;
 import com.example.clickdungeon.model.PlayerClass;
 import com.example.clickdungeon.model.Tile;
 import com.example.clickdungeon.model.TileType;
+import com.example.clickdungeon.util.AchievementManager;
 import com.example.clickdungeon.util.GameStateManager;
 import com.example.clickdungeon.util.InventoryManager;
-import com.example.clickdungeon.util.AchievementManager;
 import com.google.gson.Gson;
 
 import java.util.ArrayList;
@@ -38,7 +37,6 @@ public class GameActivity extends AppCompatActivity {
     private TextView goldCounterText, hpCounterText, statusEffectText, floorText;
     private Button classAbilityButton;
     private Tile[][] dungeonGrid;
-
     private int currentGold = 0;
     private int safeTilesToReveal = 0;
     private int revealedSafeTiles = 0;
@@ -46,8 +44,10 @@ public class GameActivity extends AppCompatActivity {
     private int frozenTurnsLeft = 0;
     private int poisonTurnsLeft = 0;
     private boolean thiefScanMode = false;
+    private TileType placedLockedStair = null;
 
     private CharacterProfile profile;
+    private String placedKeyName = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -88,6 +88,45 @@ public class GameActivity extends AppCompatActivity {
     private void updateFloorDisplay() {
         floorText.setText("Floor " + currentFloor);
     }
+    private void generateDungeon() {
+        List<Tile> tiles = new ArrayList<>();
+
+        for (int i = 0; i < 5; i++) tiles.add(new Tile(TileType.GOLD));
+        for (int i = 0; i < 5; i++) tiles.add(new Tile(TileType.ENEMY));
+        for (int i = 0; i < 2; i++) tiles.add(new Tile(TileType.TRAP_FIRE));
+        for (int i = 0; i < 2; i++) tiles.add(new Tile(TileType.TRAP_POISON));
+        tiles.add(new Tile(TileType.TRAP_ACID));
+        tiles.add(new Tile(TileType.TRAP_FREEZE));
+        tiles.add(new Tile(TileType.TRAP_PITFALL));
+
+        TileType[] keyTypes = {TileType.RED_KEY, TileType.BLUE_KEY, TileType.GREEN_KEY};
+        TileType[] lockTypes = {TileType.STAIR_DOWN_LOCKED_RED, TileType.STAIR_DOWN_LOCKED_BLUE, TileType.STAIR_DOWN_LOCKED_GREEN};
+        int keyIndex = (currentFloor - 1) % keyTypes.length;
+        placedKeyName = keyTypes[keyIndex].name().replace("_KEY", " Key (F" + currentFloor + ")");
+        placedLockedStair = lockTypes[keyIndex];
+
+        tiles.add(new Tile(placedKeyName, keyTypes[keyIndex]));
+        tiles.add(new Tile(placedLockedStair));
+        tiles.add(new Tile(TileType.STAIR_DOWN));
+        if (currentFloor > 1) tiles.add(new Tile(TileType.STAIR_UP));
+
+        while (tiles.size() < GRID_SIZE * GRID_SIZE) tiles.add(new Tile(TileType.EMPTY));
+        Collections.shuffle(tiles);
+
+        int index = 0;
+        for (int row = 0; row < GRID_SIZE; row++) {
+            for (int col = 0; col < GRID_SIZE; col++) {
+                dungeonGrid[row][col] = tiles.get(index++);
+            }
+        }
+
+        safeTilesToReveal = 0;
+        for (Tile t : tiles) {
+            if (t.getType() != TileType.ENEMY) safeTilesToReveal++;
+        }
+    }
+
+
 
     private void fallToNextFloor() {
         currentFloor++;
@@ -116,25 +155,7 @@ public class GameActivity extends AppCompatActivity {
         }
     }
 
-    private void generateDungeon() {
-        List<Tile> tiles = new ArrayList<>();
-        for (int i = 0; i < 5; i++) tiles.add(new Tile(TileType.GOLD));
-        for (int i = 0; i < 5; i++) tiles.add(new Tile(TileType.ENEMY));
-        for (int i = 0; i < 2; i++) tiles.add(new Tile(TileType.TRAP_FIRE));
-        for (int i = 0; i < 2; i++) tiles.add(new Tile(TileType.TRAP_POISON));
-        tiles.add(new Tile(TileType.TRAP_ACID));
-        tiles.add(new Tile(TileType.TRAP_FREEZE));
-        tiles.add(new Tile(TileType.TRAP_PITFALL));
-        while (tiles.size() < GRID_SIZE * GRID_SIZE) tiles.add(new Tile(TileType.EMPTY));
-        Collections.shuffle(tiles);
 
-        int index = 0;
-        for (int row = 0; row < GRID_SIZE; row++) {
-            for (int col = 0; col < GRID_SIZE; col++) {
-                dungeonGrid[row][col] = tiles.get(index++);
-            }
-        }
-    }
 
     private void renderGrid() {
         LayoutInflater inflater = getLayoutInflater();
@@ -186,18 +207,55 @@ public class GameActivity extends AppCompatActivity {
                 updateGoldCounter();
                 updateInventory("Gold", 1);
                 break;
+
             case ENEMY:
                 tileText.setText("💀");
                 takeDamage(1);
                 break;
+
             case EMPTY:
                 tileText.setText("⬜");
                 break;
+
+            case STAIR_DOWN:
+                tileText.setText("🪜");
+                fallToNextFloor();
+                break;
+
+            case STAIR_DOWN_LOCKED_RED:
+            case STAIR_DOWN_LOCKED_BLUE:
+                String neededKey = tile.getType() == TileType.STAIR_DOWN_LOCKED_RED ? "Red Key" : "Blue Key";
+                List<InventoryItem> inventory = InventoryManager.loadInventory(this);
+                boolean hasKey = false;
+
+                for (InventoryItem item : inventory) {
+                    if (item.getName().equals(neededKey) && item.getQuantity() > 0) {
+                        hasKey = true;
+                        updateInventory(neededKey, -1);
+                        break;
+                    }
+                }
+
+                if (hasKey) {
+                    Toast.makeText(this, "Unlocked stair with " + neededKey + "!", Toast.LENGTH_SHORT).show();
+                    tileText.setText(tile.getType() == TileType.STAIR_DOWN_LOCKED_RED ? "🔴🪜" : "🔵🪜");
+                    fallToNextFloor();
+                } else {
+                    tileText.setText(tile.getType() == TileType.STAIR_DOWN_LOCKED_RED ? "🔴🪜" : "🔵🪜");
+                    Toast.makeText(this, "You need the " + neededKey + "!", Toast.LENGTH_SHORT).show();
+                }
+                break;
+
+            case STAIR_UP:
+                tileText.setText("⤴️");
+                break;
+
             default:
                 handleTrap(tileText, tile);
                 break;
         }
     }
+
 
     private void handleTrap(TextView tileText, Tile tile) {
         List<InventoryItem> inventory = InventoryManager.loadInventory(this);

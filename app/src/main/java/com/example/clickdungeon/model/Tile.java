@@ -3,11 +3,24 @@ package com.example.clickdungeon.model;
 public class Tile {
     private TileType type;
     private boolean revealed;
+    private String label;
 
     public Tile(TileType type) {
         this.type = type;
         this.revealed = false;
     }
+
+
+    public Tile(String label, TileType type) {
+        this.label = label;
+        this.type = type;
+        this.revealed = false;
+    }
+
+    public String getLabel() {
+        return label != null ? label : type.toString();
+    }
+
 
     public TileType getType() {
         return type;
