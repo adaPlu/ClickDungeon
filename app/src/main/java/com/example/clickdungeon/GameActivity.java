@@ -18,6 +18,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.clickdungeon.model.CharacterProfile;
 import com.example.clickdungeon.model.InventoryItem;
+import com.example.clickdungeon.model.Monster;
 import com.example.clickdungeon.model.PlayerClass;
 import com.example.clickdungeon.model.Tile;
 import com.example.clickdungeon.model.TileType;
@@ -29,6 +30,7 @@ import com.google.gson.Gson;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 
 public class GameActivity extends AppCompatActivity {
 
@@ -48,6 +50,16 @@ public class GameActivity extends AppCompatActivity {
 
     private CharacterProfile profile;
     private String placedKeyName = null;
+    private final Monster[] monsterPool = new Monster[] {
+            new Monster("Slime", 1, 1, "🟢"),
+            new Monster("Goblin", 2, 1, "🧌"),
+            new Monster("Skeleton", 2, 2, "💀"),
+            new Monster("Orc", 3, 2, "🧟"),
+            new Monster("Troll", 4, 3, "👹"),
+            new Monster("Witch", 3, 3, "🧙"),
+            new Monster("Demon", 5, 4, "😈"),
+            new Monster("Dragon", 8, 5, "🐉")
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,8 +75,6 @@ public class GameActivity extends AppCompatActivity {
 
         loadProfile();
         currentFloor = GameStateManager.loadFloor(this);
-        updateFloorDisplay();
-
         Tile[][] savedGrid = GameStateManager.loadGrid(this);
         if (savedGrid != null) {
             dungeonGrid = savedGrid;
@@ -85,14 +95,14 @@ public class GameActivity extends AppCompatActivity {
         setupClassAbilityButton();
     }
 
-    private void updateFloorDisplay() {
-        floorText.setText("Floor " + currentFloor);
-    }
     private void generateDungeon() {
         List<Tile> tiles = new ArrayList<>();
 
         for (int i = 0; i < 5; i++) tiles.add(new Tile(TileType.GOLD));
-        for (int i = 0; i < 5; i++) tiles.add(new Tile(TileType.ENEMY));
+        for (int i = 0; i < 5; i++) {
+            Monster m = monsterPool[new Random().nextInt(monsterPool.length)];
+            tiles.add(new Tile(TileType.ENEMY, m));
+        }
         for (int i = 0; i < 2; i++) tiles.add(new Tile(TileType.TRAP_FIRE));
         for (int i = 0; i < 2; i++) tiles.add(new Tile(TileType.TRAP_POISON));
         tiles.add(new Tile(TileType.TRAP_ACID));
@@ -102,10 +112,11 @@ public class GameActivity extends AppCompatActivity {
         TileType[] keyTypes = {TileType.RED_KEY, TileType.BLUE_KEY, TileType.GREEN_KEY};
         TileType[] lockTypes = {TileType.STAIR_DOWN_LOCKED_RED, TileType.STAIR_DOWN_LOCKED_BLUE, TileType.STAIR_DOWN_LOCKED_GREEN};
         int keyIndex = (currentFloor - 1) % keyTypes.length;
-        placedKeyName = keyTypes[keyIndex].name().replace("_KEY", " Key (F" + currentFloor + ")");
+        TileType selectedKeyType = keyTypes[keyIndex];
+        placedKeyName = selectedKeyType.name().replace("_KEY", " Key (F" + currentFloor + ")");
         placedLockedStair = lockTypes[keyIndex];
 
-        tiles.add(new Tile(placedKeyName, keyTypes[keyIndex]));
+        tiles.add(new Tile(selectedKeyType));
         tiles.add(new Tile(placedLockedStair));
         tiles.add(new Tile(TileType.STAIR_DOWN));
         if (currentFloor > 1) tiles.add(new Tile(TileType.STAIR_UP));
@@ -125,9 +136,6 @@ public class GameActivity extends AppCompatActivity {
             if (t.getType() != TileType.ENEMY) safeTilesToReveal++;
         }
     }
-
-
-
     private void fallToNextFloor() {
         currentFloor++;
         GameStateManager.saveFloor(this, currentFloor);
@@ -155,6 +163,16 @@ public class GameActivity extends AppCompatActivity {
         }
     }
 
+    private void updateFloorDisplay() {
+        String label = "Floor " + currentFloor;
+
+        // Optional: show a hint if this floor was reached via locked stairs
+        if (placedLockedStair != null) {
+            label += " (Hard)";
+        }
+
+        floorText.setText(label);
+    }
 
 
     private void renderGrid() {

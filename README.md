@@ -1,10 +1,10 @@
-# ??? ClickDungeon - Android Dungelot-Inspired Roguelite
+# ðŸ§± ClickDungeon - Android Dungelot-Inspired Roguelite
 
 **ClickDungeon** is a premium Android dungeon-crawler inspired by the Dungelot series, developed in Java using Android Studio. Players explore layered floors of a hidden-tile dungeon, collect gold, unlock achievements, and use special class abilities to survive and progress. Designed for commercial use with built-in expansion points for monetization and further gameplay depth.
 
 ---
 
-## ?? Key Features
+## ðŸ”‘ Key Features
 
 1. **Grid-Based Dungeon Exploration**  
    - 5x5 dungeon grid with hidden tiles and multiple floor levels.  
@@ -26,11 +26,11 @@
    - Player can acquire items through the **Shop**.
 
 5. **Multiple Floors**  
-   - Pitfall traps cause you to advance downward.  
-   - Survive deeper floors with increased challenge and better rewards (planned).
+   - Pitfall traps and stairs cause you to advance downward.  
+   - Survive deeper floors with increased challenge and better rewards.
 
 6. **Achievements & Progress**  
-   - Collect multiple achievements (e.g., “First Blood,” “Low HP Survivor”).  
+   - Collect multiple achievements (e.g., â€œFirst Blood,â€ â€œLow HP Survivorâ€).  
    - Earn them by uncovering tiles, winning with minimal HP, or reaching boss floors.  
    - Achievements stored and displayed in **AchievementsActivity**.
 
@@ -46,7 +46,7 @@
 
 ---
 
-## ?? Technologies Used
+## ðŸ§° Technologies Used
 
 - **Java (Android SDK)**
 - **Android Studio**  
@@ -56,46 +56,46 @@
 
 ---
 
-## ??? Project Structure
+## ðŸ“ Project Structure
 
 ```bash
 ClickDungeon/
 +-- app/
-¦   +-- java/com/example/clickdungeon/
-¦   ¦   +-- MainMenuActivity.java       # Main menu & navigation
-¦   ¦   +-- ClassSelectionActivity.java # Choose class (Knight, Thief, Wizard)
-¦   ¦   +-- GameActivity.java           # Core dungeon gameplay with multi-floor logic
-¦   ¦   +-- ShopActivity.java           # Purchasing items & managing gold
-¦   ¦   +-- AchievementsActivity.java   # Viewing unlocked achievements
-¦   ¦   +-- SettingsActivity.java       # Basic settings screen
-¦   ¦   +-- model/
-¦   ¦   ¦   +-- CharacterProfile.java
-¦   ¦   ¦   +-- InventoryItem.java
-¦   ¦   ¦   +-- ShopItem.java
-¦   ¦   ¦   +-- Achievement.java
-¦   ¦   ¦   +-- Tile.java
-¦   ¦   ¦   +-- TileType.java
-¦   ¦   ¦   +-- PlayerClass.java
-¦   ¦   +-- util/
-¦   ¦   ¦   +-- GameStateManager.java
-¦   ¦   ¦   +-- InventoryManager.java
-¦   ¦   ¦   +-- AchievementManager.java
-¦   ¦   +-- adapter/
-¦   ¦   ¦   +-- ShopItemAdapter.java
-¦   ¦   ¦   +-- AchievementAdapter.java
-¦   +-- res/
-¦       +-- layout/
-¦       ¦   +-- activity_main_menu.xml
-¦       ¦   +-- activity_class_selection.xml
-¦       ¦   +-- activity_game.xml
-¦       ¦   +-- activity_shop.xml
-¦       ¦   +-- activity_achievements.xml
-¦       ¦   +-- activity_settings.xml
-¦       ¦   +-- item_tile.xml
-¦       ¦   +-- ...
-¦       +-- values/
-¦       ¦   +-- strings.xml
-¦       ¦   +-- ...
+Â¦   +-- java/com/example/clickdungeon/
+Â¦   Â¦   +-- MainMenuActivity.java       # Main menu & navigation
+Â¦   Â¦   +-- ClassSelectionActivity.java # Choose class (Knight, Thief, Wizard)
+Â¦   Â¦   +-- GameActivity.java           # Core dungeon gameplay with multi-floor logic
+Â¦   Â¦   +-- ShopActivity.java           # Purchasing items & managing gold
+Â¦   Â¦   +-- AchievementsActivity.java   # Viewing unlocked achievements
+Â¦   Â¦   +-- SettingsActivity.java       # Basic settings screen
+Â¦   Â¦   +-- model/
+Â¦   Â¦   Â¦   +-- CharacterProfile.java
+Â¦   Â¦   Â¦   +-- InventoryItem.java
+Â¦   Â¦   Â¦   +-- ShopItem.java
+Â¦   Â¦   Â¦   +-- Achievement.java
+Â¦   Â¦   Â¦   +-- Tile.java
+Â¦   Â¦   Â¦   +-- TileType.java
+Â¦   Â¦   Â¦   +-- PlayerClass.java
+Â¦   Â¦   +-- util/
+Â¦   Â¦   Â¦   +-- GameStateManager.java
+Â¦   Â¦   Â¦   +-- InventoryManager.java
+Â¦   Â¦   Â¦   +-- AchievementManager.java
+Â¦   Â¦   +-- adapter/
+Â¦   Â¦   Â¦   +-- ShopItemAdapter.java
+Â¦   Â¦   Â¦   +-- AchievementAdapter.java
+Â¦   +-- res/
+Â¦       +-- layout/
+Â¦       Â¦   +-- activity_main_menu.xml
+Â¦       Â¦   +-- activity_class_selection.xml
+Â¦       Â¦   +-- activity_game.xml
+Â¦       Â¦   +-- activity_shop.xml
+Â¦       Â¦   +-- activity_achievements.xml
+Â¦       Â¦   +-- activity_settings.xml
+Â¦       Â¦   +-- item_tile.xml
+Â¦       Â¦   +-- ...
+Â¦       +-- values/
+Â¦       Â¦   +-- strings.xml
+Â¦       Â¦   +-- ...
 +-- build.gradle.kts
 +-- settings.gradle.kts
 +-- AndroidManifest.xml
@@ -103,58 +103,63 @@ ClickDungeon/
 
 ---
 
-## ?? How to Run
+## â–¶ï¸ How to Run
 
 1. **Clone the repository**  
    ```bash
    git clone https://github.com/adaplu/ClickDungeon.git
    ```
 2. **Open in Android Studio**  
-   **File ? Open** ? Select the `ClickDungeon` folder
+   Go to **File â†’ Open**, and select the `ClickDungeon` folder
 3. **Build & Run**  
-   - Deploy on an emulator or physical Android device.
+   Deploy on an emulator or physical Android device
 
 ---
 
-## ? Progress Checklist
+## âœ… Progress Checklist
 
-- [x] Multi-floor dungeon with pitfall traps  
-- [x] Class selection (Knight, Thief, Wizard)  
+- [x] Multi-floor dungeon with pitfall traps and stairs  
+- [x] Class selection (Knight, Thief, Wizard) with abilities  
 - [x] Traps & status effects (freeze, poison)  
-- [x] New “Trap Disarm Kit” usage  
+- [x] â€œTrap Disarm Kitâ€ item integration  
 - [x] Achievements UI & unlocking logic  
-- [x] Inventory & gold system (Shop integration)  
-- [x] Resume game from main menu  
+- [x] Inventory & gold system with shop  
+- [x] Resume game from main menu with save slots  
+- [x] Key/stair integration and colored stair mechanics
+- [ ] Combat with various monsters
 - [ ] Boss floors & advanced enemy AI (planned)  
-- [ ] Additional class abilities & skill trees (planned)  
+- [ ] Additional classes and abilities (planned)
 
 ---
 
-## ?? Future Roadmap
+## ðŸ—ºï¸ Future Roadmap
 
-1. **Extended Combat & Bosses**  
-   - Introduce boss floors with unique mechanics.  
-   - Add multi-turn battles and enemy variety.
-2. **More Achievements & Classes**  
-   - Additional classes (Ranger, Paladin, Necromancer, etc.).  
-   - Deepen achievement list (speedruns, no-damage runs, etc.).
-3. **Monetization**  
-   - Implement ads or in-app purchases for premium items.  
-   - Shop expansions with more advanced gear.
-4. **Polished UI/UX**  
-   - Enhanced animations, transitions, and theming.  
-   - Accessibility improvements & language localization.
-5. **Cloud Saves & Leaderboards**  
-   - Allow cross-device progress syncing.  
-   - Global scoreboard for top dungeon delvers.
+1. **Combat Expansion & Bosses**  
+   - Boss floors with new enemies & unique rules  
+   - Multi-turn battles & class-specific combat
+
+2. **More Achievements & Class Depth**  
+   - Classes like Ranger, Necromancer, Paladin  
+   - Skills trees, magic, and custom builds
+
+3. **Monetization Options**  
+   - In-app purchases for cosmetics or utility items  
+   - Ad-based rewards (revive, gold boost, etc.)
+
+4. **UI Polish & Localization**  
+   - Animations, feedback, and user-friendly layouts  
+   - Translate into multiple languages
+
+5. **Online Features**  
+   - Cloud saving across devices  
+   - Leaderboards & challenge dungeons
 
 ---
 
-## ??? License
+## ðŸ“œ License
 
 **Commercial License**  
 This project is licensed for commercial use. Redistribution, sublicensing, or modification is allowed only under explicit written permission from the author.
 
-> © 2025 ClickDungeon Studios. All rights reserved.
-
-For licensing inquiries, please contact: `ClickDungeon@gmail.com`
+> Â© 2025 ClickDungeon Studios. All rights reserved.  
+> Contact: `ClickDungeon@gmail.com`
