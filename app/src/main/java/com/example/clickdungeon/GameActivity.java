@@ -51,14 +51,14 @@ public class GameActivity extends AppCompatActivity {
     private CharacterProfile profile;
     private String placedKeyName = null;
     private final Monster[] monsterPool = new Monster[] {
-            new Monster("Slime", 1, 1, "🟢"),
-            new Monster("Goblin", 2, 1, "🧌"),
-            new Monster("Skeleton", 2, 2, "💀"),
-            new Monster("Orc", 3, 2, "🧟"),
-            new Monster("Troll", 4, 3, "👹"),
-            new Monster("Witch", 3, 3, "🧙"),
-            new Monster("Demon", 5, 4, "😈"),
-            new Monster("Dragon", 8, 5, "🐉")
+            new Monster("Slime", 1, 1, 1, "🟢"),
+            new Monster("Goblin", 2, 1, 1, "🧌"),
+            new Monster("Skeleton", 2, 2, 2, "💀"),
+            new Monster("Orc", 3, 2, 2, "🧟"),
+            new Monster("Troll", 4, 3, 3, "👹"),
+            new Monster("Witch", 3, 3, 3, "🧙"),
+            new Monster("Demon", 5, 4, 4, "😈"),
+            new Monster("Dragon", 8, 5, 5, "🐉")
     };
 
     @Override
@@ -136,6 +136,7 @@ public class GameActivity extends AppCompatActivity {
             if (t.getType() != TileType.ENEMY) safeTilesToReveal++;
         }
     }
+
     private void fallToNextFloor() {
         currentFloor++;
         GameStateManager.saveFloor(this, currentFloor);
@@ -165,15 +166,11 @@ public class GameActivity extends AppCompatActivity {
 
     private void updateFloorDisplay() {
         String label = "Floor " + currentFloor;
-
-        // Optional: show a hint if this floor was reached via locked stairs
         if (placedLockedStair != null) {
             label += " (Hard)";
         }
-
         floorText.setText(label);
     }
-
 
     private void renderGrid() {
         LayoutInflater inflater = getLayoutInflater();
@@ -201,6 +198,44 @@ public class GameActivity extends AppCompatActivity {
         }
     }
 
+    private void startCombat(Monster monster) {
+        // Use profile (the player's CharacterProfile) instead of currentProfile
+        int playerAttack = profile.getAttack();
+        int playerDefense = profile.getDefense();
+        int monsterAttack = monster.getAttack();
+        int monsterDefense = monster.getDefense();
+
+        // Simple turn-based combat loop
+        while (!monster.isDead() && !profile.isDead()) {
+            int damageToMonster = Math.max(0, playerAttack - monsterDefense);
+            monster.takeDamage(damageToMonster);
+            Toast.makeText(this, "You dealt " + damageToMonster + " damage to " + monster.getMonsterType(), Toast.LENGTH_SHORT).show();
+
+            if (monster.isDead()) {
+                break;
+            }
+
+            int damageToPlayer = Math.max(0, monsterAttack - playerDefense);
+            profile.takeDamage(damageToPlayer);
+            Toast.makeText(this, monster.getMonsterType() + " dealt " + damageToPlayer + " damage to you", Toast.LENGTH_SHORT).show();
+        }
+
+        if (monster.isDead()) {
+            Toast.makeText(this, "You defeated " + monster.getMonsterType() + "!", Toast.LENGTH_SHORT).show();
+            int xpReward = monster.getMaxHP() / 2;
+            profile.addExperience(xpReward);
+            Toast.makeText(this, "Gained " + xpReward + " XP!", Toast.LENGTH_SHORT).show();
+        } else if (profile.isDead()) {
+            Toast.makeText(this, "You were defeated by " + monster.getMonsterType() + "!", Toast.LENGTH_SHORT).show();
+            handleGameOver();
+        }
+
+        // Save state after combat
+        // Make sure saveManager and activeSlotIndex are defined elsewhere in your code.
+        // For now, this line is commented out if not available:
+        // saveManager.saveGame(activeSlotIndex, profile, currentFloor, dungeonGrid);
+    }
+
     private void handleTileClick(int row, int col, TextView tileText) {
         Tile clickedTile = dungeonGrid[row][col];
         if (!clickedTile.isRevealed()) {
@@ -217,6 +252,42 @@ public class GameActivity extends AppCompatActivity {
         }
     }
 
+    private boolean playerIsDead() {
+        return profile.isDead();
+    }
+
+    private void handleGameOver() {
+        new AlertDialog.Builder(this)
+                .setTitle("Game Over")
+                .setMessage("You have been defeated. Would you like to restart or return to the main menu?")
+                .setPositiveButton("Restart", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        restartGame();
+                    }
+                })
+                .setNegativeButton("Main Menu", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        goToMainMenu();
+                    }
+                })
+                .setCancelable(false)
+                .show();
+    }
+
+    private void restartGame() {
+        Intent intent = new Intent(this, GameActivity.class);
+        startActivity(intent);
+        finish();
+    }
+
+    private void goToMainMenu() {
+        Intent intent = new Intent(this, MainMenuActivity.class);
+        startActivity(intent);
+        finish();
+    }
+
     private void revealTile(TextView tileText, Tile tile) {
         switch (tile.getType()) {
             case GOLD:
@@ -228,7 +299,18 @@ public class GameActivity extends AppCompatActivity {
 
             case ENEMY:
                 tileText.setText("💀");
-                takeDamage(1);
+                if (tile.hasMonster()) {
+                    startCombat(tile.getMonster());
+                    if (!playerIsDead()) {
+                        if (tile.getMonster().isDead()) {
+                            tile.setMonster(null);
+                        }
+                    } else {
+                        handleGameOver();
+                    }
+                } else {
+                    takeDamage(1);
+                }
                 break;
 
             case EMPTY:
@@ -273,7 +355,6 @@ public class GameActivity extends AppCompatActivity {
                 break;
         }
     }
-
 
     private void handleTrap(TextView tileText, Tile tile) {
         List<InventoryItem> inventory = InventoryManager.loadInventory(this);

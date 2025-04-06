@@ -1,23 +1,23 @@
 package com.example.clickdungeon.model;
 
 public class Monster {
-    private String name;
     private int maxHP;
     private int currentHP;
     private int attack;
 
     private String image;
 
-    public Monster(String name, int maxHP, int attack, String image) {
-        this.name = name;
+    private int defense;
+
+    private String monsterType;
+
+    public Monster(String monsterType, int maxHP, int attack,int defense, String image) {
+        this.monsterType = monsterType;
         this.maxHP = maxHP;
         this.currentHP = maxHP;
         this.attack = attack;
+        this.defense = defense;
         this.image = image;
-    }
-
-    public String getName() {
-        return name;
     }
 
     public int getMaxHP() {
@@ -28,11 +28,26 @@ public class Monster {
         return currentHP;
     }
 
-    public void setCurrentHP(int hp) {
-        this.currentHP = hp;
-    }
-
     public int getAttack() {
         return attack;
+    }
+
+    public int getDefense() {
+        return defense;
+    }
+
+    public String getMonsterType() {
+        return monsterType;
+    }
+
+    public boolean isDead() {
+        return currentHP <= 0;
+    }
+
+    public void takeDamage(int damage) {
+        currentHP -= damage;
+        if (currentHP < 0) {
+            currentHP = 0;
+        }
     }
 }

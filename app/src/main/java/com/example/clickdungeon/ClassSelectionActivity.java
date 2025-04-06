@@ -54,7 +54,7 @@ public class ClassSelectionActivity extends AppCompatActivity {
                 maxHP = 4;
             }
 
-            CharacterProfile profile = new CharacterProfile(name, selectedClass, maxHP);
+            CharacterProfile profile = new CharacterProfile(name, selectedClass);
             saveProfile(profile);
 
             Intent intent = new Intent(this, GameActivity.class);

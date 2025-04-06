@@ -1,4 +1,3 @@
-// Latest version of CharacterProfile.java
 package com.example.clickdungeon.model;
 
 public class CharacterProfile {
@@ -9,13 +8,53 @@ public class CharacterProfile {
     private int level;
     private int xp;
 
-    public CharacterProfile(String name, PlayerClass playerClass, int maxHP) {
+    // New instance variables for attack and defense.
+    private int attack;
+    private int defense;
+
+    public CharacterProfile(String name, PlayerClass playerClass) {
         this.name = name;
         this.playerClass = playerClass;
-        this.maxHP = maxHP;
-        this.currentHP = maxHP;
         this.level = 1;
         this.xp = 0;
+        switch (playerClass) {
+            case KNIGHT:
+                this.maxHP = 10 * level;
+                this.currentHP = maxHP;
+                break;
+            case THIEF:
+                this.maxHP = 6 * level;
+                this.currentHP = maxHP;
+                break;
+            case WIZARD:
+                this.maxHP = 4 * level;
+                this.currentHP = maxHP;
+                break;
+            default:
+                this.maxHP = 10;
+                this.currentHP = maxHP;
+                break;
+        }
+        // Set initial attack and defense based on the player's class.
+        switch (playerClass) {
+            case KNIGHT:
+                this.attack = level * 2;
+                this.defense = level * 3;
+                break;
+            case THIEF:
+                this.attack = level * 2 + 2;
+                this.defense = level + 1;
+                break;
+            case WIZARD:
+                this.attack = level * 2 + 1;
+                this.defense = level;
+                break;
+            default:
+                this.attack = level * 2;
+                this.defense = level;
+                break;
+        }
+
     }
 
     public String getName() {
@@ -47,6 +86,7 @@ public class CharacterProfile {
     }
 
     public void setCurrentHP(int currentHP) {
+        // Clamp currentHP between 0 and maxHP
         this.currentHP = Math.max(0, Math.min(maxHP, currentHP));
     }
 
@@ -64,5 +104,55 @@ public class CharacterProfile {
 
     public void setXp(int xp) {
         this.xp = xp;
+    }
+
+    // Getter and setter for attack.
+    public int getAttack() {
+        return attack;
+    }
+
+    public void setAttack(int attack) {
+        this.attack = attack;
+    }
+
+    // Getter and setter for defense.
+    public int getDefense() {
+        return defense;
+    }
+
+    public void setDefense(int defense) {
+        this.defense = defense;
+    }
+
+    // Returns true if the player's current HP is zero or less.
+    public boolean isDead() {
+        return currentHP <= 0;
+    }
+
+    // Subtracts the specified damage from currentHP using the setter to clamp the value.
+    public void takeDamage(int damageToPlayer) {
+        setCurrentHP(currentHP - damageToPlayer);
+    }
+
+    // Adds experience points, and levels up the character if the xp threshold is reached.
+    // Also increases maxHP, attack, and defense upon leveling up.
+    public void addExperience(int xpReward) {
+        xp += xpReward;
+        int xpNeeded = level * 100; // Example threshold: level * 100 XP to level up.
+        while (xp >= xpNeeded) {
+            xp -= xpNeeded;
+            level++;
+            // Increase maxHP by 10 for each level up, and restore currentHP to new maxHP.
+            maxHP += 10;
+            currentHP = maxHP;
+            // Increase attack and defense (adjust these increments as desired)
+            attack += 2;
+            defense += 1;
+            xpNeeded = level * 100;
+        }
+    }
+
+    public String getCharClass() {
+        return playerClass.toString();
     }
 }

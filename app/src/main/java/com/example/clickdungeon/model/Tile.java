@@ -8,6 +8,7 @@ public class Tile {
 
     public Tile(TileType type) {
         this.type = type;
+        this.monster = null; //null = no monster present on tile
         this.revealed = false;
     }
 
@@ -16,16 +17,15 @@ public class Tile {
         this.monster = monster;
         this.revealed = false;
     }
-    public Tile(Monster monster) {
-        this.type = TileType.ENEMY;
-        this.monster = monster;
-        this.revealed = false;
-    }
 
     public Tile(TileType type, String customName) {
         this.type = type;
         this.customName = customName;
         this.revealed = false;
+    }
+
+    public Tile() {
+
     }
 
     public TileType getType() {
@@ -54,5 +54,8 @@ public class Tile {
 
     public String getCustomName() {
         return customName;
+    }
+    public boolean hasMonster() {
+        return monster != null;
     }
 }
