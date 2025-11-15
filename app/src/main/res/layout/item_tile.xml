@@ -1,13 +1,61 @@
 <?xml version="1.0" encoding="utf-8"?>
-<TextView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/textTile"
-    android:layout_width="0dp"
-    android:layout_height="0dp"
-    android:layout_columnWeight="1"
-    android:layout_rowWeight="1"
-    android:gravity="center"
-    android:text="?"
-    android:textSize="22sp"
-    android:textStyle="bold"
-    android:background="#DDDDDD"
-    android:padding="4dp" />
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="64dp"
+    android:layout_height="64dp"
+    android:layout_margin="2dp"
+    android:background="@drawable/tile_bg">
+
+    <!-- Enemy sprite or tile -->
+    <ImageView
+        android:id="@+id/imageTile"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="centerInside"
+        android:visibility="gone" />
+
+    <!-- Damage overlay (e.g. red flash) -->
+    <View
+        android:id="@+id/damageOverlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#FF0000"
+        android:alpha="0"
+        android:visibility="gone" />
+
+    <!-- HP Bar -->
+    <ProgressBar
+        android:id="@+id/monsterHpBar"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="6dp"
+        android:layout_gravity="bottom"
+        android:progress="100"
+        android:max="100"
+        android:progressTint="#FF4444"
+        android:background="#33000000"
+        android:visibility="gone" />
+
+    <!-- Floating damage popup -->
+    <TextView
+        android:id="@+id/textFloatingDamage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="-3"
+        android:textColor="#FF4444"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:layout_gravity="center_horizontal"
+        android:translationY="-24dp"
+        android:visibility="gone"
+        android:elevation="12dp" />
+
+    <!-- Text label fallback (for unrevealed or simple tiles) -->
+    <TextView
+        android:id="@+id/textTile"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:textSize="20sp"
+        android:text="?"
+        android:textStyle="bold" />
+</FrameLayout>

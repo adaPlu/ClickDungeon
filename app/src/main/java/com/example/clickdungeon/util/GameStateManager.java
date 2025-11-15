@@ -12,22 +12,23 @@ import java.lang.reflect.Type;
 public class GameStateManager {
 
     private static final String PREFS_NAME = "player_prefs";
-    private static final String GRID_KEY = "grid";
-    private static final String GOLD_KEY = "gold";
-    private static final String FLOOR_KEY = "floor";
 
-    public static void saveGrid(Context context, Tile[][] grid, int gold) {
+    private static String key(String base, int slot) {
+        return base + "_slot_" + slot;
+    }
+
+    public static void saveGrid(Context context, Tile[][] grid, int gold, int slot) {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         Gson gson = new Gson();
         prefs.edit()
-                .putString(GRID_KEY, gson.toJson(grid))
-                .putInt(GOLD_KEY, gold)
+                .putString(key("grid", slot), gson.toJson(grid))
+                .putInt(key("gold", slot), gold)
                 .apply();
     }
 
-    public static Tile[][] loadGrid(Context context) {
+    public static Tile[][] loadGrid(Context context, int slot) {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-        String json = prefs.getString(GRID_KEY, null);
+        String json = prefs.getString(key("grid", slot), null);
         if (json == null) return null;
 
         Gson gson = new Gson();
@@ -35,27 +36,27 @@ public class GameStateManager {
         return gson.fromJson(json, type);
     }
 
-    public static void clearState(Context context) {
+    public static void clearSlot(Context context, int slot) {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         prefs.edit()
-                .remove(GRID_KEY)
-                .remove(GOLD_KEY)
-                .remove(FLOOR_KEY)
+                .remove(key("grid", slot))
+                .remove(key("gold", slot))
+                .remove(key("floor", slot))
                 .apply();
     }
 
-    public static void saveFloor(Context context, int floor) {
+    public static void saveFloor(Context context, int floor, int slot) {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-        prefs.edit().putInt(FLOOR_KEY, floor).apply();
+        prefs.edit().putInt(key("floor", slot), floor).apply();
     }
 
-    public static int loadFloor(Context context) {
+    public static int loadFloor(Context context, int slot) {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-        return prefs.getInt(FLOOR_KEY, 1);
+        return prefs.getInt(key("floor", slot), 1);
     }
 
-    public static int loadGold(Context context) {
+    public static int loadGold(Context context, int slot) {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-        return prefs.getInt(GOLD_KEY, 0);
+        return prefs.getInt(key("gold", slot), 0);
     }
 }

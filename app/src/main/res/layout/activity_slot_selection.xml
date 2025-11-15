@@ -1,0 +1,105 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/black"
+    android:padding="24dp">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:gravity="center"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Select Save Slot"
+            android:textSize="22sp"
+            android:textColor="@android:color/white"
+            android:layout_marginBottom="20dp" />
+
+        <!-- Slot 1 -->
+        <Button
+            android:id="@+id/btnSlot1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Slot 1" />
+        <TextView
+            android:id="@+id/txtSlot1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="(Empty)"
+            android:textColor="@android:color/white"
+            android:layout_marginBottom="12dp" />
+		<Button
+			android:id="@+id/btnDelete1"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:text="Delete Slot 1"
+			android:textColor="#FF0000"
+			android:layout_marginBottom="16dp" />
+        <!-- Slot 2 -->
+        <Button
+            android:id="@+id/btnSlot2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Slot 2" />
+        <TextView
+            android:id="@+id/txtSlot2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="(Empty)"
+            android:textColor="@android:color/white"
+            android:layout_marginBottom="12dp" />
+		<Button
+			android:id="@+id/btnDelete2"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:text="Delete Slot 2"
+			android:textColor="#FF0000"
+			android:layout_marginBottom="16dp" />
+
+        <!-- Slot 3 -->
+        <Button
+            android:id="@+id/btnSlot3"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Slot 3" />
+        <TextView
+            android:id="@+id/txtSlot3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="(Empty)"
+            android:textColor="@android:color/white"
+            android:layout_marginBottom="12dp" />
+		<Button
+			android:id="@+id/btnDelete3"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:text="Delete Slot 3"
+			android:textColor="#FF0000"
+			android:layout_marginBottom="16dp" />
+        <!-- Slot 4 -->
+        <Button
+            android:id="@+id/btnSlot4"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Slot 4" />
+        <TextView
+            android:id="@+id/txtSlot4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="(Empty)"
+            android:textColor="@android:color/white"
+            android:layout_marginBottom="12dp" />
+			
+		<Button
+			android:id="@+id/btnDelete4"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:text="Delete Slot 4"
+			android:textColor="#FF0000"
+			android:layout_marginBottom="16dp" />
+			
+    </LinearLayout>
+</ScrollView>

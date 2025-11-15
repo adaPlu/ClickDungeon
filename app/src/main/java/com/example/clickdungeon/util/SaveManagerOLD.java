@@ -1,4 +1,4 @@
-package com.example.clickdungeon.util;
+/*package com.example.clickdungeon.util;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -10,7 +10,7 @@ import com.google.gson.Gson;
 /**
  * Manages saving and loading game data across multiple save slots using SharedPreferences.
  */
-public class SaveManager {
+/*public class SaveManager {
 
     private static final String PREFS_NAME_PREFIX = "SaveSlot";
     private static final int TOTAL_SLOTS = 4;
@@ -25,7 +25,7 @@ public class SaveManager {
      * Constructor for SaveManager.
      *
      * @param context The application context.
-     */
+
     public SaveManager(Context context) {
         this.context = context;
         this.gson = new Gson();
@@ -38,7 +38,7 @@ public class SaveManager {
      * @param profile      The character profile to save.
      * @param currentFloor The current floor level.
      * @param dungeonGrid  The current state of the dungeon grid.
-     */
+
     public void saveGame(int slotIndex,
                          CharacterProfile profile,
                          int currentFloor,
@@ -68,7 +68,7 @@ public class SaveManager {
      *
      * @param slotIndex The index of the save slot (0 to 3).
      * @return A GameState object containing the loaded data, or null if the slot is empty or data is invalid.
-     */
+
     public GameState loadGame(int slotIndex) {
         if (slotIndex < 0 || slotIndex >= TOTAL_SLOTS) {
             throw new IllegalArgumentException("Invalid slot index");
@@ -114,7 +114,7 @@ public class SaveManager {
      *
      * @param slotIndex The index of the save slot (0 to 3).
      * @return True if the slot is occupied, false otherwise.
-     */
+
     public boolean isSlotOccupied(int slotIndex) {
         if (slotIndex < 0 || slotIndex >= TOTAL_SLOTS) {
             throw new IllegalArgumentException("Invalid slot index");
@@ -131,7 +131,7 @@ public class SaveManager {
      * Deletes the save data in the specified slot.
      *
      * @param slotIndex The index of the save slot (0 to 3).
-     */
+
     public void deleteSave(int slotIndex) {
         if (slotIndex < 0 || slotIndex >= TOTAL_SLOTS) {
             throw new IllegalArgumentException("Invalid slot index");
@@ -146,7 +146,7 @@ public class SaveManager {
 
     /**
      * A simple data class to hold the game state.
-     */
+
     public static class GameState {
         public CharacterProfile profile;
         public int currentFloor;
@@ -161,3 +161,4 @@ public class SaveManager {
         }
     }
 }
+*/

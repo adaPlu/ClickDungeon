@@ -1,62 +1,75 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:gravity="center_horizontal"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <LinearLayout
+    <EditText
+        android:id="@+id/editName"
+        android:hint="Enter character name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="16dp">
+        android:inputType="textPersonName"
+        android:maxLines="1"
+        android:layout_marginBottom="16dp" />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Character Selection"
-            android:textSize="24sp"
-            android:textStyle="bold"
-            android:layout_gravity="center_horizontal"
-            android:paddingBottom="16dp" />
+    <ImageView
+        android:id="@+id/imageClassPreview"
+        android:layout_width="96dp"
+        android:layout_height="96dp"
+        android:src="@drawable/icon_knight"
+        android:layout_marginBottom="16dp"
+        android:contentDescription="Class Preview" />
 
-        <EditText
-            android:id="@+id/editCharacterName"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="@string/enter_name"
-            android:inputType="textPersonName"
-            android:layout_marginBottom="16dp" />
+	<TextView
+		android:id="@+id/textSlotDisplay"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:text="Slot: 1"
+		android:textSize="16sp"
+		android:textColor="#888888"
+		android:layout_marginBottom="8dp" />
 
-        <RadioGroup
-            android:id="@+id/radioClassGroup"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Choose your class:"
+        android:textSize="18sp"
+        android:layout_marginBottom="12dp" />
 
-            <RadioButton
-                android:id="@+id/radioKnight"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/knight_option" />
-
-            <RadioButton
-                android:id="@+id/radioThief"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/thief_option" />
-
-            <RadioButton
-                android:id="@+id/radioWizard"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/wizard_option" />
-        </RadioGroup>
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center">
 
         <Button
-            android:id="@+id/btnStartGame"
-            android:layout_width="match_parent"
+            android:id="@+id/btnKnight"
+            android:text="Knight"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/start_game"
-            android:layout_marginTop="24dp" />
+            android:layout_marginEnd="8dp" />
 
+        <Button
+            android:id="@+id/btnThief"
+            android:text="Thief"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp" />
+
+        <Button
+            android:id="@+id/btnWizard"
+            android:text="Wizard"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
     </LinearLayout>
-</ScrollView>
+
+    <Button
+        android:id="@+id/btnStart"
+        android:text="Start Adventure"
+        android:layout_marginTop="24dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+</LinearLayout>

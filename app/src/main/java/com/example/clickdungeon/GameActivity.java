@@ -1,7 +1,9 @@
+//Made By Ada Pluguez
+//01/01/2025
+//Java based Android click based RPG
 package com.example.clickdungeon;
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -10,15 +12,20 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.GridLayout;
+import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.clickdungeon.model.AnimatedMonster;
+import com.example.clickdungeon.model.AnimatedPlayer;
 import com.example.clickdungeon.model.CharacterProfile;
 import com.example.clickdungeon.model.InventoryItem;
 import com.example.clickdungeon.model.Monster;
+import com.example.clickdungeon.model.MonsterFactory;
 import com.example.clickdungeon.model.PlayerClass;
 import com.example.clickdungeon.model.Tile;
 import com.example.clickdungeon.model.TileType;
@@ -31,6 +38,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
+
+import android.animation.ObjectAnimator;
+import android.graphics.Color;
+import android.media.MediaPlayer;
 
 public class GameActivity extends AppCompatActivity {
 
@@ -46,25 +57,25 @@ public class GameActivity extends AppCompatActivity {
     private int frozenTurnsLeft = 0;
     private int poisonTurnsLeft = 0;
     private boolean thiefScanMode = false;
-    private TileType placedLockedStair = null;
 
     private CharacterProfile profile;
-    private String placedKeyName = null;
-    private final Monster[] monsterPool = new Monster[] {
-            new Monster("Slime", 1, 1, 1, "🟢"),
-            new Monster("Goblin", 2, 1, 1, "🧌"),
-            new Monster("Skeleton", 2, 2, 2, "💀"),
-            new Monster("Orc", 3, 2, 2, "🧟"),
-            new Monster("Troll", 4, 3, 3, "👹"),
-            new Monster("Witch", 3, 3, 3, "🧙"),
-            new Monster("Demon", 5, 4, 4, "😈"),
-            new Monster("Dragon", 8, 5, 5, "🐉")
+
+    private static final int FRAME_COUNT = 4;
+    private static final int FRAME_SIZE = 64;
+    private static final long FRAME_DURATION = 150;
+    private int spriteResId;
+    private int activeSlot = 1;
+
+    private static final String[] MONSTER_TYPES = {
+            "slime", "goblin", "skeleton", "orc",
+            "troll", "witch", "demon", "dragon"
     };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game);
+        activeSlot = getIntent().getIntExtra("save_slot", 1);
 
         gridLayout = findViewById(R.id.gridDungeon);
         goldCounterText = findViewById(R.id.textGoldCounter);
@@ -74,11 +85,16 @@ public class GameActivity extends AppCompatActivity {
         classAbilityButton = findViewById(R.id.btnClassAbility);
 
         loadProfile();
-        currentFloor = GameStateManager.loadFloor(this);
-        Tile[][] savedGrid = GameStateManager.loadGrid(this);
+
+        if (profile.getAnimatedPlayer() == null) {
+            profile.setAnimatedPlayer(new AnimatedPlayer(this, profile.getPlayerClass(), FRAME_SIZE, FRAME_SIZE, FRAME_COUNT, FRAME_DURATION));
+        }
+
+        currentFloor = GameStateManager.loadFloor(this, activeSlot);
+        Tile[][] savedGrid = GameStateManager.loadGrid(this, activeSlot);
         if (savedGrid != null) {
             dungeonGrid = savedGrid;
-            currentGold = GameStateManager.loadGold(this);
+            currentGold = GameStateManager.loadGold(this, activeSlot);
         } else {
             dungeonGrid = new Tile[GRID_SIZE][GRID_SIZE];
             generateDungeon();
@@ -95,58 +111,28 @@ public class GameActivity extends AppCompatActivity {
         setupClassAbilityButton();
     }
 
-    private void generateDungeon() {
-        List<Tile> tiles = new ArrayList<>();
-
-        for (int i = 0; i < 5; i++) tiles.add(new Tile(TileType.GOLD));
-        for (int i = 0; i < 5; i++) {
-            Monster m = monsterPool[new Random().nextInt(monsterPool.length)];
-            tiles.add(new Tile(TileType.ENEMY, m));
-        }
-        for (int i = 0; i < 2; i++) tiles.add(new Tile(TileType.TRAP_FIRE));
-        for (int i = 0; i < 2; i++) tiles.add(new Tile(TileType.TRAP_POISON));
-        tiles.add(new Tile(TileType.TRAP_ACID));
-        tiles.add(new Tile(TileType.TRAP_FREEZE));
-        tiles.add(new Tile(TileType.TRAP_PITFALL));
-
-        TileType[] keyTypes = {TileType.RED_KEY, TileType.BLUE_KEY, TileType.GREEN_KEY};
-        TileType[] lockTypes = {TileType.STAIR_DOWN_LOCKED_RED, TileType.STAIR_DOWN_LOCKED_BLUE, TileType.STAIR_DOWN_LOCKED_GREEN};
-        int keyIndex = (currentFloor - 1) % keyTypes.length;
-        TileType selectedKeyType = keyTypes[keyIndex];
-        placedKeyName = selectedKeyType.name().replace("_KEY", " Key (F" + currentFloor + ")");
-        placedLockedStair = lockTypes[keyIndex];
-
-        tiles.add(new Tile(selectedKeyType));
-        tiles.add(new Tile(placedLockedStair));
-        tiles.add(new Tile(TileType.STAIR_DOWN));
-        if (currentFloor > 1) tiles.add(new Tile(TileType.STAIR_UP));
-
-        while (tiles.size() < GRID_SIZE * GRID_SIZE) tiles.add(new Tile(TileType.EMPTY));
-        Collections.shuffle(tiles);
-
-        int index = 0;
-        for (int row = 0; row < GRID_SIZE; row++) {
-            for (int col = 0; col < GRID_SIZE; col++) {
-                dungeonGrid[row][col] = tiles.get(index++);
+    private void loadProfile() {
+        SharedPreferences prefs = getSharedPreferences("player_profile", Context.MODE_PRIVATE);
+        String json = prefs.getString("profile", null);
+        if (json != null) {
+            profile = new Gson().fromJson(json, CharacterProfile.class);
+            switch (profile.getPlayerClass()) {
+                case THIEF:
+                    spriteResId = R.drawable.thief_sprite_sheet;
+                    break;
+                case WIZARD:
+                    spriteResId = R.drawable.wizard_sprite_sheet;
+                    break;
+                default:
+                    spriteResId = R.drawable.knight_sprite_sheet;
             }
+            AnimatedPlayer playerAnim = new AnimatedPlayer(this, profile.getPlayerClass(), FRAME_SIZE, FRAME_SIZE, FRAME_COUNT, FRAME_DURATION);
+            profile.setAnimatedPlayer(playerAnim);
+        } else {
+            Toast.makeText(this, R.string.no_profile_found, Toast.LENGTH_SHORT).show();
+            startActivity(new Intent(this, ClassSelectionActivity.class));
+            finish();
         }
-
-        safeTilesToReveal = 0;
-        for (Tile t : tiles) {
-            if (t.getType() != TileType.ENEMY) safeTilesToReveal++;
-        }
-    }
-
-    private void fallToNextFloor() {
-        currentFloor++;
-        GameStateManager.saveFloor(this, currentFloor);
-        generateDungeon();
-        renderGrid();
-        updateFloorDisplay();
-        frozenTurnsLeft = 0;
-        poisonTurnsLeft = 0;
-        updateStatusText();
-        Toast.makeText(this, "You fell to Floor " + currentFloor + "!", Toast.LENGTH_LONG).show();
     }
 
     private void setupClassAbilityButton() {
@@ -164,14 +150,6 @@ public class GameActivity extends AppCompatActivity {
         }
     }
 
-    private void updateFloorDisplay() {
-        String label = "Floor " + currentFloor;
-        if (placedLockedStair != null) {
-            label += " (Hard)";
-        }
-        floorText.setText(label);
-    }
-
     private void renderGrid() {
         LayoutInflater inflater = getLayoutInflater();
         gridLayout.removeAllViews();
@@ -185,55 +163,16 @@ public class GameActivity extends AppCompatActivity {
 
                 if (tile.isRevealed()) {
                     tileText.setText(tile.getType().toString());
-                    if (tile.getType() != TileType.ENEMY) revealedSafeTiles++;
+                    revealedSafeTiles++;
                 } else {
                     tileText.setText("?");
                 }
 
                 final int r = row, c = col;
                 tileView.setOnClickListener(v -> handleTileClick(r, c, tileText));
-
                 gridLayout.addView(tileView);
             }
         }
-    }
-
-    private void startCombat(Monster monster) {
-        // Use profile (the player's CharacterProfile) instead of currentProfile
-        int playerAttack = profile.getAttack();
-        int playerDefense = profile.getDefense();
-        int monsterAttack = monster.getAttack();
-        int monsterDefense = monster.getDefense();
-
-        // Simple turn-based combat loop
-        while (!monster.isDead() && !profile.isDead()) {
-            int damageToMonster = Math.max(0, playerAttack - monsterDefense);
-            monster.takeDamage(damageToMonster);
-            Toast.makeText(this, "You dealt " + damageToMonster + " damage to " + monster.getMonsterType(), Toast.LENGTH_SHORT).show();
-
-            if (monster.isDead()) {
-                break;
-            }
-
-            int damageToPlayer = Math.max(0, monsterAttack - playerDefense);
-            profile.takeDamage(damageToPlayer);
-            Toast.makeText(this, monster.getMonsterType() + " dealt " + damageToPlayer + " damage to you", Toast.LENGTH_SHORT).show();
-        }
-
-        if (monster.isDead()) {
-            Toast.makeText(this, "You defeated " + monster.getMonsterType() + "!", Toast.LENGTH_SHORT).show();
-            int xpReward = monster.getMaxHP() / 2;
-            profile.addExperience(xpReward);
-            Toast.makeText(this, "Gained " + xpReward + " XP!", Toast.LENGTH_SHORT).show();
-        } else if (profile.isDead()) {
-            Toast.makeText(this, "You were defeated by " + monster.getMonsterType() + "!", Toast.LENGTH_SHORT).show();
-            handleGameOver();
-        }
-
-        // Save state after combat
-        // Make sure saveManager and activeSlotIndex are defined elsewhere in your code.
-        // For now, this line is commented out if not available:
-        // saveManager.saveGame(activeSlotIndex, profile, currentFloor, dungeonGrid);
     }
 
     private void handleTileClick(int row, int col, TextView tileText) {
@@ -245,165 +184,33 @@ public class GameActivity extends AppCompatActivity {
                 return;
             }
             clickedTile.reveal();
+            if (profile.getAnimatedPlayer() != null) {
+                profile.getAnimatedPlayer().setAction("move");
+            }
             revealTile(tileText, clickedTile);
             if (clickedTile.getType() != TileType.ENEMY) revealedSafeTiles++;
-            GameStateManager.saveGrid(this, dungeonGrid, currentGold);
+            GameStateManager.saveGrid(this, dungeonGrid, currentGold, activeSlot);
             checkVictoryCondition();
         }
     }
 
-    private boolean playerIsDead() {
-        return profile.isDead();
-    }
-
-    private void handleGameOver() {
-        new AlertDialog.Builder(this)
-                .setTitle("Game Over")
-                .setMessage("You have been defeated. Would you like to restart or return to the main menu?")
-                .setPositiveButton("Restart", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        restartGame();
-                    }
-                })
-                .setNegativeButton("Main Menu", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        goToMainMenu();
-                    }
-                })
-                .setCancelable(false)
-                .show();
-    }
-
-    private void restartGame() {
-        Intent intent = new Intent(this, GameActivity.class);
-        startActivity(intent);
-        finish();
-    }
-
-    private void goToMainMenu() {
-        Intent intent = new Intent(this, MainMenuActivity.class);
-        startActivity(intent);
-        finish();
-    }
-
     private void revealTile(TextView tileText, Tile tile) {
-        switch (tile.getType()) {
-            case GOLD:
-                tileText.setText("💰");
-                currentGold++;
-                updateGoldCounter();
-                updateInventory("Gold", 1);
-                break;
-
-            case ENEMY:
-                tileText.setText("💀");
-                if (tile.hasMonster()) {
-                    startCombat(tile.getMonster());
-                    if (!playerIsDead()) {
-                        if (tile.getMonster().isDead()) {
-                            tile.setMonster(null);
-                        }
-                    } else {
-                        handleGameOver();
-                    }
-                } else {
-                    takeDamage(1);
-                }
-                break;
-
-            case EMPTY:
-                tileText.setText("⬜");
-                break;
-
-            case STAIR_DOWN:
-                tileText.setText("🪜");
-                fallToNextFloor();
-                break;
-
-            case STAIR_DOWN_LOCKED_RED:
-            case STAIR_DOWN_LOCKED_BLUE:
-                String neededKey = tile.getType() == TileType.STAIR_DOWN_LOCKED_RED ? "Red Key" : "Blue Key";
-                List<InventoryItem> inventory = InventoryManager.loadInventory(this);
-                boolean hasKey = false;
-
-                for (InventoryItem item : inventory) {
-                    if (item.getName().equals(neededKey) && item.getQuantity() > 0) {
-                        hasKey = true;
-                        updateInventory(neededKey, -1);
-                        break;
-                    }
-                }
-
-                if (hasKey) {
-                    Toast.makeText(this, "Unlocked stair with " + neededKey + "!", Toast.LENGTH_SHORT).show();
-                    tileText.setText(tile.getType() == TileType.STAIR_DOWN_LOCKED_RED ? "🔴🪜" : "🔵🪜");
-                    fallToNextFloor();
-                } else {
-                    tileText.setText(tile.getType() == TileType.STAIR_DOWN_LOCKED_RED ? "🔴🪜" : "🔵🪜");
-                    Toast.makeText(this, "You need the " + neededKey + "!", Toast.LENGTH_SHORT).show();
-                }
-                break;
-
-            case STAIR_UP:
-                tileText.setText("⤴️");
-                break;
-
-            default:
-                handleTrap(tileText, tile);
-                break;
-        }
+        tileText.setText(tile.getType().toString());
+        // You can extend this method to show icons, damage, or animations
     }
 
-    private void handleTrap(TextView tileText, Tile tile) {
-        List<InventoryItem> inventory = InventoryManager.loadInventory(this);
-        InventoryItem kit = null;
-        for (InventoryItem item : inventory) {
-            if (item.getName().equals("Trap Disarm Kit") && item.getQuantity() > 0) {
-                kit = item;
-                break;
+    private void searchAdjacentForTraps(int row, int col) {
+        for (int dr = -1; dr <= 1; dr++) {
+            for (int dc = -1; dc <= 1; dc++) {
+                int nr = row + dr;
+                int nc = col + dc;
+                if (nr >= 0 && nc >= 0 && nr < GRID_SIZE && nc < GRID_SIZE) {
+                    Tile t = dungeonGrid[nr][nc];
+                    if (!t.isRevealed() && t.getType().name().startsWith("TRAP")) {
+                        Toast.makeText(this, "Trap nearby at (" + nr + "," + nc + ")", Toast.LENGTH_SHORT).show();
+                    }
+                }
             }
-        }
-
-        if (kit != null) {
-            Toast.makeText(this, "Trap disarmed!", Toast.LENGTH_SHORT).show();
-            updateInventory("Trap Disarm Kit", -1);
-            tileText.setText("🧰");
-        } else {
-            switch (tile.getType()) {
-                case TRAP_FIRE:
-                    tileText.setText("🔥");
-                    takeDamage(1);
-                    break;
-                case TRAP_ACID:
-                    tileText.setText("🧪");
-                    takeDamage(1);
-                    break;
-                case TRAP_POISON:
-                    tileText.setText("☠️");
-                    poisonTurnsLeft = 3;
-                    poisonTick();
-                    break;
-                case TRAP_FREEZE:
-                    tileText.setText("❄️");
-                    frozenTurnsLeft = 2 + (int) (Math.random() * 2);
-                    updateStatusText();
-                    break;
-                case TRAP_PITFALL:
-                    tileText.setText("🕳️");
-                    fallToNextFloor();
-                    break;
-            }
-        }
-    }
-
-    private void poisonTick() {
-        if (poisonTurnsLeft > 0) {
-            poisonTurnsLeft--;
-            takeDamage(1);
-            updateStatusText();
-            new Handler().postDelayed(this::poisonTick, 1500);
         }
     }
 
@@ -417,20 +224,6 @@ public class GameActivity extends AppCompatActivity {
             }
         }
         renderGrid();
-    }
-
-    private void searchAdjacentForTraps(int row, int col) {
-        for (int dr = -1; dr <= 1; dr++) {
-            for (int dc = -1; dc <= 1; dc++) {
-                int nr = row + dr, nc = col + dc;
-                if (nr >= 0 && nc >= 0 && nr < GRID_SIZE && nc < GRID_SIZE) {
-                    Tile t = dungeonGrid[nr][nc];
-                    if (!t.isRevealed() && t.getType().name().startsWith("TRAP")) {
-                        Toast.makeText(this, "Trap nearby at (" + nr + "," + nc + ")", Toast.LENGTH_SHORT).show();
-                    }
-                }
-            }
-        }
     }
 
     private void checkVictoryCondition() {
@@ -473,32 +266,13 @@ public class GameActivity extends AppCompatActivity {
         InventoryManager.saveInventory(this, inventory);
     }
 
-    private void takeDamage(int amount) {
-        profile.setCurrentHP(profile.getCurrentHP() - amount);
-        updateHpCounter();
-        if (profile.getCurrentHP() <= 0) showGameOverDialog();
-        else if (profile.getCurrentHP() == 1) AchievementManager.unlock(this, "LOW_HP_SURVIVOR");
-    }
-
-    private void loadProfile() {
-        SharedPreferences prefs = getSharedPreferences("player_profile", Context.MODE_PRIVATE);
-        String json = prefs.getString("profile", null);
-        if (json != null) {
-            profile = new Gson().fromJson(json, CharacterProfile.class);
-        } else {
-            Toast.makeText(this, "No profile found! Returning to menu...", Toast.LENGTH_SHORT).show();
-            startActivity(new Intent(this, ClassSelectionActivity.class));
-            finish();
-        }
-    }
-
     private void showVictoryDialog() {
-        GameStateManager.clearState(this);
+        GameStateManager.clearSlot(this, activeSlot);
         new AlertDialog.Builder(this)
-                .setTitle("Victory!")
-                .setMessage("You revealed all safe tiles. Well done!")
+                .setTitle(R.string.victory_title)
+                .setMessage(R.string.victory_message)
                 .setCancelable(false)
-                .setPositiveButton("Play Again", (dialog, which) -> {
+                .setPositiveButton(R.string.play_again, (dialog, which) -> {
                     dungeonGrid = new Tile[GRID_SIZE][GRID_SIZE];
                     currentGold = 0;
                     profile.setCurrentHP(profile.getMaxHP());
@@ -507,7 +281,7 @@ public class GameActivity extends AppCompatActivity {
                     updateGoldCounter();
                     updateHpCounter();
                 })
-                .setNegativeButton("Main Menu", (dialog, which) -> {
+                .setNegativeButton(R.string.main_menu, (dialog, which) -> {
                     Intent intent = new Intent(GameActivity.this, MainMenuActivity.class);
                     intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                     startActivity(intent);
@@ -517,12 +291,12 @@ public class GameActivity extends AppCompatActivity {
     }
 
     private void showGameOverDialog() {
-        GameStateManager.clearState(this);
+        GameStateManager.clearSlot(this, activeSlot);
         new AlertDialog.Builder(this)
-                .setTitle("Game Over")
-                .setMessage("You've run out of HP!")
+                .setTitle(R.string.game_over_title)
+                .setMessage(R.string.game_over_message)
                 .setCancelable(false)
-                .setPositiveButton("Restart", (dialog, which) -> {
+                .setPositiveButton(R.string.restart, (dialog, which) -> {
                     dungeonGrid = new Tile[GRID_SIZE][GRID_SIZE];
                     currentGold = 0;
                     profile.setCurrentHP(profile.getMaxHP());
@@ -531,7 +305,7 @@ public class GameActivity extends AppCompatActivity {
                     updateGoldCounter();
                     updateHpCounter();
                 })
-                .setNegativeButton("Main Menu", (dialog, which) -> {
+                .setNegativeButton(R.string.main_menu, (dialog, which) -> {
                     Intent intent = new Intent(GameActivity.this, MainMenuActivity.class);
                     intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                     startActivity(intent);
@@ -540,9 +314,47 @@ public class GameActivity extends AppCompatActivity {
                 .show();
     }
 
+    private void generateDungeon() {
+        List<Tile> tiles = new ArrayList<>();
+        Random rand = new Random();
+        int numGold = 4 + currentFloor;
+        int numEnemies = 3 + currentFloor;
+        int numTraps = 2 + (currentFloor / 2);
+
+        for (int i = 0; i < numGold; i++) tiles.add(new Tile(TileType.GOLD));
+        for (int i = 0; i < numEnemies; i++) {
+            String type = MONSTER_TYPES[rand.nextInt(MONSTER_TYPES.length)];
+            AnimatedMonster monster = MonsterFactory.create(this, type);
+            tiles.add(new Tile(TileType.ENEMY, monster));
+        }
+
+        TileType[] trapTypes = {TileType.TRAP_FIRE, TileType.TRAP_POISON, TileType.TRAP_FREEZE, TileType.TRAP_ACID, TileType.TRAP_PITFALL};
+        for (int i = 0; i < numTraps; i++) {
+            TileType trap = trapTypes[rand.nextInt(trapTypes.length)];
+            tiles.add(new Tile(trap));
+        }
+
+        tiles.add(new Tile(TileType.STAIR_DOWN));
+        if (currentFloor > 1) tiles.add(new Tile(TileType.STAIR_UP));
+
+        while (tiles.size() < GRID_SIZE * GRID_SIZE) {
+            tiles.add(new Tile(TileType.EMPTY));
+        }
+
+        Collections.shuffle(tiles);
+
+        for (int r = 0; r < GRID_SIZE; r++) {
+            for (int c = 0; c < GRID_SIZE; c++) {
+                if (dungeonGrid == null) dungeonGrid = new Tile[GRID_SIZE][GRID_SIZE];
+                dungeonGrid[r][c] = tiles.get(r * GRID_SIZE + c);
+                if (dungeonGrid[r][c].getType() != TileType.ENEMY) safeTilesToReveal++;
+            }
+        }
+    }
+
     @Override
     protected void onPause() {
         super.onPause();
-        GameStateManager.saveGrid(this, dungeonGrid, currentGold);
+        GameStateManager.saveGrid(this, dungeonGrid, currentGold, activeSlot);
     }
 }

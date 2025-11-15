@@ -1,3 +1,6 @@
+//Made By Ada Pluguez
+//01/01/2025
+//Java based Android click based RPG
 package com.example.clickdungeon.model;
 
 public class CharacterProfile {
@@ -11,6 +14,8 @@ public class CharacterProfile {
     // New instance variables for attack and defense.
     private int attack;
     private int defense;
+    // Add at the top
+    private transient AnimatedPlayer animatedPlayer;
 
     public CharacterProfile(String name, PlayerClass playerClass) {
         this.name = name;
@@ -151,8 +156,18 @@ public class CharacterProfile {
             xpNeeded = level * 100;
         }
     }
+    // Add setter/getter
+    public void setAnimatedPlayer(AnimatedPlayer animatedPlayer) {
+        this.animatedPlayer = animatedPlayer;
+    }
 
+    public AnimatedPlayer getAnimatedPlayer() {
+        return animatedPlayer;
+    }
     public String getCharClass() {
         return playerClass.toString();
     }
+
+
+
 }

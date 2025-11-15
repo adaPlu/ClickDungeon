@@ -6,7 +6,6 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -24,39 +23,45 @@ public class MainMenuActivity extends AppCompatActivity {
         btnAchievements = findViewById(R.id.btnAchievements);
         btnShop = findViewById(R.id.btnShop);
         btnSettings = findViewById(R.id.btnSettings);
+
+        // Disable Continue if no saved slots exist
+        if (!hasAnySavedSlot()) {
+            btnContinue.setEnabled(false);
+            btnContinue.setAlpha(0.5f); // visually indicate disabled state
+        }
+
+        // ✅ New Game: go to slot selection for character + slot
         btnNewGame.setOnClickListener(v -> {
-            Intent intent = new Intent(MainMenuActivity.this, ClassSelectionActivity.class);
+            Intent intent = new Intent(MainMenuActivity.this, SlotSelectionActivity.class);
+            intent.putExtra("mode", "new_game");
             startActivity(intent);
         });
 
+        // ✅ Continue: pick from available slots to resume
         btnContinue.setOnClickListener(v -> {
-            SharedPreferences prefs = getSharedPreferences("player_profile", MODE_PRIVATE);
-            String profile = prefs.getString("slot_1", null);
-            if (profile != null) {
-                Intent intent = new Intent(MainMenuActivity.this, GameActivity.class);
-                startActivity(intent);
-            } else {
-                Toast.makeText(this, "No saved game found.", Toast.LENGTH_SHORT).show();
-            }
+            Intent intent = new Intent(MainMenuActivity.this, SlotSelectionActivity.class);
+            intent.putExtra("mode", "continue");
+            startActivity(intent);
         });
 
         btnAchievements.setOnClickListener(v -> {
-            Intent intent = new Intent(MainMenuActivity.this, AchievementsActivity.class);
-            startActivity(intent);
+            startActivity(new Intent(this, AchievementsActivity.class));
         });
 
         btnShop.setOnClickListener(v -> {
-            Intent intent = new Intent(MainMenuActivity.this, ShopActivity.class);
-            startActivity(intent);
+            startActivity(new Intent(this, ShopActivity.class));
         });
 
         btnSettings.setOnClickListener(v -> {
-            Intent intent = new Intent(MainMenuActivity.this, SettingsActivity.class);
-            startActivity(intent);
+            startActivity(new Intent(this, SettingsActivity.class));
         });
     }
-    private boolean hasSavedGame() {
+
+    private boolean hasAnySavedSlot() {
         SharedPreferences prefs = getSharedPreferences("player_prefs", Context.MODE_PRIVATE);
-        return prefs.contains("grid");
+        for (int i = 1; i <= 4; i++) {
+            if (prefs.contains("grid_slot_" + i)) return true;
+        }
+        return false;
     }
 }

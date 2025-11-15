@@ -42,4 +42,7 @@
 <!-- Status -->
 <string name="frozen_status">Frozen: %1$d turns</string>
 <string name="poison_status">Poisoned: %1$d turns</string>
+<string name="no_profile_found">No profile found! Returning to menu…</string>
+<string name="game_over_message">You\'ve run out of HP!</string>
+<string name="game_over_title">Game Over</string>
 </resources>

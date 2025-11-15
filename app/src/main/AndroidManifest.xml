@@ -23,11 +23,15 @@
             </intent-filter>
         </activity>
 
-        <!-- Other activities -->
+        <!-- Core game features -->
         <activity android:name=".GameActivity" />
         <activity android:name=".ClassSelectionActivity" />
-        <activity android:name=".ShopActivity" />
         <activity android:name=".AchievementsActivity" />
+        <activity android:name=".ShopActivity" />
+        <activity android:name=".SettingsActivity" />
+        <activity android:name=".SlotSelectionActivity" />
+
+        <!-- Removed: ContinueActivity (replaced by SlotSelectionActivity) -->
 
     </application>
 </manifest>

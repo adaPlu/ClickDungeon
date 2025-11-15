@@ -1,0 +1,106 @@
+🧩 TO-DO LIST: Next Steps
+🧪 1. Finish Key Loot and Inventory Integration
+Assign Red/Blue key when generating loot
+
+Label keys like "Red Key (F2)" and allow only on that floor
+
+Display key icon in inventory (optional)
+
+💾 2. Multiple Save Slot Support
+UI: Save/Load menu with 4 slots
+
+Save state per slot (grid, floor, profile, inventory)
+
+Select slot at new game / resume
+
+⚔️ 3. Combat Expansion
+Add enemy HP
+
+Add damage values per enemy
+
+Add “Attack” popup or auto-resolve mechanic
+
+Maybe weapons in loot?
+
+✨ 4. Visual/UI Polish
+Animations (tile flips, trap triggers)
+
+Icons and theming
+
+Pause button / game menu during play
+
+Better game over screen styling
+
+🧪 5. Testing and Stability
+Unit test: tile generation, inventory, saving/loading
+
+Game balance: trap frequency, loot ratio
+
+User testing / volunteer feedback
+
+
+Great — we'll proceed with implementing those four steps in the specified order. Here's a quick breakdown of what's coming next:
+
+Stair Destination Labeling:
+
+Tag each stair tile with its destination (floor+1, floor+1_hard, etc.) to distinguish standard vs. hard paths.
+
+Key Loot Placement:
+
+On floors with locked stairs, loot tables will now include red, blue, or green keys labeled for that floor (e.g., Red Key (F2)).
+
+Hard Path Difficulty Scaling:
+
+Adjust enemy and trap generation based on path difficulty (e.g., more fire/poison traps, stronger enemies on hard floors).
+
+Multi-Slot Save Support:
+
+Prepare for saving/loading from multiple floor slots to support alternate paths and persistent state.
+
+private void generateDungeon() {
+        List<Tile> tiles = new ArrayList<>();
+
+        // Core content
+        for (int i = 0; i < 5; i++) tiles.add(new Tile(TileType.GOLD));
+        for (int i = 0; i < 5; i++) tiles.add(new Tile(TileType.ENEMY));
+        for (int i = 0; i < 2; i++) tiles.add(new Tile(TileType.TRAP_FIRE));
+        for (int i = 0; i < 2; i++) tiles.add(new Tile(TileType.TRAP_POISON));
+        tiles.add(new Tile(TileType.TRAP_ACID));
+        tiles.add(new Tile(TileType.TRAP_FREEZE));
+        tiles.add(new Tile(TileType.TRAP_PITFALL));
+
+        // Add one up stair if not first floor
+        if (currentFloor > 1) tiles.add(new Tile(TileType.STAIR_UP));
+
+        // Always add one down stair, sometimes locked
+        TileType placedLockedStair = null;
+        if (Math.random() < 0.5) {
+            placedLockedStair = Math.random() < 0.5 ? TileType.STAIR_DOWN_LOCKED_RED : TileType.STAIR_DOWN_LOCKED_BLUE;
+            tiles.add(new Tile(placedLockedStair));
+        } else {
+            tiles.add(new Tile(TileType.STAIR_DOWN));
+        }
+
+        // If locked stair was added, add the matching key
+        if (placedLockedStair != null) {
+            if (placedLockedStair == TileType.STAIR_DOWN_LOCKED_RED) {
+                tiles.add(new Tile(TileType.RED_KEY));
+            } else if (placedLockedStair == TileType.STAIR_DOWN_LOCKED_BLUE) {
+                tiles.add(new Tile(TileType.BLUE_KEY));
+            }
+        }
+
+        // Fill remaining tiles
+        while (tiles.size() < GRID_SIZE * GRID_SIZE) {
+            tiles.add(new Tile(TileType.EMPTY));
+        }
+
+        Collections.shuffle(tiles);
+
+        int index = 0;
+        for (int row = 0; row < GRID_SIZE; row++) {
+            for (int col = 0; col < GRID_SIZE; col++) {
+                dungeonGrid[row][col] = tiles.get(index++);
+            }
+        }
+    }
