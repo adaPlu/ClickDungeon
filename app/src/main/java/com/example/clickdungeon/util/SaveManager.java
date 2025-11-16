@@ -17,6 +17,7 @@ public class SaveManager {
     private static final String KEY_PROFILE = "CharacterProfile";
     private static final String KEY_FLOOR = "CurrentFloor";
     private static final String KEY_GRID = "DungeonGrid";
+    private static final String KEY_GOLD = "CurrentGold";
 
     private final Context context;
     private final Gson gson;
@@ -42,6 +43,7 @@ public class SaveManager {
     public void saveGame(int slotIndex,
                          CharacterProfile profile,
                          int currentFloor,
+                         int currentGold,
                          Tile[][] dungeonGrid) {
         if (slotIndex < 0 || slotIndex >= TOTAL_SLOTS) {
             throw new IllegalArgumentException("Invalid slot index");
@@ -59,6 +61,7 @@ public class SaveManager {
         editor.putString(KEY_PROFILE, profileJson);
         editor.putInt(KEY_FLOOR, currentFloor);
         editor.putString(KEY_GRID, gridJson);
+        editor.putInt(KEY_GOLD, currentGold);
 
         editor.apply();
     }
@@ -95,13 +98,14 @@ public class SaveManager {
             CharacterProfile profile = gson.fromJson(profileJson, CharacterProfile.class);
             int currentFloor = prefs.getInt(KEY_FLOOR, 1);
             Tile[][] dungeonGrid = gson.fromJson(gridJson, Tile[][].class);
+            int currentGold = prefs.getInt(KEY_GOLD, 0);
 
             // If parsing fails or objects are null, treat as corruption
             if (profile == null || dungeonGrid == null) {
                 return null;
             }
 
-            return new GameState(profile, currentFloor, dungeonGrid);
+            return new GameState(profile, currentFloor, currentGold, dungeonGrid);
 
         } catch (Exception e) {
             // Catch any JSON parsing errors or other exceptions
@@ -151,12 +155,15 @@ public class SaveManager {
         public CharacterProfile profile;
         public int currentFloor;
         public Tile[][] dungeonGrid;
+        public int currentGold;
 
         public GameState(CharacterProfile profile,
                          int currentFloor,
+                         int currentGold,
                          Tile[][] dungeonGrid) {
             this.profile = profile;
             this.currentFloor = currentFloor;
+            this.currentGold = currentGold;
             this.dungeonGrid = dungeonGrid;
         }
     }

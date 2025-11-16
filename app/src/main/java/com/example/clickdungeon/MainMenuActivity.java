@@ -1,12 +1,8 @@
 package com.example.clickdungeon;
 
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.Button;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -30,14 +26,8 @@ public class MainMenuActivity extends AppCompatActivity {
         });
 
         btnContinue.setOnClickListener(v -> {
-            SharedPreferences prefs = getSharedPreferences("player_profile", MODE_PRIVATE);
-            String profile = prefs.getString("slot_1", null);
-            if (profile != null) {
-                Intent intent = new Intent(MainMenuActivity.this, GameActivity.class);
-                startActivity(intent);
-            } else {
-                Toast.makeText(this, "No saved game found.", Toast.LENGTH_SHORT).show();
-            }
+            Intent intent = new Intent(MainMenuActivity.this, ContinueActivity.class);
+            startActivity(intent);
         });
 
         btnAchievements.setOnClickListener(v -> {
@@ -54,9 +44,5 @@ public class MainMenuActivity extends AppCompatActivity {
             Intent intent = new Intent(MainMenuActivity.this, SettingsActivity.class);
             startActivity(intent);
         });
-    }
-    private boolean hasSavedGame() {
-        SharedPreferences prefs = getSharedPreferences("player_prefs", Context.MODE_PRIVATE);
-        return prefs.contains("grid");
     }
 }

@@ -1,7 +1,6 @@
 package com.example.clickdungeon;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -12,11 +11,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.clickdungeon.adapter.AchievementAdapter;
 import com.example.clickdungeon.model.Achievement;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
+import com.example.clickdungeon.util.AchievementManager;
 
-import java.lang.reflect.Type;
-import java.util.ArrayList;
 import java.util.List;
 
 public class AchievementsActivity extends AppCompatActivity {
@@ -48,20 +44,6 @@ public class AchievementsActivity extends AppCompatActivity {
     }
 
     private List<Achievement> loadAchievements() {
-        SharedPreferences prefs = getSharedPreferences("player_prefs", MODE_PRIVATE);
-        String json = prefs.getString("achievements", null);
-        Type type = new TypeToken<List<Achievement>>(){}.getType();
-        return json != null ? new Gson().fromJson(json, type) : getMockAchievements();
-    }
-
-    private List<Achievement> getMockAchievements() {
-        List<Achievement> list = new ArrayList<>();
-        list.add(new Achievement("First Blood", "Defeat your first enemy.", false));
-        list.add(new Achievement("Dungeon Explorer", "Reveal 50 dungeon tiles.", false));
-        list.add(new Achievement("Gold Hoarder", "Collect 1000 gold.", false));
-        list.add(new Achievement("Boss Slayer", "Defeat a dungeon boss.", false));
-        list.add(new Achievement("Low HP Survivor", "Win with 1 HP remaining.", false));
-        list.add(new Achievement("Trap Dodger", "Survive a trap without damage.", false));
-        return list;
+        return AchievementManager.loadAchievements(this);
     }
 }

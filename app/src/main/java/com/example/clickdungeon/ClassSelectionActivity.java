@@ -18,9 +18,12 @@ import com.google.gson.Gson;
 
 public class ClassSelectionActivity extends AppCompatActivity {
 
+    public static final String EXTRA_SAVE_SLOT_INDEX = "com.example.clickdungeon.extra.SAVE_SLOT_INDEX";
+
     private EditText editName;
     private RadioGroup classGroup;
     private Button btnStartGame;
+    private int targetSlotIndex = -1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,6 +33,7 @@ public class ClassSelectionActivity extends AppCompatActivity {
         editName = findViewById(R.id.editCharacterName);
         classGroup = findViewById(R.id.radioClassGroup);
         btnStartGame = findViewById(R.id.btnStartGame);
+        targetSlotIndex = getIntent().getIntExtra(EXTRA_SAVE_SLOT_INDEX, -1);
 
         btnStartGame.setOnClickListener(v -> {
             String name = editName.getText().toString().trim();
@@ -41,24 +45,30 @@ public class ClassSelectionActivity extends AppCompatActivity {
             }
 
             PlayerClass selectedClass;
-            int maxHP;
 
             if (selectedId == R.id.radioKnight) {
                 selectedClass = PlayerClass.KNIGHT;
-                maxHP = 10;
             } else if (selectedId == R.id.radioThief) {
                 selectedClass = PlayerClass.THIEF;
-                maxHP = 6;
             } else {
                 selectedClass = PlayerClass.WIZARD;
-                maxHP = 4;
             }
 
             CharacterProfile profile = new CharacterProfile(name, selectedClass);
-            saveProfile(profile);
+            String profileJson = new Gson().toJson(profile);
 
-            Intent intent = new Intent(this, GameActivity.class);
-            startActivity(intent);
+            if (targetSlotIndex >= 0) {
+                Intent intent = new Intent(this, GameActivity.class);
+                intent.putExtra(GameActivity.EXTRA_SLOT_INDEX, targetSlotIndex);
+                intent.putExtra(GameActivity.EXTRA_IS_NEW_GAME, true);
+                intent.putExtra(GameActivity.EXTRA_PROFILE_JSON, profileJson);
+                startActivity(intent);
+            } else {
+                saveProfile(profile);
+                Intent intent = new Intent(this, GameActivity.class);
+                intent.putExtra(GameActivity.EXTRA_PROFILE_JSON, profileJson);
+                startActivity(intent);
+            }
             finish();
         });
     }
@@ -67,4 +77,4 @@ public class ClassSelectionActivity extends AppCompatActivity {
         SharedPreferences prefs = getSharedPreferences("player_profile", Context.MODE_PRIVATE);
         prefs.edit().putString("profile", new Gson().toJson(profile)).apply();
     }
-} 
+}
