@@ -18,55 +18,58 @@ import com.google.gson.Gson;
 
 public class ClassSelectionActivity extends AppCompatActivity {
 
-    private Button btnKnight, btnThief, btnWizard, btnStart;
-    private EditText inputName;
-    private ImageView classPreview;
-    private PlayerClass selectedClass = PlayerClass.KNIGHT;
-    private int saveSlot = 1;
+    public static final String EXTRA_SAVE_SLOT_INDEX = "com.example.clickdungeon.extra.SAVE_SLOT_INDEX";
+
+    private EditText editName;
+    private RadioGroup classGroup;
+    private Button btnStartGame;
+    private int targetSlotIndex = -1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_class_selection);
 
-        btnKnight = findViewById(R.id.btnKnight);
-        btnThief = findViewById(R.id.btnThief);
-        btnWizard = findViewById(R.id.btnWizard);
-        btnStart = findViewById(R.id.btnStart);
-        inputName = findViewById(R.id.editName);
-        classPreview = findViewById(R.id.imageClassPreview);
+        editName = findViewById(R.id.editCharacterName);
+        classGroup = findViewById(R.id.radioClassGroup);
+        btnStartGame = findViewById(R.id.btnStartGame);
+        targetSlotIndex = getIntent().getIntExtra(EXTRA_SAVE_SLOT_INDEX, -1);
 
-        // Get save slot from intent
-        saveSlot = getIntent().getIntExtra("save_slot", 1);
+        btnStartGame.setOnClickListener(v -> {
+            String name = editName.getText().toString().trim();
+            int selectedId = classGroup.getCheckedRadioButtonId();
 
-        btnKnight.setOnClickListener(v -> {
-            selectedClass = PlayerClass.KNIGHT;
-            classPreview.setImageResource(R.drawable.icon_knight);
-        });
-
-        btnThief.setOnClickListener(v -> {
-            selectedClass = PlayerClass.THIEF;
-            classPreview.setImageResource(R.drawable.icon_thief);
-        });
-
-        btnWizard.setOnClickListener(v -> {
-            selectedClass = PlayerClass.WIZARD;
-            classPreview.setImageResource(R.drawable.icon_wizard);
-        });
-
-        btnStart.setOnClickListener(v -> {
-            String name = inputName.getText().toString().trim();
-            if (name.isEmpty()) {
-                Toast.makeText(this, "Please enter a name", Toast.LENGTH_SHORT).show();
+            if (name.isEmpty() || selectedId == -1) {
+                Toast.makeText(this, "Enter name and select a class.", Toast.LENGTH_SHORT).show();
                 return;
             }
 
-            CharacterProfile profile = new CharacterProfile(name, selectedClass);
-            saveProfile(profile, saveSlot);
+            PlayerClass selectedClass;
 
-            Intent intent = new Intent(ClassSelectionActivity.this, GameActivity.class);
-            intent.putExtra("save_slot", saveSlot);
-            startActivity(intent);
+            if (selectedId == R.id.radioKnight) {
+                selectedClass = PlayerClass.KNIGHT;
+            } else if (selectedId == R.id.radioThief) {
+                selectedClass = PlayerClass.THIEF;
+            } else {
+                selectedClass = PlayerClass.WIZARD;
+            }
+
+            CharacterProfile profile = new CharacterProfile(name, selectedClass);
+            String profileJson = new Gson().toJson(profile);
+
+            if (targetSlotIndex >= 0) {
+                Intent intent = new Intent(this, GameActivity.class);
+                intent.putExtra(GameActivity.EXTRA_SLOT_INDEX, targetSlotIndex);
+                intent.putExtra(GameActivity.EXTRA_IS_NEW_GAME, true);
+                intent.putExtra(GameActivity.EXTRA_PROFILE_JSON, profileJson);
+                startActivity(intent);
+            } else {
+                saveProfile(profile);
+                Intent intent = new Intent(this, GameActivity.class);
+                intent.putExtra(GameActivity.EXTRA_PROFILE_JSON, profileJson);
+                startActivity(intent);
+            }
+            finish();
         });
     }
 

@@ -3,6 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="com.example.clickdungeon">
 
+    <uses-permission android:name="android.permission.VIBRATE" />
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -23,15 +25,12 @@
             </intent-filter>
         </activity>
 
-        <!-- Core game features -->
+        <!-- Other activities -->
+        <activity android:name=".ContinueActivity" />
         <activity android:name=".GameActivity" />
         <activity android:name=".ClassSelectionActivity" />
         <activity android:name=".AchievementsActivity" />
-        <activity android:name=".ShopActivity" />
         <activity android:name=".SettingsActivity" />
-        <activity android:name=".SlotSelectionActivity" />
-
-        <!-- Removed: ContinueActivity (replaced by SlotSelectionActivity) -->
 
     </application>
 </manifest>

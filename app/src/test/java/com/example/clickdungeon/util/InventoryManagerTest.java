@@ -1,0 +1,70 @@
+package com.example.clickdungeon.util;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+import android.content.Context;
+
+import androidx.test.core.app.ApplicationProvider;
+
+import com.example.clickdungeon.model.InventoryItem;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
+
+import java.util.List;
+
+@RunWith(RobolectricTestRunner.class)
+public class InventoryManagerTest {
+
+    private Context context;
+
+    @Before
+    public void setUp() {
+        context = ApplicationProvider.getApplicationContext();
+        context.getSharedPreferences("player_prefs", Context.MODE_PRIVATE)
+                .edit()
+                .clear()
+                .commit();
+    }
+
+    @Test
+    public void adjustItemQuantityAddsUpdatesAndRemovesItems() {
+        InventoryManager.adjustItemQuantity(context, "Potion", 2);
+        assertEquals(2, InventoryManager.getItemQuantity(context, "Potion"));
+
+        InventoryManager.adjustItemQuantity(context, "Potion", 3);
+        assertEquals(5, InventoryManager.getItemQuantity(context, "Potion"));
+
+        InventoryManager.adjustItemQuantity(context, "Potion", -5);
+        assertEquals(0, InventoryManager.getItemQuantity(context, "Potion"));
+
+        List<InventoryItem> inventory = InventoryManager.loadInventory(context);
+        assertTrue(inventory.isEmpty());
+    }
+
+    @Test
+    public void quantityRespectsProvidedMaximum() {
+        InventoryManager.adjustItemQuantity(context, "Trap Disarm Kit", 10, 3);
+        assertEquals(3, InventoryManager.getItemQuantity(context, "Trap Disarm Kit"));
+
+        InventoryManager.adjustItemQuantity(context, "Trap Disarm Kit", -1, 3);
+        assertEquals(2, InventoryManager.getItemQuantity(context, "Trap Disarm Kit"));
+    }
+
+    @Test
+    public void goldOperationsClampToValidRange() {
+        assertEquals(500, InventoryManager.getGold(context));
+
+        InventoryManager.setGold(context, 1200);
+        assertEquals(1200, InventoryManager.getGold(context));
+
+        InventoryManager.adjustGold(context, -300);
+        assertEquals(900, InventoryManager.getGold(context));
+
+        InventoryManager.adjustGold(context, -1000);
+        assertEquals(0, InventoryManager.getGold(context));
+    }
+}

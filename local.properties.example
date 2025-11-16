@@ -1,0 +1,5 @@
+# Copy this file to local.properties and update sdk.dir to your Android SDK path
+# Example paths:
+# macOS: /Users/you/Library/Android/sdk
+# Linux: /home/you/Android/Sdk
+sdk.dir=/path/to/your/android-sdk

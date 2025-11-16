@@ -1,10 +1,7 @@
 package com.example.clickdungeon;
 
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.Button;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -39,8 +36,7 @@ public class MainMenuActivity extends AppCompatActivity {
 
         // ✅ Continue: pick from available slots to resume
         btnContinue.setOnClickListener(v -> {
-            Intent intent = new Intent(MainMenuActivity.this, SlotSelectionActivity.class);
-            intent.putExtra("mode", "continue");
+            Intent intent = new Intent(MainMenuActivity.this, ContinueActivity.class);
             startActivity(intent);
         });
 
@@ -55,13 +51,5 @@ public class MainMenuActivity extends AppCompatActivity {
         btnSettings.setOnClickListener(v -> {
             startActivity(new Intent(this, SettingsActivity.class));
         });
-    }
-
-    private boolean hasAnySavedSlot() {
-        SharedPreferences prefs = getSharedPreferences("player_prefs", Context.MODE_PRIVATE);
-        for (int i = 1; i <= 4; i++) {
-            if (prefs.contains("grid_slot_" + i)) return true;
-        }
-        return false;
     }
 }

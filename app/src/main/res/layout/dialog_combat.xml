@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="24dp">
+
+    <TextView
+        android:id="@+id/textPlayerStats"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+        android:textStyle="bold"
+        android:paddingBottom="8dp" />
+
+    <TextView
+        android:id="@+id/textMonsterStats"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+        android:paddingBottom="12dp" />
+
+    <TextView
+        android:id="@+id/textMonsterIntent"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingBottom="4dp"
+        android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
+
+    <ProgressBar
+        android:id="@+id/progressMonsterIntent"
+        style="@android:style/Widget.ProgressBar.Horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="8dp"
+        android:max="100"
+        android:progress="0"
+        android:progressBackgroundTint="@color/teal_200"
+        android:layout_marginBottom="12dp" />
+
+    <TextView
+        android:id="@+id/textCombatSummary"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/combat_summary_ready"
+        android:textAppearance="@style/TextAppearance.AppCompat.Body2"
+        android:paddingBottom="8dp" />
+
+    <TextView
+        android:id="@+id/textCombatLog"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+        android:paddingBottom="16dp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="end"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/buttonAttack"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/combat_action_attack" />
+
+        <Button
+            android:id="@+id/buttonUsePotion"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="8dp"
+            android:text="@string/combat_action_use_potion" />
+
+        <Button
+            android:id="@+id/buttonFlee"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="8dp"
+            android:text="@string/combat_action_flee" />
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/buttonCloseSummary"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:text="@string/combat_summary_button_continue"
+        android:visibility="gone" />
+
+</LinearLayout>

@@ -13,11 +13,43 @@
 <string name="back_to_menu">Back to Menu</string>
 <string name="no_game_in_progress">No game in progress</string>
 
+<!-- Settings -->
+<string name="settings_title">Game Settings</string>
+<string name="settings_audio_label">Enable Audio</string>
+<string name="settings_vibration_label">Enable Vibration</string>
+<string name="settings_color_blind_label">Enable color-blind aid</string>
+<string name="settings_color_blind_summary">Adds letter codes to keys, traps, and stairs for high-contrast play.</string>
+<string name="settings_color_blind_summary_enabled">Letter codes are active across the dungeon grid.</string>
+<string name="settings_tutorial_hints_label">Show tutorial hints</string>
+<string name="settings_tutorial_hints_summary">Surface onboarding tips when entering the dungeon.</string>
+<string name="settings_tutorial_hints_summary_disabled">Tutorial pop-ups are disabled for future runs.</string>
+<string name="settings_difficulty_label">Difficulty</string>
+<string name="settings_difficulty_casual">Casual</string>
+<string name="settings_difficulty_normal">Normal</string>
+<string name="settings_difficulty_hardcore">Hardcore</string>
+<string name="settings_difficulty_summary_placeholder">Choose how punishing monsters and traps should be.</string>
+<string-array name="settings_difficulty_entries">
+    <item>@string/settings_difficulty_casual</item>
+    <item>@string/settings_difficulty_normal</item>
+    <item>@string/settings_difficulty_hardcore</item>
+</string-array>
+<string-array name="settings_difficulty_values">
+    <item>CASUAL</item>
+    <item>NORMAL</item>
+    <item>HARDCORE</item>
+</string-array>
+<string-array name="settings_difficulty_descriptions">
+    <item>Casual – Friendlier monsters with reduced health and power. Traps sting far less.</item>
+    <item>Normal – The balanced ClickDungeon experience.</item>
+    <item>Hardcore – Brutal encounters with tougher monsters and lethal traps.</item>
+</string-array>
+
 <!-- Shop -->
 <string name="purchase_successful">Purchased: %1$s</string>
 <string name="not_enough_gold">Not enough gold!</string>
 <string name="gold_display">Gold:</string>
 <string name="gold_display_dynamic">Gold: %1$d</string>
+<string name="gold_found_message">You found %1$d gold!</string>
 <string name="refresh_shop">Refresh Shop</string>
 
 <!-- Game -->
@@ -42,7 +74,94 @@
 <!-- Status -->
 <string name="frozen_status">Frozen: %1$d turns</string>
 <string name="poison_status">Poisoned: %1$d turns</string>
-<string name="no_profile_found">No profile found! Returning to menu…</string>
-<string name="game_over_message">You\'ve run out of HP!</string>
-<string name="game_over_title">Game Over</string>
+<string name="profile_missing_message">No profile found! Returning to menu...</string>
+
+<!-- Continue Activity -->
+<string name="continue_slot_empty">Slot %1$d is empty</string>
+<string name="continue_slot_corrupted">Slot %1$d: Data corrupted</string>
+<string name="continue_slot_occupied">Slot %1$d - %2$s (%3$s) - Floor %4$d</string>
+<string name="continue_slot_new_game">New Game</string>
+<string name="continue_slot_continue">Continue</string>
+<string name="continue_slot_overwrite">Overwrite</string>
+<string name="continue_slot_overwrite_title">Overwrite Slot?</string>
+<string name="continue_slot_overwrite_message">This slot already has saved data. Overwrite it?</string>
+<string name="continue_slot_overwrite_confirm">Overwrite</string>
+<string name="continue_slot_load_failed">Unable to load this save slot.</string>
+
+<!-- Combat -->
+<string name="combat_dialog_title">Battle</string>
+<string name="combat_action_attack">Attack</string>
+<string name="combat_action_use_potion">Use Potion</string>
+<string name="combat_action_flee">Flee</string>
+<string name="combat_player_stats">%1$s\nHP: %2$d/%3$d  ATK: %4$d  DEF: %5$d</string>
+<string name="combat_monster_stats">%1$s\nHP: %2$d/%3$d  ATK: %4$d  DEF: %5$d</string>
+<string name="combat_log_intro">A wild %1$s appears!</string>
+<string name="combat_log_player_attack">You strike for %1$d damage against %2$s.</string>
+<string name="combat_log_monster_attack">%1$s hits you for %2$d damage!</string>
+<string name="combat_log_monster_glancing">%1$s can't break through your defenses.</string>
+<string name="combat_log_monster_defeated">%1$s is defeated!</string>
+<string name="combat_log_player_defeated">You collapse from your wounds...</string>
+<string name="combat_log_use_potion">You drink a potion and recover %1$d HP.</string>
+<string name="combat_log_no_potions">No healing potions remain!</string>
+<string name="combat_log_potion_full_hp">You're already at full health.</string>
+<string name="combat_tile_cleared">✅</string>
+<string name="combat_result_victory">You defeated %1$s! +%2$d XP, +%3$d gold.</string>
+<string name="combat_result_flee">You fled the battle, taking %1$d damage.</string>
+<string name="combat_intent_quick">Quick strike</string>
+<string name="combat_intent_heavy">Heavy swing</string>
+<string name="combat_intent_guard_break">Guard break</string>
+<string name="combat_intent_display">Next up: %1$s (~%2$d dmg)</string>
+<string name="combat_summary_button_continue">Continue</string>
+    <string name="combat_summary_victory">Victory! %1$d XP, %2$d gold after %3$d turns. You dealt %4$d damage, took %5$d, and used %6$d potions.</string>
+    <string name="combat_summary_flee">Retreat! Escaped in %1$d turns after dealing %2$d damage, suffering %3$d on the way out.</string>
+    <string name="combat_summary_ready">Choose your next move.</string>
+    <string name="combat_summary_potion_used">Potion consumed! %1$d HP restored.</string>
+    <string name="combat_summary_defeat">Defeat… You fell after %1$d turns, dealing %2$d damage, taking %3$d, and using %4$d potions.</string>
+
+<!-- Achievements -->
+<string name="achievement_first_blood_title">First Blood</string>
+<string name="achievement_first_blood_description">Defeat your first enemy.</string>
+<string name="achievement_dungeon_explorer_title">Dungeon Explorer</string>
+<string name="achievement_dungeon_explorer_description">Reveal 50 dungeon tiles.</string>
+<string name="achievement_gold_hoarder_title">Gold Hoarder</string>
+<string name="achievement_gold_hoarder_description">Collect 1,000 gold throughout your adventures.</string>
+<string name="achievement_boss_slayer_title">Boss Slayer</string>
+<string name="achievement_boss_slayer_description">Defeat a dungeon boss.</string>
+<string name="achievement_low_hp_survivor_title">Low HP Survivor</string>
+<string name="achievement_low_hp_survivor_description">Win a battle with only 1 HP remaining.</string>
+<string name="achievement_trap_dodger_title">Trap Dodger</string>
+<string name="achievement_trap_dodger_description">Disarm a trap without taking damage.</string>
+<string name="achievement_victory_title">Flawless Explorer</string>
+<string name="achievement_victory_description">Reveal every safe tile on a floor.</string>
+
+<!-- Accessibility & onboarding -->
+<string name="tile_desc_hidden">Hidden tile</string>
+<string name="tile_desc_gold">Gold pile</string>
+<string name="tile_desc_enemy">Enemy encounter</string>
+<string name="tile_desc_stairs_down">Stairs descending to the next floor</string>
+<string name="tile_desc_stairs_up">Stairs leading upward</string>
+<string name="tile_desc_locked_stair_red">Locked red stair</string>
+<string name="tile_desc_locked_stair_blue">Locked blue stair</string>
+<string name="tile_desc_locked_stair_green">Locked green stair</string>
+<string name="tile_desc_key_red">Red key</string>
+<string name="tile_desc_key_blue">Blue key</string>
+<string name="tile_desc_key_green">Green key</string>
+<string name="tile_desc_trap_fire">Fire trap</string>
+<string name="tile_desc_trap_poison">Poison trap</string>
+<string name="tile_desc_trap_acid">Acid trap</string>
+<string name="tile_desc_trap_freeze">Freeze trap</string>
+<string name="tile_desc_trap_pitfall">Pitfall trap</string>
+<string name="onboarding_dungeon_title">Welcome to ClickDungeon</string>
+<string name="onboarding_dungeon_message">You are delving in on %1$s difficulty.
+
+Tips:
+• Tap hidden tiles to explore.
+• Watch the combat bar for enemy telegraphs.
+• %2$s
+
+Adjust these preferences anytime from Settings.</string>
+<string name="onboarding_colorblind_enabled">Color-blind mode is on; emoji include letter codes.</string>
+<string name="onboarding_colorblind_disabled">Enable color-blind mode from Settings for letter-coded tiles.</string>
+<string name="onboarding_tutorial_continue">Let&#39;s go</string>
+<string name="onboarding_tutorial_disable">Don&#39;t show again</string>
 </resources>

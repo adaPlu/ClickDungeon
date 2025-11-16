@@ -40,6 +40,10 @@ public class Monster {
         return monsterType;
     }
 
+    public String getImage() {
+        return image;
+    }
+
     public boolean isDead() {
         return currentHP <= 0;
     }
