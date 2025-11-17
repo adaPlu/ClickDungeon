@@ -50,6 +50,31 @@
 <string name="gold_display">Gold:</string>
 <string name="gold_display_dynamic">Gold: %1$d</string>
 <string name="gold_found_message">You found %1$d gold!</string>
+<string name="key_found_message">You picked up the %1$s!</string>
+<string name="locked_stair_unlocked">Unlocked stair with %1$s!</string>
+<string name="locked_stair_missing">You need the %1$s!</string>
+<string name="ability_button_wizard">Cast Fireball</string>
+<string name="ability_button_thief">Trap Scan</string>
+<string name="ability_button_knight">Raise Shield</string>
+<string name="ability_button_targeting">Select target...</string>
+<string name="ability_target_cancelled">Ability targeting cancelled.</string>
+<string name="ability_on_cooldown">Ability ready again on Floor %1$d.</string>
+<string name="ability_target_prompt_fireball">Select a tile within %1$d spaces to cast Fireball.</string>
+<string name="ability_target_prompt_scan">Select a tile within %1$d spaces to scan for traps.</string>
+<string name="ability_target_prompt_shield">Select a revealed tile within %1$d spaces to raise your shield.</string>
+<string name="ability_range_error">Target must be within %1$d spaces.</string>
+<string name="fireball_result_whiff">The fireball fizzles without a target.</string>
+<string name="fireball_result_hit">Fireball scorches for %1$d damage!</string>
+<string name="fireball_result_kill">Fireball incinerates the %1$s.</string>
+<string name="thief_scan_result">Nearby traps are revealed.</string>
+<string name="thief_scan_no_traps">No traps detected.</string>
+<string name="knight_shield_requires_visible">Shield can only be anchored on revealed tiles.</string>
+<string name="knight_shield_invalid_tile">Cannot anchor a shield on enemies or traps.</string>
+<string name="knight_shield_activated">Shield deployed! Absorbs %1$d damage while you stay put.</string>
+<string name="knight_shield_moved">You left the shielded tile. The shield dissipates.</string>
+<string name="knight_shield_broken">Your shield shatters!</string>
+<string name="knight_shield_absorb">Shield absorbs %1$d damage.</string>
+<string name="player_position_unknown">Reveal a tile first to anchor your position.</string>
 <string name="refresh_shop">Refresh Shop</string>
 
 <!-- Game -->
@@ -62,6 +87,9 @@
 <string name="main_menu">Main Menu</string>
 <string name="play_again">Play Again</string>
 <string name="use_ability">Use Ability</string>
+<string name="slot_display_label">Slot: %1$d</string>
+<string name="game_over_title">Game Over</string>
+<string name="game_over_message">You have been defeated. Would you like to restart or return to the main menu?</string>
 
 <!-- Character Selection -->
 <string name="enter_name">Enter character name</string>
@@ -98,12 +126,12 @@
 <string name="combat_log_intro">A wild %1$s appears!</string>
 <string name="combat_log_player_attack">You strike for %1$d damage against %2$s.</string>
 <string name="combat_log_monster_attack">%1$s hits you for %2$d damage!</string>
-<string name="combat_log_monster_glancing">%1$s can't break through your defenses.</string>
+<string name="combat_log_monster_glancing">%1$s can\'t break through your defenses.</string>
 <string name="combat_log_monster_defeated">%1$s is defeated!</string>
 <string name="combat_log_player_defeated">You collapse from your wounds...</string>
 <string name="combat_log_use_potion">You drink a potion and recover %1$d HP.</string>
 <string name="combat_log_no_potions">No healing potions remain!</string>
-<string name="combat_log_potion_full_hp">You're already at full health.</string>
+<string name="combat_log_potion_full_hp">You\'re already at full health.</string>
 <string name="combat_tile_cleared">✅</string>
 <string name="combat_result_victory">You defeated %1$s! +%2$d XP, +%3$d gold.</string>
 <string name="combat_result_flee">You fled the battle, taking %1$d damage.</string>
@@ -162,6 +190,6 @@ Tips:
 Adjust these preferences anytime from Settings.</string>
 <string name="onboarding_colorblind_enabled">Color-blind mode is on; emoji include letter codes.</string>
 <string name="onboarding_colorblind_disabled">Enable color-blind mode from Settings for letter-coded tiles.</string>
-<string name="onboarding_tutorial_continue">Let&#39;s go</string>
-<string name="onboarding_tutorial_disable">Don&#39;t show again</string>
+<string name="onboarding_tutorial_continue">Let\'s go</string>
+<string name="onboarding_tutorial_disable">Don\'t show again</string>
 </resources>

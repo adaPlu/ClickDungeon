@@ -13,7 +13,11 @@ import com.example.clickdungeon.util.SaveManager.GameState;
 
 public class ContinueActivity extends AppCompatActivity {
 
+    public static final String EXTRA_FORCE_NEW_GAME =
+            "com.example.clickdungeon.extra.FORCE_NEW_GAME";
+
     private SaveManager saveManager;
+    private boolean forceNewGameMode = false;
 
     private TextView slot1Info, slot2Info, slot3Info, slot4Info;
     private Button slot1Button, slot2Button, slot3Button, slot4Button;
@@ -24,6 +28,7 @@ public class ContinueActivity extends AppCompatActivity {
         setContentView(R.layout.activity_continue);
 
         saveManager = new SaveManager(this);
+        forceNewGameMode = getIntent().getBooleanExtra(EXTRA_FORCE_NEW_GAME, false);
 
         slot1Info = findViewById(R.id.slot1Info);
         slot1Button = findViewById(R.id.slot1Button);
@@ -68,8 +73,13 @@ public class ContinueActivity extends AppCompatActivity {
         int floor = gameState.currentFloor;
 
         infoView.setText(getString(R.string.continue_slot_occupied, slotIndex + 1, name, charClass, floor));
-        actionButton.setText(R.string.continue_slot_continue);
-        actionButton.setOnClickListener(v -> continueGame(slotIndex));
+        if (forceNewGameMode) {
+            actionButton.setText(R.string.continue_slot_overwrite);
+            actionButton.setOnClickListener(v -> showOverwriteDialog(slotIndex));
+        } else {
+            actionButton.setText(R.string.continue_slot_continue);
+            actionButton.setOnClickListener(v -> continueGame(slotIndex));
+        }
     }
 
     private void showOverwriteDialog(int slotIndex) {

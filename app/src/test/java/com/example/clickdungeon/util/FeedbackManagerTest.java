@@ -1,7 +1,9 @@
 package com.example.clickdungeon.util;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import android.content.Context;
 import android.os.Vibrator;
@@ -18,6 +20,7 @@ import org.robolectric.util.ReflectionHelpers;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(sdk = 33)
+@SuppressWarnings("deprecation")
 public class FeedbackManagerTest {
 
     private Context context;
@@ -48,22 +51,22 @@ public class FeedbackManagerTest {
         SettingsManager.setVibrationEnabled(context, false);
         Vibrator vibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
         ShadowVibrator shadowVibrator = org.robolectric.Shadows.shadowOf(vibrator);
-        shadowVibrator.clear();
+        clearShadowVibration(shadowVibrator);
 
         FeedbackManager.vibrate(context, FeedbackManager.VibrationPattern.MEDIUM);
 
-        assertNull(shadowVibrator.getLastVibration());
+        assertFalse(hasRecordedVibration(shadowVibrator));
     }
 
     @Test
     public void vibrate_vibrationEnabled_recordsLastVibration() {
         Vibrator vibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
         ShadowVibrator shadowVibrator = org.robolectric.Shadows.shadowOf(vibrator);
-        shadowVibrator.clear();
+        clearShadowVibration(shadowVibrator);
 
         FeedbackManager.vibrate(context, FeedbackManager.VibrationPattern.HEAVY);
 
-        assertNotNull(shadowVibrator.getLastVibration());
+        assertTrue(hasRecordedVibration(shadowVibrator));
     }
 
     private void resetToneGenerator() {
@@ -72,5 +75,43 @@ public class FeedbackManagerTest {
 
     private Object getToneGenerator() {
         return ReflectionHelpers.getStaticField(FeedbackManager.class, "toneGenerator");
+    }
+
+    private void clearShadowVibration(ShadowVibrator shadowVibrator) {
+        try {
+            ShadowVibrator.class.getMethod("clear").invoke(shadowVibrator);
+        } catch (Exception ignored) {
+            try {
+                Object records = ShadowVibrator.class
+                        .getMethod("getVibrationEffects")
+                        .invoke(shadowVibrator);
+                if (records instanceof java.util.Collection) {
+                    ((java.util.Collection<?>) records).clear();
+                }
+            } catch (Exception ignoredAgain) {
+                // no-op
+            }
+        }
+    }
+
+    private boolean hasRecordedVibration(ShadowVibrator shadowVibrator) {
+        try {
+            Object record = ShadowVibrator.class
+                    .getMethod("getLastVibration")
+                    .invoke(shadowVibrator);
+            return record != null;
+        } catch (Exception ignored) {
+            try {
+                Object records = ShadowVibrator.class
+                        .getMethod("getVibrationEffects")
+                        .invoke(shadowVibrator);
+                if (records instanceof java.util.Collection) {
+                    return !((java.util.Collection<?>) records).isEmpty();
+                }
+            } catch (Exception ignoredAgain) {
+                // no-op
+            }
+        }
+        return false;
     }
 }

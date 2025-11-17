@@ -4,10 +4,12 @@
 package com.example.clickdungeon;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,6 +21,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.StringRes;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -35,16 +39,12 @@ import com.example.clickdungeon.util.AchievementManager;
 import com.example.clickdungeon.util.FeedbackManager;
 import com.example.clickdungeon.util.DungeonGenerator;
 import com.example.clickdungeon.util.GameBalance;
-import com.example.clickdungeon.util.GameStateManager;
 import com.example.clickdungeon.util.InventoryManager;
 import com.example.clickdungeon.util.OnboardingManager;
 import com.example.clickdungeon.util.SaveManager;
 import com.example.clickdungeon.util.SettingsManager;
 import com.google.gson.Gson;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.Random;
 
 import android.animation.ObjectAnimator;
@@ -52,6 +52,13 @@ import android.graphics.Color;
 import android.media.MediaPlayer;
 
 public class GameActivity extends AppCompatActivity implements CombatDialogFragment.CombatCallbacks {
+
+    private enum AbilityTargetMode {
+        NONE,
+        WIZARD_FIREBALL,
+        THIEF_SCAN,
+        KNIGHT_SHIELD
+    }
 
     public static final String EXTRA_SLOT_INDEX = "com.example.clickdungeon.extra.SLOT_INDEX";
     public static final String EXTRA_IS_NEW_GAME = "com.example.clickdungeon.extra.IS_NEW_GAME";
@@ -64,8 +71,12 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
     private static final String PROGRESS_KEY_TILES = "tiles_revealed_total";
     private static final String PROGRESS_KEY_GOLD = "gold_collected_total";
     private static final String PROGRESS_KEY_ENEMIES = "enemies_defeated_total";
+    private static final int ABILITY_RANGE = 3;
+    private static final int ABILITY_COOLDOWN_FLOORS = 2;
 
     private static final int GRID_SIZE = 5;
+    private static final int TOTAL_SAVE_SLOTS = 4;
+    private static final int DEFAULT_SLOT_INDEX = 0;
     private static final String TAG_COMBAT_DIALOG = "CombatDialog";
     private GridLayout gridLayout;
     private TextView goldCounterText, hpCounterText, statusEffectText, floorText;
@@ -77,10 +88,9 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
     private int currentFloor = 1;
     private int frozenTurnsLeft = 0;
     private int poisonTurnsLeft = 0;
-    private boolean thiefScanMode = false;
 
     private CharacterProfile profile;
-    private String placedKeyName = null;
+    private TileType placedLockedStair = null;
     private final Random random = new Random();
     private final MonsterTemplate[] monsterTemplates = new MonsterTemplate[] {
             new MonsterTemplate("Slime", "🟢", 3, 1, 0),
@@ -103,6 +113,14 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
     private boolean colorBlindModeEnabled = false;
     private int pendingCombatGoldReward = 0;
     private int pendingCombatXpReward = 0;
+    private int playerRow = GRID_SIZE / 2;
+    private int playerCol = GRID_SIZE / 2;
+    private int nextAbilityAvailableFloor = 1;
+    private AbilityTargetMode pendingAbilityTargetMode = AbilityTargetMode.NONE;
+    private boolean knightShieldActive = false;
+    private int knightShieldStrength = 0;
+    private int knightShieldRow = -1;
+    private int knightShieldCol = -1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -127,25 +145,22 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         launchingNewSlotGame = launchIntent.getBooleanExtra(EXTRA_IS_NEW_GAME, false);
         String profileJsonOverride = launchIntent.getStringExtra(EXTRA_PROFILE_JSON);
 
-        if (activeSlotIndex >= 0) {
-            if (launchingNewSlotGame) {
-                if (!loadProfileForSession(profileJsonOverride, true)) {
-                    return;
-                }
-                currentFloor = 1;
-                currentGold = 0;
-                dungeonGrid = new Tile[GRID_SIZE][GRID_SIZE];
-                generateDungeon();
-                InventoryManager.adjustItemQuantity(this, "Trap Disarm Kit", 1, INVENTORY_STACK_LIMIT);
-                InventoryManager.syncGoldWithCurrentRun(this, currentGold);
-                persistGameState();
-            } else {
-                SaveManager.GameState gameState = saveManager.loadGame(activeSlotIndex);
-                if (gameState == null) {
-                    Toast.makeText(this, R.string.continue_slot_load_failed, Toast.LENGTH_LONG).show();
-                    finish();
-                    return;
-                }
+        if (activeSlotIndex < 0 || activeSlotIndex >= TOTAL_SAVE_SLOTS) {
+            SharedPreferences prefs = getSharedPreferences("player_profile", Context.MODE_PRIVATE);
+            int storedSlot = prefs.getInt("save_slot", DEFAULT_SLOT_INDEX);
+            activeSlotIndex = Math.max(0, Math.min(TOTAL_SAVE_SLOTS - 1, storedSlot));
+        }
+
+        if (launchingNewSlotGame) {
+            if (!loadProfileForSession(profileJsonOverride, true)) {
+                return;
+            }
+            startNewRunForActiveSlot();
+        } else {
+            SaveManager.GameState gameState = activeSlotIndex >= 0
+                    ? saveManager.loadGame(activeSlotIndex)
+                    : null;
+            if (gameState != null) {
                 profile = gameState.profile;
                 currentFloor = gameState.currentFloor;
                 currentGold = gameState.currentGold;
@@ -153,24 +168,13 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
                 recalculateSafeTileTargets(dungeonGrid);
                 restoreLockedStairStateFromGrid(dungeonGrid);
                 InventoryManager.syncGoldWithCurrentRun(this, currentGold);
-            }
-        } else {
-            if (!loadProfileForSession(profileJsonOverride, true)) {
-                return;
-            }
-            currentFloor = GameStateManager.loadFloor(this);
-            Tile[][] savedGrid = GameStateManager.loadGrid(this);
-            if (savedGrid != null) {
-                dungeonGrid = savedGrid;
-                currentGold = GameStateManager.loadGold(this);
-                recalculateSafeTileTargets(dungeonGrid);
-                restoreLockedStairStateFromGrid(dungeonGrid);
-                InventoryManager.syncGoldWithCurrentRun(this, currentGold);
+                restoreRunMetadata(gameState.metadata);
             } else {
-                dungeonGrid = new Tile[GRID_SIZE][GRID_SIZE];
-                generateDungeon();
-                InventoryManager.adjustItemQuantity(this, "Trap Disarm Kit", 1, INVENTORY_STACK_LIMIT);
-                InventoryManager.syncGoldWithCurrentRun(this, currentGold);
+                Toast.makeText(this, R.string.continue_slot_load_failed, Toast.LENGTH_LONG).show();
+                if (!loadProfileForSession(profileJsonOverride, true)) {
+                    return;
+                }
+                startNewRunForActiveSlot();
             }
         }
 
@@ -191,38 +195,125 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
                 () -> createRandomMonsterForCurrentFloor());
         dungeonGrid = result.grid;
         placedLockedStair = result.lockedStair;
-        placedKeyName = result.keyName;
         safeTilesToReveal = result.safeTiles;
+    }
+
+    private void startNewRunForActiveSlot() {
+        currentFloor = 1;
+        currentGold = 0;
+        dungeonGrid = new Tile[GRID_SIZE][GRID_SIZE];
+        generateDungeon();
+        resetPlayerPositionToCenter();
+        clearKnightShield(0);
+        pendingAbilityTargetMode = AbilityTargetMode.NONE;
+        nextAbilityAvailableFloor = currentFloor;
+        InventoryManager.adjustItemQuantity(this, "Trap Disarm Kit", 1, INVENTORY_STACK_LIMIT);
+        InventoryManager.syncGoldWithCurrentRun(this, currentGold);
+        updateAbilityButtonState();
+        persistGameState();
     }
 
     private void fallToNextFloor() {
         currentFloor++;
-        if (activeSlotIndex < 0) {
-            GameStateManager.saveFloor(this, currentFloor);
-        }
         generateDungeon();
+        resetPlayerPositionToCenter();
+        clearKnightShield(0);
+        pendingAbilityTargetMode = AbilityTargetMode.NONE;
         renderGrid();
         updateFloorDisplay();
         frozenTurnsLeft = 0;
         poisonTurnsLeft = 0;
         updateStatusText();
+        updateAbilityButtonState();
         persistGameState();
         Toast.makeText(this, "You fell to Floor " + currentFloor + "!", Toast.LENGTH_LONG).show();
     }
 
     private void setupClassAbilityButton() {
-        if (profile.getPlayerClass() == PlayerClass.WIZARD || profile.getPlayerClass() == PlayerClass.THIEF) {
-            classAbilityButton.setVisibility(View.VISIBLE);
-            classAbilityButton.setOnClickListener(v -> {
-                if (profile.getPlayerClass() == PlayerClass.WIZARD) {
-                    revealAllTraps();
-                    Toast.makeText(this, "All traps revealed!", Toast.LENGTH_SHORT).show();
-                } else if (profile.getPlayerClass() == PlayerClass.THIEF) {
-                    thiefScanMode = true;
-                    Toast.makeText(this, "Tap a tile to scan for traps...", Toast.LENGTH_SHORT).show();
-                }
-            });
+        if (profile == null || profile.getPlayerClass() == null || classAbilityButton == null) {
+            if (classAbilityButton != null) {
+                classAbilityButton.setVisibility(View.GONE);
+            }
+            return;
         }
+        classAbilityButton.setVisibility(View.VISIBLE);
+        classAbilityButton.setOnClickListener(v -> triggerClassAbility());
+        updateAbilityButtonState();
+    }
+
+    private void triggerClassAbility() {
+        if (pendingAbilityTargetMode != AbilityTargetMode.NONE) {
+            pendingAbilityTargetMode = AbilityTargetMode.NONE;
+            Toast.makeText(this, R.string.ability_target_cancelled, Toast.LENGTH_SHORT).show();
+            updateAbilityButtonState();
+            return;
+        }
+        if (!isAbilityReady()) {
+            Toast.makeText(this, getString(R.string.ability_on_cooldown, nextAbilityAvailableFloor), Toast.LENGTH_SHORT).show();
+            return;
+        }
+        PlayerClass playerClass = profile.getPlayerClass();
+        if (playerClass == null) {
+            return;
+        }
+        switch (playerClass) {
+            case WIZARD:
+                beginAbilityTargeting(AbilityTargetMode.WIZARD_FIREBALL, R.string.ability_target_prompt_fireball);
+                break;
+            case THIEF:
+                beginAbilityTargeting(AbilityTargetMode.THIEF_SCAN, R.string.ability_target_prompt_scan);
+                break;
+            case KNIGHT:
+                beginAbilityTargeting(AbilityTargetMode.KNIGHT_SHIELD, R.string.ability_target_prompt_shield);
+                break;
+            default:
+                break;
+        }
+    }
+
+    private void beginAbilityTargeting(AbilityTargetMode mode, int promptResId) {
+        if (mode == null) {
+            return;
+        }
+        pendingAbilityTargetMode = mode;
+        Toast.makeText(this, getString(promptResId, ABILITY_RANGE), Toast.LENGTH_SHORT).show();
+        updateAbilityButtonState();
+    }
+
+    private void updateAbilityButtonState() {
+        if (classAbilityButton == null || profile == null || profile.getPlayerClass() == null) {
+            return;
+        }
+        boolean targeting = pendingAbilityTargetMode != AbilityTargetMode.NONE;
+        classAbilityButton.setEnabled(!targeting && isAbilityReady());
+        classAbilityButton.setText(getString(targeting
+                ? R.string.ability_button_targeting
+                : getAbilityButtonLabelRes(profile.getPlayerClass())));
+    }
+
+    private int getAbilityButtonLabelRes(PlayerClass playerClass) {
+        switch (playerClass) {
+            case WIZARD:
+                return R.string.ability_button_wizard;
+            case THIEF:
+                return R.string.ability_button_thief;
+            case KNIGHT:
+                return R.string.ability_button_knight;
+            default:
+                return R.string.use_ability;
+        }
+    }
+
+    private boolean isAbilityReady() {
+        return profile != null
+                && currentFloor >= nextAbilityAvailableFloor
+                && pendingAbilityTargetMode == AbilityTargetMode.NONE;
+    }
+
+    private void consumeAbilityUse() {
+        nextAbilityAvailableFloor = currentFloor + ABILITY_COOLDOWN_FLOORS;
+        pendingAbilityTargetMode = AbilityTargetMode.NONE;
+        updateAbilityButtonState();
     }
 
     private boolean loadProfileForSession(String profileJsonOverride, boolean allowStoredFallback) {
@@ -238,7 +329,10 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         }
         if (profile == null) {
             Toast.makeText(this, R.string.profile_missing_message, Toast.LENGTH_SHORT).show();
-            startActivity(new Intent(this, ClassSelectionActivity.class));
+            Intent intent = new Intent(this, ClassSelectionActivity.class);
+            intent.putExtra(ClassSelectionActivity.EXTRA_SAVE_SLOT_INDEX,
+                    Math.max(0, activeSlotIndex));
+            startActivity(intent);
             finish();
             return false;
         }
@@ -286,28 +380,28 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
     }
 
     private void persistGameState() {
-        if (dungeonGrid == null || profile == null) {
+        if (dungeonGrid == null || profile == null || saveManager == null) {
             return;
         }
         InventoryManager.syncGoldWithCurrentRun(this, currentGold);
-        if (activeSlotIndex >= 0) {
-            if (saveManager != null) {
-                saveManager.saveGame(activeSlotIndex, profile, currentFloor, currentGold, dungeonGrid);
-            }
-        } else {
-            GameStateManager.saveGrid(this, dungeonGrid, currentGold);
-            GameStateManager.saveFloor(this, currentFloor);
-        }
+        int slotToPersist = activeSlotIndex >= 0 ? activeSlotIndex : DEFAULT_SLOT_INDEX;
+        SaveManager.RunMetadata metadata = new SaveManager.RunMetadata(
+                playerRow,
+                playerCol,
+                knightShieldActive,
+                knightShieldStrength,
+                knightShieldRow,
+                knightShieldCol,
+                nextAbilityAvailableFloor);
+        saveManager.saveGame(slotToPersist, profile, currentFloor, currentGold, dungeonGrid, metadata);
     }
 
     private void clearPersistedState() {
-        if (activeSlotIndex >= 0) {
-            if (saveManager != null) {
-                saveManager.deleteSave(activeSlotIndex);
-            }
-        } else {
-            GameStateManager.clearState(this);
+        if (saveManager == null) {
+            return;
         }
+        int slotToClear = activeSlotIndex >= 0 ? activeSlotIndex : DEFAULT_SLOT_INDEX;
+        saveManager.deleteSave(slotToClear);
     }
 
     private void updateFloorDisplay() {
@@ -498,13 +592,12 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
     }
 
     private void handleTileClick(int row, int col, TextView tileText) {
+        if (pendingAbilityTargetMode != AbilityTargetMode.NONE) {
+            handleAbilityTargetSelection(row, col);
+            return;
+        }
         Tile clickedTile = dungeonGrid[row][col];
         if (!clickedTile.isRevealed()) {
-            if (thiefScanMode && profile.getPlayerClass() == PlayerClass.THIEF) {
-                searchAdjacentForTraps(row, col);
-                thiefScanMode = false;
-                return;
-            }
             clickedTile.reveal();
             if (profile.getAnimatedPlayer() != null) {
                 profile.getAnimatedPlayer().setAction("move");
@@ -514,8 +607,286 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
                 revealedSafeTiles++;
                 recordSafeTileReveal();
             }
+            updatePlayerPosition(row, col);
             persistGameState();
             checkVictoryCondition();
+        }
+    }
+
+    private void updatePlayerPosition(int row, int col) {
+        playerRow = clampGridIndex(row);
+        playerCol = clampGridIndex(col);
+        verifyShieldAnchor();
+    }
+
+    private int clampGridIndex(int value) {
+        if (value < 0 || value >= GRID_SIZE) {
+            return Math.max(0, Math.min(GRID_SIZE - 1, value));
+        }
+        return value;
+    }
+
+    private void handleAbilityTargetSelection(int row, int col) {
+        if (pendingAbilityTargetMode == AbilityTargetMode.NONE) {
+            return;
+        }
+        if (!isPlayerPositionKnown()) {
+            Toast.makeText(this, R.string.player_position_unknown, Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (!isTargetWithinAbilityRange(row, col)) {
+            Toast.makeText(this, getString(R.string.ability_range_error, ABILITY_RANGE), Toast.LENGTH_SHORT).show();
+            return;
+        }
+        boolean resolved = false;
+        switch (pendingAbilityTargetMode) {
+            case WIZARD_FIREBALL:
+                resolved = executeWizardFireball(row, col);
+                break;
+            case THIEF_SCAN:
+                resolved = executeThiefScan(row, col);
+                break;
+            case KNIGHT_SHIELD:
+                resolved = deployKnightShield(row, col);
+                break;
+            case NONE:
+            default:
+                break;
+        }
+        if (resolved) {
+            consumeAbilityUse();
+            persistGameState();
+        }
+    }
+
+    private boolean isPlayerPositionKnown() {
+        return playerRow >= 0 && playerCol >= 0;
+    }
+
+    private boolean isTargetWithinAbilityRange(int row, int col) {
+        if (!isPlayerPositionKnown()) {
+            return false;
+        }
+        int distance = Math.abs(row - playerRow) + Math.abs(col - playerCol);
+        return distance <= ABILITY_RANGE;
+    }
+
+    private boolean executeWizardFireball(int row, int col) {
+        Tile tile = dungeonGrid[row][col];
+        if (tile == null) {
+            return false;
+        }
+        TextView tileText = getTileTextView(row, col);
+        tile.reveal();
+        if (tileText != null) {
+            tileText.setText(getTileDisplay(tile));
+            tileText.setContentDescription(getTileContentDescription(tile));
+        }
+        int damage = calculateFireballDamage();
+        if (tile.hasMonster()) {
+            Monster monster = tile.getMonster();
+            monster.takeDamage(damage);
+            if (monster.isDead()) {
+                handleAbilityMonsterDefeat(monster, tile, tileText, row, col);
+                Toast.makeText(this,
+                        getString(R.string.fireball_result_kill, monster.getMonsterType()),
+                        Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(this,
+                        getString(R.string.fireball_result_hit, damage),
+                        Toast.LENGTH_SHORT).show();
+            }
+            FeedbackManager.playSound(this, FeedbackManager.SoundEffect.POSITIVE);
+            FeedbackManager.vibrate(this, FeedbackManager.VibrationPattern.LIGHT);
+        } else {
+            Toast.makeText(this, R.string.fireball_result_whiff, Toast.LENGTH_SHORT).show();
+        }
+        return true;
+    }
+
+    private boolean executeThiefScan(int row, int col) {
+        boolean revealedAny = false;
+        for (int r = row - 1; r <= row + 1; r++) {
+            for (int c = col - 1; c <= col + 1; c++) {
+                if (r < 0 || c < 0 || r >= GRID_SIZE || c >= GRID_SIZE) {
+                    continue;
+                }
+                Tile tile = dungeonGrid[r][c];
+                if (tile == null || !isTrapTile(tile)) {
+                    continue;
+                }
+                boolean wasRevealed = tile.isRevealed();
+                tile.reveal();
+                TextView tileText = getTileTextView(r, c);
+                if (tileText != null) {
+                    tileText.setText(getTileDisplay(tile));
+                    tileText.setContentDescription(getTileContentDescription(tile));
+                }
+                if (!wasRevealed) {
+                    revealedAny = true;
+                }
+            }
+        }
+        Toast.makeText(this,
+                revealedAny ? R.string.thief_scan_result : R.string.thief_scan_no_traps,
+                Toast.LENGTH_SHORT).show();
+        return true;
+    }
+
+    private boolean deployKnightShield(int row, int col) {
+        if (!isTargetWithinAbilityRange(row, col)) {
+            Toast.makeText(this, getString(R.string.ability_range_error, ABILITY_RANGE), Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        Tile tile = dungeonGrid[row][col];
+        if (tile == null || !tile.isRevealed()) {
+            Toast.makeText(this, R.string.knight_shield_requires_visible, Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        if (tile.getType() == TileType.ENEMY || isTrapTile(tile)) {
+            Toast.makeText(this, R.string.knight_shield_invalid_tile, Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        knightShieldStrength = calculateKnightShieldStrength();
+        knightShieldRow = row;
+        knightShieldCol = col;
+        knightShieldActive = true;
+        playerRow = row;
+        playerCol = col;
+        Toast.makeText(this,
+                getString(R.string.knight_shield_activated, knightShieldStrength),
+                Toast.LENGTH_SHORT).show();
+        updateAbilityButtonState();
+        return true;
+    }
+
+    private void handleAbilityMonsterDefeat(Monster monster,
+                                           Tile tile,
+                                           TextView tileText,
+                                           int row,
+                                           int col) {
+        tile.setMonster(null);
+        tile.setType(TileType.EMPTY);
+        if (tileText != null) {
+            tileText.setText(getString(R.string.combat_tile_cleared));
+            tileText.setContentDescription(getTileContentDescription(tile));
+        }
+        int xpReward = GameBalance.calculateXpReward(monster, currentFloor, difficultyMode, random);
+        profile.addExperience(xpReward);
+        int goldReward = GameBalance.calculateGoldReward(monster, currentFloor, difficultyMode, random);
+        currentGold += goldReward;
+        InventoryManager.syncGoldWithCurrentRun(this, currentGold);
+        updateGoldCounter();
+        recordGoldEarned(goldReward);
+        recordEnemyDefeat();
+        if (revealedSafeTiles < safeTilesToReveal) {
+            revealedSafeTiles++;
+            recordSafeTileReveal();
+        }
+        checkVictoryCondition();
+    }
+
+    private boolean isTrapTile(Tile tile) {
+        if (tile == null) {
+            return false;
+        }
+        TileType type = tile.getType();
+        return type == TileType.TRAP_FIRE
+                || type == TileType.TRAP_ACID
+                || type == TileType.TRAP_POISON
+                || type == TileType.TRAP_FREEZE
+                || type == TileType.TRAP_PITFALL;
+    }
+
+    private int calculateFireballDamage() {
+        int level = profile != null ? Math.max(1, profile.getLevel()) : 1;
+        return 4 + (level * 2);
+    }
+
+    private int calculateKnightShieldStrength() {
+        int level = profile != null ? Math.max(1, profile.getLevel()) : 1;
+        return 6 + (level * 3);
+    }
+
+    @Nullable
+    private TextView getTileTextView(int row, int col) {
+        int index = (row * GRID_SIZE) + col;
+        if (index < 0 || index >= gridLayout.getChildCount()) {
+            return null;
+        }
+        View child = gridLayout.getChildAt(index);
+        if (child == null) {
+            return null;
+        }
+        return child.findViewById(R.id.textTile);
+    }
+
+    private void verifyShieldAnchor() {
+        if (!knightShieldActive) {
+            return;
+        }
+        if (playerRow != knightShieldRow || playerCol != knightShieldCol) {
+            clearKnightShield(R.string.knight_shield_moved);
+        }
+    }
+
+    private void clearKnightShield(@StringRes int messageResId) {
+        if (knightShieldActive && messageResId != 0) {
+            Toast.makeText(this, messageResId, Toast.LENGTH_SHORT).show();
+        }
+        knightShieldActive = false;
+        knightShieldStrength = 0;
+        knightShieldRow = -1;
+        knightShieldCol = -1;
+    }
+
+    private int applyKnightShield(int incomingDamage) {
+        if (!knightShieldActive || incomingDamage <= 0) {
+            return incomingDamage;
+        }
+        if (playerRow != knightShieldRow || playerCol != knightShieldCol) {
+            clearKnightShield(0);
+            return incomingDamage;
+        }
+        int absorbed = Math.min(knightShieldStrength, incomingDamage);
+        knightShieldStrength -= absorbed;
+        incomingDamage -= absorbed;
+        if (absorbed > 0) {
+            Toast.makeText(this,
+                    getString(R.string.knight_shield_absorb, absorbed),
+                    Toast.LENGTH_SHORT).show();
+            FeedbackManager.vibrate(this, FeedbackManager.VibrationPattern.LIGHT);
+        }
+        if (knightShieldStrength <= 0) {
+            clearKnightShield(R.string.knight_shield_broken);
+        }
+        return incomingDamage;
+    }
+
+    private void resetPlayerPositionToCenter() {
+        playerRow = GRID_SIZE / 2;
+        playerCol = GRID_SIZE / 2;
+    }
+
+    private void restoreRunMetadata(@Nullable SaveManager.RunMetadata metadata) {
+        if (metadata == null) {
+            resetPlayerPositionToCenter();
+            clearKnightShield(0);
+            nextAbilityAvailableFloor = currentFloor;
+            return;
+        }
+        playerRow = metadata.playerRow >= 0 ? clampGridIndex(metadata.playerRow) : GRID_SIZE / 2;
+        playerCol = metadata.playerCol >= 0 ? clampGridIndex(metadata.playerCol) : GRID_SIZE / 2;
+        nextAbilityAvailableFloor = Math.max(currentFloor, metadata.nextAbilityAvailableFloor);
+        if (metadata.knightShieldActive && metadata.knightShieldStrength > 0) {
+            knightShieldActive = true;
+            knightShieldStrength = metadata.knightShieldStrength;
+            knightShieldRow = metadata.knightShieldRow >= 0
+                    ? clampGridIndex(metadata.knightShieldRow) : -1;
+            knightShieldCol = metadata.knightShieldCol >= 0
+                    ? clampGridIndex(metadata.knightShieldCol) : -1;
+        } else {
+            clearKnightShield(0);
         }
     }
 
@@ -588,6 +959,12 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
                 handleLockedStair(tileText, tile);
                 break;
 
+            case RED_KEY:
+            case BLUE_KEY:
+            case GREEN_KEY:
+                collectKey(tile, tileText);
+                break;
+
             case STAIR_UP:
                 // Visual update already applied above.
                 break;
@@ -602,35 +979,80 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         }
     }
 
+    private void collectKey(Tile tile, TextView tileText) {
+        TileType originalType = tile.getType();
+        String inventoryKeyName = getInventoryKeyNameForType(originalType);
+        if (TextUtils.isEmpty(inventoryKeyName)) {
+            return;
+        }
+        String displayName = getKeyDisplayName(originalType, tile.getCustomName());
+        InventoryManager.adjustItemQuantity(this, inventoryKeyName, 1);
+        FeedbackManager.playSound(this, FeedbackManager.SoundEffect.POSITIVE);
+        FeedbackManager.vibrate(this, FeedbackManager.VibrationPattern.LIGHT);
+        Toast.makeText(this, getString(R.string.key_found_message, displayName), Toast.LENGTH_SHORT).show();
+        tile.setType(TileType.EMPTY);
+        tile.setMonster(null);
+        if (tileText != null) {
+            tileText.setText(getTileDisplay(tile));
+            tileText.setContentDescription(getTileContentDescription(tile));
+        }
+    }
+
     private void handleLockedStair(TextView tileText, Tile tile) {
-        String neededKey;
-        String neededKeyDisplay;
-        switch (tile.getType()) {
-            case STAIR_DOWN_LOCKED_RED:
-                neededKey = "RED KEY";
-                neededKeyDisplay = "Red Key";
-                break;
-            case STAIR_DOWN_LOCKED_BLUE:
-                neededKey = "BLUE KEY";
-                neededKeyDisplay = "Blue Key";
-                break;
-            case STAIR_DOWN_LOCKED_GREEN:
-                neededKey = "GREEN KEY";
-                neededKeyDisplay = "Green Key";
-                break;
-            default:
-                return;
+        String neededKey = getInventoryKeyNameForType(tile.getType());
+        String neededKeyDisplay = getKeyDisplayName(tile.getType(), null);
+        if (TextUtils.isEmpty(neededKey) || TextUtils.isEmpty(neededKeyDisplay)) {
+            return;
         }
 
         if (InventoryManager.getItemQuantity(this, neededKey) > 0) {
             InventoryManager.adjustItemQuantity(this, neededKey, -1);
-            Toast.makeText(this, "Unlocked stair with " + neededKeyDisplay + "!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this,
+                    getString(R.string.locked_stair_unlocked, neededKeyDisplay),
+                    Toast.LENGTH_SHORT).show();
             fallToNextFloor();
         } else {
-            Toast.makeText(this, "You need the " + neededKeyDisplay + "!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this,
+                    getString(R.string.locked_stair_missing, neededKeyDisplay),
+                    Toast.LENGTH_SHORT).show();
         }
         tileText.setText(getTileDisplay(tile));
         tileText.setContentDescription(getTileContentDescription(tile));
+    }
+
+    private String getInventoryKeyNameForType(TileType type) {
+        switch (type) {
+            case RED_KEY:
+            case STAIR_DOWN_LOCKED_RED:
+                return "RED KEY";
+            case BLUE_KEY:
+            case STAIR_DOWN_LOCKED_BLUE:
+                return "BLUE KEY";
+            case GREEN_KEY:
+            case STAIR_DOWN_LOCKED_GREEN:
+                return "GREEN KEY";
+            default:
+                return null;
+        }
+    }
+
+    private String getKeyDisplayName(TileType type, String customName) {
+        if (!TextUtils.isEmpty(customName)) {
+            return customName;
+        }
+        switch (type) {
+            case RED_KEY:
+            case STAIR_DOWN_LOCKED_RED:
+                return getString(R.string.tile_desc_key_red);
+            case BLUE_KEY:
+            case STAIR_DOWN_LOCKED_BLUE:
+                return getString(R.string.tile_desc_key_blue);
+            case GREEN_KEY:
+            case STAIR_DOWN_LOCKED_GREEN:
+                return getString(R.string.tile_desc_key_green);
+            default:
+                return getString(R.string.tile_desc_key_red);
+        }
     }
 
     private void handleTrap(TextView tileText, Tile tile) {
@@ -684,7 +1106,7 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
             applyTrapDamage(1);
             FeedbackManager.vibrate(this, FeedbackManager.VibrationPattern.LIGHT);
             updateStatusText();
-            new Handler().postDelayed(this::poisonTick, 1500);
+            new Handler(Looper.getMainLooper()).postDelayed(this::poisonTick, 1500);
         }
     }
 
@@ -735,12 +1157,19 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
     }
 
     private void takeDamage(int amount) {
-        profile.setCurrentHP(profile.getCurrentHP() - amount);
+        int remaining = applyKnightShield(amount);
+        if (remaining <= 0) {
+            persistGameState();
+            return;
+        }
+        profile.setCurrentHP(profile.getCurrentHP() - remaining);
         updateHpCounter();
-        if (profile.getCurrentHP() <= 0) showGameOverDialog();
-        else if (profile.getCurrentHP() == 1) {
+        if (profile.getCurrentHP() <= 0) {
+            showGameOverDialog();
+        } else if (profile.getCurrentHP() == 1) {
             unlockAchievement(R.string.achievement_low_hp_survivor_title);
         }
+        persistGameState();
     }
 
     @Override
@@ -795,12 +1224,11 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
     @Override
     public void onCombatFled(int penaltyDamage) {
         if (penaltyDamage > 0) {
-            profile.takeDamage(penaltyDamage);
+            takeDamage(penaltyDamage);
             FeedbackManager.vibrate(this, FeedbackManager.VibrationPattern.MEDIUM);
             Toast.makeText(this,
                     getString(R.string.combat_result_flee, penaltyDamage),
                     Toast.LENGTH_SHORT).show();
-            updateHpCounter();
             if (profile.isDead()) {
                 clearCombatTracking();
                 handleGameOver();
@@ -931,44 +1359,6 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
                     finish();
                 })
                 .show();
-    }
-
-    private void generateDungeon() {
-        List<Tile> tiles = new ArrayList<>();
-        Random rand = new Random();
-        int numGold = 4 + currentFloor;
-        int numEnemies = 3 + currentFloor;
-        int numTraps = 2 + (currentFloor / 2);
-
-        for (int i = 0; i < numGold; i++) tiles.add(new Tile(TileType.GOLD));
-        for (int i = 0; i < numEnemies; i++) {
-            String type = MONSTER_TYPES[rand.nextInt(MONSTER_TYPES.length)];
-            AnimatedMonster monster = MonsterFactory.create(this, type);
-            tiles.add(new Tile(TileType.ENEMY, monster));
-        }
-
-        TileType[] trapTypes = {TileType.TRAP_FIRE, TileType.TRAP_POISON, TileType.TRAP_FREEZE, TileType.TRAP_ACID, TileType.TRAP_PITFALL};
-        for (int i = 0; i < numTraps; i++) {
-            TileType trap = trapTypes[rand.nextInt(trapTypes.length)];
-            tiles.add(new Tile(trap));
-        }
-
-        tiles.add(new Tile(TileType.STAIR_DOWN));
-        if (currentFloor > 1) tiles.add(new Tile(TileType.STAIR_UP));
-
-        while (tiles.size() < GRID_SIZE * GRID_SIZE) {
-            tiles.add(new Tile(TileType.EMPTY));
-        }
-
-        Collections.shuffle(tiles);
-
-        for (int r = 0; r < GRID_SIZE; r++) {
-            for (int c = 0; c < GRID_SIZE; c++) {
-                if (dungeonGrid == null) dungeonGrid = new Tile[GRID_SIZE][GRID_SIZE];
-                dungeonGrid[r][c] = tiles.get(r * GRID_SIZE + c);
-                if (dungeonGrid[r][c].getType() != TileType.ENEMY) safeTilesToReveal++;
-            }
-        }
     }
 
     @Override

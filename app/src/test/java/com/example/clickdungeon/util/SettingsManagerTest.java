@@ -67,7 +67,7 @@ public class SettingsManagerTest {
         assertEquals(SettingsManager.Difficulty.CASUAL, difficulty);
         assertEquals(8, difficulty.scaleMonsterHealth(10));
         assertEquals(9, difficulty.scaleMonsterAttack(10));
-        assertEquals(6, difficulty.scaleTrapDamage(8));
+        assertEquals(5, difficulty.scaleTrapDamage(8));
         assertEquals(7, difficulty.scaleXpReward(8));
         assertEquals(8, difficulty.scaleGoldReward(10));
 

@@ -95,7 +95,7 @@ ClickDungeon/
 ¦   ¦   ¦   +-- TileType.java
 ¦   ¦   ¦   +-- PlayerClass.java
 ¦   ¦   +-- util/
-¦   ¦   ¦   +-- GameStateManager.java
+¦   ¦   ¦   +-- SaveManager.java
 ¦   ¦   ¦   +-- InventoryManager.java
 ¦   ¦   ¦   +-- AchievementManager.java
 ¦   ¦   +-- adapter/

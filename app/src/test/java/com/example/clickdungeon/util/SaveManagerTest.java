@@ -48,7 +48,9 @@ public class SaveManagerTest {
         }
         grid[0][0] = new Tile(TileType.ENEMY, new Monster("Slime", 6, 2, 0, "🟢"));
 
-        saveManager.saveGame(1, profile, 3, 42, grid);
+        SaveManager.RunMetadata metadata =
+                new SaveManager.RunMetadata(-1, -1, false, 0, -1, -1, 1);
+        saveManager.saveGame(1, profile, 3, 42, grid, metadata);
 
         SaveManager.GameState state = saveManager.loadGame(1);
         assertNotNull(state);
@@ -56,6 +58,8 @@ public class SaveManagerTest {
         assertEquals(42, state.currentGold);
         assertEquals("Aeris", state.profile.getName());
         assertTrue(state.dungeonGrid[0][0].hasMonster());
+        assertNotNull(state.metadata);
+        assertEquals(-1, state.metadata.playerRow);
 
         saveManager.deleteSave(1);
         assertNull(saveManager.loadGame(1));

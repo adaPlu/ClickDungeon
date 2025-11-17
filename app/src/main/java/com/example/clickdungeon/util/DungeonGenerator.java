@@ -43,7 +43,9 @@ public final class DungeonGenerator {
         TileType selectedKeyType = keyTypes[keyIndex];
         TileType lockedStair = lockTypes[keyIndex];
 
-        pool.add(new Tile(selectedKeyType));
+        String keyName = selectedKeyType.name().replace("_KEY", " Key (F" + floor + ")");
+
+        pool.add(new Tile(selectedKeyType, keyName));
         pool.add(new Tile(lockedStair));
         pool.add(new Tile(TileType.STAIR_DOWN));
         if (floor > 1) {
@@ -68,8 +70,6 @@ public final class DungeonGenerator {
                 }
             }
         }
-
-        String keyName = selectedKeyType.name().replace("_KEY", " Key (F" + floor + ")");
 
         return new Result(grid, lockedStair, keyName, safeTiles);
     }

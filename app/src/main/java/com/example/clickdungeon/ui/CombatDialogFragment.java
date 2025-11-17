@@ -474,6 +474,9 @@ public class CombatDialogFragment extends DialogFragment {
             logBuilder.append('\n');
         }
         logBuilder.append(line);
+        if (combatLogView != null) {
+            combatLogView.setText(logBuilder.toString());
+        }
     }
 
     private void disableActions() {
