@@ -2,7 +2,7 @@ package com.example.clickdungeon;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
+//import android.view.View;
 import android.widget.Button;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -17,29 +17,23 @@ import java.util.List;
 
 public class AchievementsActivity extends AppCompatActivity {
 
-    private RecyclerView recyclerView;
-    private Button btnBackToMenu;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setTitle(R.string.achievements);
         setContentView(R.layout.activity_achievements);
 
-        recyclerView = findViewById(R.id.recyclerAchievements);
-        btnBackToMenu = findViewById(R.id.btnBackToMenu);
+        RecyclerView recyclerView = findViewById(R.id.recyclerAchievements);
+        Button btnBackToMenu = findViewById(R.id.btnBackToMenu);
 
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(new AchievementAdapter(loadAchievements()));
 
-        btnBackToMenu.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(AchievementsActivity.this, MainMenuActivity.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                startActivity(intent);
-                finish();
-            }
+        btnBackToMenu.setOnClickListener(view -> {
+            Intent intent = new Intent(AchievementsActivity.this, MainMenuActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(intent);
+            finish();
         });
     }
 

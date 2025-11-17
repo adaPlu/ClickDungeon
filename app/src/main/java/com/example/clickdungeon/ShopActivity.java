@@ -20,7 +20,6 @@ public class ShopActivity extends AppCompatActivity {
 
     private RecyclerView recyclerView;
     private TextView goldText;
-    private Button refreshButton;
 
     private int gold;
     private final List<ShopItem> shopItems = new ArrayList<>();
@@ -32,7 +31,7 @@ public class ShopActivity extends AppCompatActivity {
 
         recyclerView = findViewById(R.id.recyclerShopItems);
         goldText = findViewById(R.id.textGold);
-        refreshButton = findViewById(R.id.btnRefreshShop);
+        Button refreshButton = findViewById(R.id.btnRefreshShop);
 
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         gold = InventoryManager.getGold(this);

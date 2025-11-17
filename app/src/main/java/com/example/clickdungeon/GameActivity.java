@@ -4,9 +4,10 @@
 package com.example.clickdungeon;
 
 import android.content.Context;
-import android.content.DialogInterface;
+//import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -25,12 +26,11 @@ import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 
-import com.example.clickdungeon.model.AnimatedMonster;
 import com.example.clickdungeon.model.AnimatedPlayer;
 import com.example.clickdungeon.model.CharacterProfile;
 import com.example.clickdungeon.model.Monster;
-import com.example.clickdungeon.model.MonsterFactory;
 import com.example.clickdungeon.model.PlayerClass;
 import com.example.clickdungeon.model.Tile;
 import com.example.clickdungeon.model.TileType;
@@ -46,10 +46,6 @@ import com.example.clickdungeon.util.SettingsManager;
 import com.google.gson.Gson;
 
 import java.util.Random;
-
-import android.animation.ObjectAnimator;
-import android.graphics.Color;
-import android.media.MediaPlayer;
 
 public class GameActivity extends AppCompatActivity implements CombatDialogFragment.CombatCallbacks {
 
@@ -107,9 +103,8 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
     private SaveManager saveManager;
     private SettingsManager.Difficulty difficultyMode;
     private int activeSlotIndex = -1;
-    private boolean launchingNewSlotGame = false;
     private Tile activeCombatTile = null;
-    private TextView activeCombatTileView = null;
+    private View activeCombatTileView = null;
     private boolean colorBlindModeEnabled = false;
     private int pendingCombatGoldReward = 0;
     private int pendingCombatXpReward = 0;
@@ -121,6 +116,9 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
     private int knightShieldStrength = 0;
     private int knightShieldRow = -1;
     private int knightShieldCol = -1;
+    private View activePlayerTileView = null;
+    private int lastPlayerRow = -1;
+    private int lastPlayerCol = -1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -142,7 +140,7 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         saveManager = new SaveManager(this);
         Intent launchIntent = getIntent();
         activeSlotIndex = launchIntent.getIntExtra(EXTRA_SLOT_INDEX, -1);
-        launchingNewSlotGame = launchIntent.getBooleanExtra(EXTRA_IS_NEW_GAME, false);
+        boolean launchingNewSlotGame = launchIntent.getBooleanExtra(EXTRA_IS_NEW_GAME, false);
         String profileJsonOverride = launchIntent.getStringExtra(EXTRA_PROFILE_JSON);
 
         if (activeSlotIndex < 0 || activeSlotIndex >= TOTAL_SAVE_SLOTS) {
@@ -152,14 +150,13 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         }
 
         if (launchingNewSlotGame) {
-            if (!loadProfileForSession(profileJsonOverride, true)) {
+            if (loadProfileForSessionInvert(profileJsonOverride)) {
                 return;
             }
+            ensureAnimatedPlayer();
             startNewRunForActiveSlot();
         } else {
-            SaveManager.GameState gameState = activeSlotIndex >= 0
-                    ? saveManager.loadGame(activeSlotIndex)
-                    : null;
+            SaveManager.GameState gameState = saveManager.loadGame(activeSlotIndex);
             if (gameState != null) {
                 profile = gameState.profile;
                 currentFloor = gameState.currentFloor;
@@ -168,12 +165,14 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
                 recalculateSafeTileTargets(dungeonGrid);
                 restoreLockedStairStateFromGrid(dungeonGrid);
                 InventoryManager.syncGoldWithCurrentRun(this, currentGold);
+                ensureAnimatedPlayer();
                 restoreRunMetadata(gameState.metadata);
             } else {
                 Toast.makeText(this, R.string.continue_slot_load_failed, Toast.LENGTH_LONG).show();
-                if (!loadProfileForSession(profileJsonOverride, true)) {
+                if (loadProfileForSessionInvert(profileJsonOverride)) {
                     return;
                 }
+                ensureAnimatedPlayer();
                 startNewRunForActiveSlot();
             }
         }
@@ -192,7 +191,7 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
 
     private void generateDungeon() {
         DungeonGenerator.Result result = DungeonGenerator.generateFloor(GRID_SIZE, currentFloor,
-                () -> createRandomMonsterForCurrentFloor());
+                this::createRandomMonsterForCurrentFloor);
         dungeonGrid = result.grid;
         placedLockedStair = result.lockedStair;
         safeTilesToReveal = result.safeTiles;
@@ -316,11 +315,11 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         updateAbilityButtonState();
     }
 
-    private boolean loadProfileForSession(String profileJsonOverride, boolean allowStoredFallback) {
+    private boolean loadProfileForSessionInvert(String profileJsonOverride) {
         if (profileJsonOverride != null) {
             profile = new Gson().fromJson(profileJsonOverride, CharacterProfile.class);
         }
-        if (profile == null && allowStoredFallback) {
+        if (profile == null) {
             SharedPreferences prefs = getSharedPreferences("player_profile", Context.MODE_PRIVATE);
             String json = prefs.getString("profile", null);
             if (json != null) {
@@ -334,9 +333,10 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
                     Math.max(0, activeSlotIndex));
             startActivity(intent);
             finish();
-            return false;
+            return true;
         }
-        return true;
+        ensureAnimatedPlayer();
+        return false;
     }
 
     private void recalculateSafeTileTargets(Tile[][] grid) {
@@ -413,29 +413,42 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
     }
 
     private void renderGrid() {
-        LayoutInflater inflater = getLayoutInflater();
-        gridLayout.removeAllViews();
-        revealedSafeTiles = 0;
-
-        for (int row = 0; row < GRID_SIZE; row++) {
-            for (int col = 0; col < GRID_SIZE; col++) {
-                View tileView = inflater.inflate(R.layout.item_tile, gridLayout, false);
-                TextView tileText = tileView.findViewById(R.id.textTile);
-                Tile tile = dungeonGrid[row][col];
-
-                if (tile.isRevealed()) {
-                    tileText.setText(getTileDisplay(tile));
-                    tileText.setContentDescription(getTileContentDescription(tile));
-                    if (tile.getType() != TileType.ENEMY) revealedSafeTiles++;
-                } else {
-                    tileText.setText("?");
-                    tileText.setContentDescription(getString(R.string.tile_desc_hidden));
+        if (gridLayout == null || dungeonGrid == null) {
+            return;
+        }
+        if (gridLayout.getChildCount() == 0) {
+            LayoutInflater inflater = getLayoutInflater();
+            for (int row = 0; row < GRID_SIZE; row++) {
+                for (int col = 0; col < GRID_SIZE; col++) {
+                    View tileView = inflater.inflate(R.layout.item_tile, gridLayout, false);
+                    tileView.setTag(R.id.tag_row, row);
+                    tileView.setTag(R.id.tag_col, col);
+                    tileView.setOnClickListener(v -> {
+                        Object tagRow = v.getTag(R.id.tag_row);
+                        Object tagCol = v.getTag(R.id.tag_col);
+                        if (tagRow instanceof Integer && tagCol instanceof Integer) {
+                            handleTileClick((Integer) tagRow, (Integer) tagCol, v);
+                        }
+                    });
+                    gridLayout.addView(tileView);
                 }
-
-                final int r = row, c = col;
-                tileView.setOnClickListener(v -> handleTileClick(r, c, tileText));
-                gridLayout.addView(tileView);
             }
+        }
+        revealedSafeTiles = 0;
+        for (int i = 0; i < gridLayout.getChildCount(); i++) {
+            View tileView = gridLayout.getChildAt(i);
+            Object tagRow = tileView.getTag(R.id.tag_row);
+            Object tagCol = tileView.getTag(R.id.tag_col);
+            if (!(tagRow instanceof Integer) || !(tagCol instanceof Integer)) {
+                continue;
+            }
+            int row = (Integer) tagRow;
+            int col = (Integer) tagCol;
+            Tile tile = dungeonGrid[row][col];
+            if (tile != null && tile.isRevealed() && tile.getType() != TileType.ENEMY) {
+                revealedSafeTiles++;
+            }
+            bindTileView(tileView, tile, row, col);
         }
     }
 
@@ -572,7 +585,139 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         }
     }
 
-    private void startCombat(Tile tile, TextView tileText) {
+    private void bindTileView(@NonNull View tileView,
+                              @Nullable Tile tile,
+                              int row,
+                              int col) {
+        TextView tileText = tileView.findViewById(R.id.textTile);
+        ImageView tileImage = tileView.findViewById(R.id.imageTile);
+        ProgressBar hpBar = tileView.findViewById(R.id.monsterHpBar);
+        View overlay = tileView.findViewById(R.id.damageOverlay);
+
+        tileImage.setVisibility(View.GONE);
+        tileImage.setImageDrawable(null);
+        hpBar.setVisibility(View.GONE);
+        tileText.setVisibility(View.VISIBLE);
+
+        String description;
+        if (tile == null || !tile.isRevealed()) {
+            tileText.setText("?");
+            description = getString(R.string.tile_desc_hidden);
+        } else if (tile.getType() == TileType.ENEMY && tile.hasMonster()) {
+            tileText.setVisibility(View.GONE);
+            tileImage.setVisibility(View.VISIBLE);
+            tileImage.setImageResource(getMonsterSpriteResource(tile.getMonster()));
+            hpBar.setVisibility(View.VISIBLE);
+            hpBar.setMax(Math.max(1, tile.getMonster().getMaxHP()));
+            hpBar.setProgress(Math.max(0, tile.getMonster().getCurrentHP()));
+            tile.setMonsterSpriteKey(tile.getMonster().getMonsterType());
+            tile.setCachedMonsterHp(tile.getMonster().getCurrentHP());
+            tile.setCachedMonsterMaxHp(tile.getMonster().getMaxHP());
+            description = getString(R.string.tile_desc_enemy_with_hp,
+                    tile.getMonster().getMonsterType(),
+                    tile.getMonster().getCurrentHP(),
+                    tile.getMonster().getMaxHP());
+        } else {
+            tileText.setVisibility(View.VISIBLE);
+            tileText.setText(getTileDisplay(tile));
+            description = getTileContentDescription(tile);
+        }
+
+        boolean playerHere = tile != null && tile.hasPlayer();
+        if (playerHere) {
+            overlay.setVisibility(View.VISIBLE);
+            overlay.setBackgroundColor(getColorCompat(R.color.player_highlight_overlay));
+            overlay.setAlpha(0.5f);
+            activePlayerTileView = tileView;
+            description = getString(R.string.tile_desc_player_here, description);
+        } else {
+            overlay.setVisibility(View.GONE);
+        }
+
+        tileView.setContentDescription(description);
+    }
+
+    private void refreshTileViewAt(int row, int col) {
+        if (!isValidGridPosition(row, col) || gridLayout == null || dungeonGrid == null) {
+            return;
+        }
+        for (int i = 0; i < gridLayout.getChildCount(); i++) {
+            View child = gridLayout.getChildAt(i);
+            Object tagRow = child.getTag(R.id.tag_row);
+            Object tagCol = child.getTag(R.id.tag_col);
+            if (tagRow instanceof Integer && tagCol instanceof Integer
+                    && (Integer) tagRow == row
+                    && (Integer) tagCol == col) {
+                bindTileView(child, dungeonGrid[row][col], row, col);
+                break;
+            }
+        }
+    }
+
+    private void refreshActiveCombatTileView() {
+        if (activeCombatTileView == null || activeCombatTile == null) {
+            return;
+        }
+        Object tagRow = activeCombatTileView.getTag(R.id.tag_row);
+        Object tagCol = activeCombatTileView.getTag(R.id.tag_col);
+        if (tagRow instanceof Integer && tagCol instanceof Integer) {
+            bindTileView(activeCombatTileView,
+                    activeCombatTile,
+                    (Integer) tagRow,
+                    (Integer) tagCol);
+        }
+    }
+
+    private int getMonsterSpriteResource(@NonNull Monster monster) {
+        String type = monster.getMonsterType();
+        if (type == null) {
+            return R.drawable.slime_main;
+        }
+        switch (type.toLowerCase()) {
+            case "goblin":
+                return R.drawable.goblin_main;
+            case "skeleton":
+                return R.drawable.skeleton_sprite_sheet;
+            case "orc":
+                return R.drawable.orc_sprite_sheet;
+            case "troll":
+                return R.drawable.troll_main;
+            case "witch":
+                return R.drawable.witch_main;
+            case "vampire":
+                return R.drawable.demon_main;
+            case "demon":
+                return R.drawable.demon_main;
+            case "dragon":
+                return R.drawable.dragon_main;
+            default:
+                return R.drawable.slime_main;
+        }
+    }
+
+    private int getPlayerIconResource() {
+        if (profile == null || profile.getPlayerClass() == null) {
+            return R.drawable.icon_knight;
+        }
+        switch (profile.getPlayerClass()) {
+            case THIEF:
+                return R.drawable.icon_thief;
+            case WIZARD:
+                return R.drawable.icon_wizard;
+            case KNIGHT:
+            default:
+                return R.drawable.icon_knight;
+        }
+    }
+
+    private int getColorCompat(int colorRes) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            return getColor(colorRes);
+        }
+        return ContextCompat.getColor(this, colorRes);
+    }
+
+    private void startCombat(Tile tile, View tileView) {
         if (tile == null || !tile.hasMonster() || profile == null) {
             return;
         }
@@ -587,11 +732,11 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         pendingCombatGoldReward = GameBalance.calculateGoldReward(monster, currentFloor, difficultyMode, random);
         fragment.setRewardPreview(pendingCombatXpReward, pendingCombatGoldReward);
         activeCombatTile = tile;
-        activeCombatTileView = tileText;
+        activeCombatTileView = tileView;
         fragment.show(getSupportFragmentManager(), TAG_COMBAT_DIALOG);
     }
 
-    private void handleTileClick(int row, int col, TextView tileText) {
+    private void handleTileClick(int row, int col, View tileView) {
         if (pendingAbilityTargetMode != AbilityTargetMode.NONE) {
             handleAbilityTargetSelection(row, col);
             return;
@@ -602,20 +747,25 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
             if (profile.getAnimatedPlayer() != null) {
                 profile.getAnimatedPlayer().setAction("move");
             }
-            revealTile(tileText, clickedTile);
+            TextView tileText = tileView.findViewById(R.id.textTile);
+            revealTile(tileView, tileText, clickedTile);
             if (clickedTile.getType() != TileType.ENEMY) {
                 revealedSafeTiles++;
                 recordSafeTileReveal();
             }
             updatePlayerPosition(row, col);
+            bindTileView(tileView, clickedTile, row, col);
             persistGameState();
             checkVictoryCondition();
         }
     }
 
     private void updatePlayerPosition(int row, int col) {
-        playerRow = clampGridIndex(row);
-        playerCol = clampGridIndex(col);
+        int clampedRow = clampGridIndex(row);
+        int clampedCol = clampGridIndex(col);
+        setPlayerFlag(clampedRow, clampedCol);
+        playerRow = clampedRow;
+        playerCol = clampedCol;
         verifyShieldAnchor();
     }
 
@@ -626,15 +776,78 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         return value;
     }
 
+    private void setPlayerFlag(int row, int col) {
+        if (dungeonGrid == null) {
+            return;
+        }
+        int previousRow = lastPlayerRow;
+        int previousCol = lastPlayerCol;
+        if (isValidGridPosition(previousRow, previousCol)) {
+            dungeonGrid[previousRow][previousCol].setHasPlayer(false);
+            refreshTileViewAt(previousRow, previousCol);
+        }
+        if (isValidGridPosition(row, col)) {
+            dungeonGrid[row][col].setHasPlayer(true);
+            lastPlayerRow = row;
+            lastPlayerCol = col;
+            refreshTileViewAt(row, col);
+        } else {
+            lastPlayerRow = -1;
+            lastPlayerCol = -1;
+        }
+    }
+
+    private boolean isValidGridPosition(int row, int col) {
+        return row >= 0 && row < GRID_SIZE && col >= 0 && col < GRID_SIZE;
+    }
+
+    private void refreshPlayerTileFlags() {
+        if (dungeonGrid == null) {
+            return;
+        }
+        for (int r = 0; r < GRID_SIZE; r++) {
+            for (int c = 0; c < GRID_SIZE; c++) {
+                Tile tile = dungeonGrid[r][c];
+                if (tile != null) {
+                    tile.setHasPlayer(false);
+                }
+            }
+        }
+        if (isValidGridPosition(playerRow, playerCol)) {
+            dungeonGrid[playerRow][playerCol].setHasPlayer(true);
+            lastPlayerRow = playerRow;
+            lastPlayerCol = playerCol;
+        } else {
+            lastPlayerRow = -1;
+            lastPlayerCol = -1;
+        }
+        activePlayerTileView = null;
+    }
+
+    private void ensureAnimatedPlayer() {
+        if (profile == null || profile.getPlayerClass() == null) {
+            return;
+        }
+        if (profile.getAnimatedPlayer() == null) {
+            profile.setAnimatedPlayer(new AnimatedPlayer(
+                    this,
+                    profile.getPlayerClass(),
+                    64,
+                    64,
+                    4,
+                    120));
+        }
+    }
+
     private void handleAbilityTargetSelection(int row, int col) {
         if (pendingAbilityTargetMode == AbilityTargetMode.NONE) {
             return;
         }
-        if (!isPlayerPositionKnown()) {
+        if (isPlayerPositionKnownInvert()) {
             Toast.makeText(this, R.string.player_position_unknown, Toast.LENGTH_SHORT).show();
             return;
         }
-        if (!isTargetWithinAbilityRange(row, col)) {
+        if (isTargetWithinAbilityRangeInvert(row, col)) {
             Toast.makeText(this, getString(R.string.ability_range_error, ABILITY_RANGE), Toast.LENGTH_SHORT).show();
             return;
         }
@@ -659,16 +872,16 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         }
     }
 
-    private boolean isPlayerPositionKnown() {
-        return playerRow >= 0 && playerCol >= 0;
+    private boolean isPlayerPositionKnownInvert() {
+        return playerRow < 0 || playerCol < 0;
     }
 
-    private boolean isTargetWithinAbilityRange(int row, int col) {
-        if (!isPlayerPositionKnown()) {
-            return false;
+    private boolean isTargetWithinAbilityRangeInvert(int row, int col) {
+        if (isPlayerPositionKnownInvert()) {
+            return true;
         }
         int distance = Math.abs(row - playerRow) + Math.abs(col - playerCol);
-        return distance <= ABILITY_RANGE;
+        return distance > ABILITY_RANGE;
     }
 
     private boolean executeWizardFireball(int row, int col) {
@@ -712,7 +925,7 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
                     continue;
                 }
                 Tile tile = dungeonGrid[r][c];
-                if (tile == null || !isTrapTile(tile)) {
+                if (!isTrapTile(tile)) {
                     continue;
                 }
                 boolean wasRevealed = tile.isRevealed();
@@ -734,7 +947,7 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
     }
 
     private boolean deployKnightShield(int row, int col) {
-        if (!isTargetWithinAbilityRange(row, col)) {
+        if (isTargetWithinAbilityRangeInvert(row, col)) {
             Toast.makeText(this, getString(R.string.ability_range_error, ABILITY_RANGE), Toast.LENGTH_SHORT).show();
             return false;
         }
@@ -866,6 +1079,7 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
     private void resetPlayerPositionToCenter() {
         playerRow = GRID_SIZE / 2;
         playerCol = GRID_SIZE / 2;
+        refreshPlayerTileFlags();
     }
 
     private void restoreRunMetadata(@Nullable SaveManager.RunMetadata metadata) {
@@ -888,6 +1102,7 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         } else {
             clearKnightShield(0);
         }
+        refreshPlayerTileFlags();
     }
 
     private void handleGameOver() {
@@ -895,18 +1110,8 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         new AlertDialog.Builder(this)
                 .setTitle("Game Over")
                 .setMessage("You have been defeated. Would you like to restart or return to the main menu?")
-                .setPositiveButton("Restart", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        restartGame();
-                    }
-                })
-                .setNegativeButton("Main Menu", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        goToMainMenu();
-                    }
-                })
+                .setPositiveButton("Restart", (dialog, which) -> restartGame())
+                .setNegativeButton("Main Menu", (dialog, which) -> goToMainMenu())
                 .setCancelable(false)
                 .show();
     }
@@ -928,7 +1133,7 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         finish();
     }
 
-    private void revealTile(TextView tileText, Tile tile) {
+    private void revealTile(View tileView, TextView tileText, Tile tile) {
         tileText.setText(getTileDisplay(tile));
         tileText.setContentDescription(getTileContentDescription(tile));
         switch (tile.getType()) {
@@ -945,7 +1150,7 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
 
             case ENEMY:
                 if (tile.hasMonster()) {
-                    startCombat(tile, tileText);
+                    startCombat(tile, tileView);
                 }
                 break;
 
@@ -1041,9 +1246,6 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
             return customName;
         }
         switch (type) {
-            case RED_KEY:
-            case STAIR_DOWN_LOCKED_RED:
-                return getString(R.string.tile_desc_key_red);
             case BLUE_KEY:
             case STAIR_DOWN_LOCKED_BLUE:
                 return getString(R.string.tile_desc_key_blue);
@@ -1072,11 +1274,11 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         switch (tile.getType()) {
             case TRAP_FIRE:
                 FeedbackManager.vibrate(this, FeedbackManager.VibrationPattern.MEDIUM);
-                applyTrapDamage(1);
+                applyTrapDamage();
                 break;
             case TRAP_ACID:
                 FeedbackManager.vibrate(this, FeedbackManager.VibrationPattern.MEDIUM);
-                applyTrapDamage(1);
+                applyTrapDamage();
                 break;
             case TRAP_POISON:
                 poisonTurnsLeft = 3;
@@ -1103,17 +1305,17 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
     private void poisonTick() {
         if (poisonTurnsLeft > 0) {
             poisonTurnsLeft--;
-            applyTrapDamage(1);
+            applyTrapDamage();
             FeedbackManager.vibrate(this, FeedbackManager.VibrationPattern.LIGHT);
             updateStatusText();
             new Handler(Looper.getMainLooper()).postDelayed(this::poisonTick, 1500);
         }
     }
 
-    private void applyTrapDamage(int baseDamage) {
-        int finalDamage = baseDamage;
+    private void applyTrapDamage() {
+        int finalDamage = 1;
         if (difficultyMode != null) {
-            finalDamage = difficultyMode.scaleTrapDamage(baseDamage);
+            finalDamage = difficultyMode.scaleTrapDamage(1);
         }
         if (finalDamage <= 0) {
             return;
@@ -1179,9 +1381,7 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
             activeCombatTile.setMonster(null);
             activeCombatTile.setType(TileType.EMPTY);
         }
-        if (activeCombatTileView != null) {
-            activeCombatTileView.setText(getString(R.string.combat_tile_cleared));
-        }
+        refreshActiveCombatTileView();
 
         int xpReward = pendingCombatXpReward > 0
                 ? pendingCombatXpReward
@@ -1236,10 +1436,7 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
             }
         }
 
-        if (activeCombatTileView != null && activeCombatTile != null) {
-            activeCombatTileView.setText(getTileDisplay(activeCombatTile));
-            activeCombatTileView.setContentDescription(getTileContentDescription(activeCombatTile));
-        }
+        refreshActiveCombatTileView();
 
         clearCombatTracking();
         persistGameState();

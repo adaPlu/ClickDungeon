@@ -449,11 +449,14 @@ public class CombatDialogFragment extends DialogFragment {
         if (args != null) {
             String image = args.getString(ARG_MONSTER_IMAGE, "");
             if (!TextUtils.isEmpty(image)) {
+                assert monster != null;
                 monsterLabel = image + " " + monster.getMonsterType();
             } else {
+                assert monster != null;
                 monsterLabel = monster.getMonsterType();
             }
         } else {
+            assert monster != null;
             monsterLabel = monster.getMonsterType();
         }
 

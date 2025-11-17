@@ -7,6 +7,7 @@ import static org.junit.Assert.assertTrue;
 
 import android.app.Dialog;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.FragmentActivity;
 
 import com.example.clickdungeon.R;
@@ -189,7 +190,7 @@ public class CombatDialogFragmentTest {
         }
 
         @Override
-        public void onCombatVictory(Monster monster) {
+        public void onCombatVictory(@NonNull Monster monster) {
             victoryAchieved = true;
         }
 

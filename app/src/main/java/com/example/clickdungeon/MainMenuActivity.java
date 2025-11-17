@@ -10,22 +10,18 @@ import com.example.clickdungeon.util.SaveManager;
 
 public class MainMenuActivity extends AppCompatActivity {
 
-    private Button btnNewGame;
     private Button btnContinue;
-    private Button btnAchievements;
-    private Button btnShop;
-    private Button btnSettings;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_menu);
 
-        btnNewGame = findViewById(R.id.btnNewGame);
+        Button btnNewGame = findViewById(R.id.btnNewGame);
         btnContinue = findViewById(R.id.btnContinue);
-        btnAchievements = findViewById(R.id.btnAchievements);
-        btnShop = findViewById(R.id.btnShop);
-        btnSettings = findViewById(R.id.btnSettings);
+        Button btnAchievements = findViewById(R.id.btnAchievements);
+        Button btnShop = findViewById(R.id.btnShop);
+        Button btnSettings = findViewById(R.id.btnSettings);
 
         updateContinueState();
 

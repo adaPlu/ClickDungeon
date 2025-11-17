@@ -24,9 +24,7 @@ public class ClassSelectionActivity extends AppCompatActivity {
     private Button btnKnight;
     private Button btnThief;
     private Button btnWizard;
-    private Button btnStartGame;
     private ImageView classPreview;
-    private TextView slotDisplay;
     private int targetSlotIndex = -1;
     private PlayerClass selectedClass = null;
 
@@ -39,9 +37,9 @@ public class ClassSelectionActivity extends AppCompatActivity {
         btnKnight = findViewById(R.id.btnKnight);
         btnThief = findViewById(R.id.btnThief);
         btnWizard = findViewById(R.id.btnWizard);
-        btnStartGame = findViewById(R.id.btnStart);
+        Button btnStartGame = findViewById(R.id.btnStart);
         classPreview = findViewById(R.id.imageClassPreview);
-        slotDisplay = findViewById(R.id.textSlotDisplay);
+        TextView slotDisplay = findViewById(R.id.textSlotDisplay);
         targetSlotIndex = getIntent().getIntExtra(EXTRA_SAVE_SLOT_INDEX, -1);
 
         if (slotDisplay != null && targetSlotIndex >= 0) {
@@ -63,7 +61,7 @@ public class ClassSelectionActivity extends AppCompatActivity {
             CharacterProfile profile = new CharacterProfile(name, selectedClass);
             String profileJson = new Gson().toJson(profile);
 
-            int slotIndex = targetSlotIndex >= 0 ? targetSlotIndex : 0;
+            int slotIndex = Math.max(targetSlotIndex, 0);
             saveProfile(profile, slotIndex);
             Intent intent = new Intent(this, GameActivity.class);
             intent.putExtra(GameActivity.EXTRA_SLOT_INDEX, slotIndex);

@@ -179,6 +179,8 @@
 <string name="tile_desc_trap_acid">Acid trap</string>
 <string name="tile_desc_trap_freeze">Freeze trap</string>
 <string name="tile_desc_trap_pitfall">Pitfall trap</string>
+<string name="tile_desc_enemy_with_hp">%1$s (%2$d/%3$d HP)</string>
+<string name="tile_desc_player_here">%1$s (hero present)</string>
 <string name="onboarding_dungeon_title">Welcome to ClickDungeon</string>
 <string name="onboarding_dungeon_message">You are delving in on %1$s difficulty.
 

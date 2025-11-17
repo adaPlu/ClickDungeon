@@ -5,6 +5,10 @@ public class Tile {
     private boolean revealed;
     private Monster monster;
     private String customName;
+    private boolean hasPlayer;
+    private String monsterSpriteKey;
+    private int cachedMonsterHp;
+    private int cachedMonsterMaxHp;
 
     public Tile(TileType type) {
         this.type = type;
@@ -57,5 +61,37 @@ public class Tile {
     }
     public boolean hasMonster() {
         return monster != null;
+    }
+
+    public boolean hasPlayer() {
+        return hasPlayer;
+    }
+
+    public void setHasPlayer(boolean hasPlayer) {
+        this.hasPlayer = hasPlayer;
+    }
+
+    public String getMonsterSpriteKey() {
+        return monsterSpriteKey;
+    }
+
+    public void setMonsterSpriteKey(String monsterSpriteKey) {
+        this.monsterSpriteKey = monsterSpriteKey;
+    }
+
+    public int getCachedMonsterHp() {
+        return cachedMonsterHp;
+    }
+
+    public void setCachedMonsterHp(int cachedMonsterHp) {
+        this.cachedMonsterHp = cachedMonsterHp;
+    }
+
+    public int getCachedMonsterMaxHp() {
+        return cachedMonsterMaxHp;
+    }
+
+    public void setCachedMonsterMaxHp(int cachedMonsterMaxHp) {
+        this.cachedMonsterMaxHp = cachedMonsterMaxHp;
     }
 }

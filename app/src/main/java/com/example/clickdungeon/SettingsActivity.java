@@ -59,7 +59,7 @@ public class SettingsActivity extends AppCompatActivity {
         difficultySpinner.setSelection(selectedIndex, false);
         updateDifficultySummary(difficultySummaryText, difficultySummaries, selectedIndex);
         TooltipCompat.setTooltipText(difficultySpinner,
-                selectedIndex >= 0 && selectedIndex < difficultySummaries.length
+                selectedIndex < difficultySummaries.length
                         ? difficultySummaries[selectedIndex]
                         : null);
 
