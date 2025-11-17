@@ -11,9 +11,10 @@
    - Traps, enemies, and treasure are shuffled each time, creating replay value.
 
 2. **Class Selection & Abilities**  
-   - **Knight**: Higher HP for direct confrontations.  
-   - **Thief**: Can scan adjacent tiles for traps.  
-   - **Wizard**: Reveals all traps on demand.
+   - **Knight**: Heavy armor plus a deployable shield that soaks incoming damage while you hold position.  
+   - **Thief**: Remote trap scan within three tiles that reveals hazards before you step on them.  
+   - **Wizard**: Floor-scaling fireball that targets any tile within three steps and obliterates exposed enemies.  
+   _All class abilities share a two-floor cooldown so you can’t spam them._
 
 3. **Traps & Status Effects**  
    - Fire, acid, poison, freeze, and pitfall traps.  
@@ -37,7 +38,7 @@
 7. **Game Over & Victory**
    - You lose if your HP drops to 0.
    - Reveal all safe tiles on a floor to claim victory and proceed to the next.
-   - Automatic saving across four slots lets you resume each run from the Continue menu.
+   - Automatic saving across four slots lets you resume each run from the Continue or New Game slot selector, with overwrite prompts and corrupted-slot handling.
 
 8. **Interactive Combat Encounters**
    - Turn-based combat dialog with attack, potion, and flee options.
@@ -137,7 +138,7 @@ ClickDungeon/
 ## ✅ Progress Checklist
 
 - [x] Multi-floor dungeon with pitfall traps and stairs  
-- [x] Class selection (Knight, Thief, Wizard) with abilities  
+- [x] Class selection (Knight, Thief, Wizard) with level-scaling abilities + cooldowns  
 - [x] Traps & status effects (freeze, poison)  
 - [x] “Trap Disarm Kit” item integration  
 - [x] Achievements UI & unlocking logic  
@@ -153,11 +154,11 @@ ClickDungeon/
 ## 🗺️ Roadmap
 
 ### Near-Term Priorities
-1. **Balance difficulty & economy** – Iterate on `GameBalance` reward formulas, drop rates, and difficulty multipliers using playtest feedback.
-2. **Deepen combat presentation** – Layer enemy telegraphs, lightweight animations, and richer victory/defeat summaries into the combat dialog.
-3. **Broaden accessibility & onboarding** – Expand color-blind affordances, add contextual tips for new mechanics, and surface difficulty guidance inline.
-4. **Prototype boss and class expansions** – Outline boss floor structure plus perk trees or new abilities that build on the balanced combat loop.
-5. **Instrumentation & localization prep** – Add analytics/remote config hooks and ready strings/tooltips for future translation.
+1. **Integrate animations & richer feedback** — Hook up `AnimatedPlayer`/`AnimatedMonster` sprites and route events through `SoundManager` for a more tactile feel.
+2. **Improve inventory & economy UX** — Surface a lightweight inventory panel, emit feedback when items drop/are consumed, and broaden shop offerings tied to `GameBalance`.
+3. **Expand automated coverage** — Add Robolectric tests around the new ability cooldowns, shop flows, and inventory UI to catch regressions early.
+4. **Prototype boss and class expansions** — Outline boss floor structure plus perk trees or new abilities that build on the balanced combat loop.
+5. **Instrumentation & localization prep** — Add analytics/remote config hooks and ready strings/tooltips for future translation.
 
 ### Long-Term Milestones
 - **Milestone A — Boss Floor Launch:** Boss-only floors with scripted encounters, multi-phase combat behaviors, and tailored loot pacing to capstone each dungeon run.
