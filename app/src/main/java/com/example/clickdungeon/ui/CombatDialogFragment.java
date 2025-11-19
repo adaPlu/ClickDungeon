@@ -2,13 +2,18 @@ package com.example.clickdungeon.ui;
 
 import android.animation.ObjectAnimator;
 import android.app.Dialog;
+import android.content.Context;
 import android.content.res.ColorStateList;
+import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.animation.AlphaAnimation;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -19,8 +24,12 @@ import androidx.fragment.app.DialogFragment;
 import androidx.core.content.ContextCompat;
 
 import com.example.clickdungeon.R;
+import com.example.clickdungeon.model.AnimatedMonster;
+import com.example.clickdungeon.model.AnimatedPlayer;
 import com.example.clickdungeon.model.CharacterProfile;
 import com.example.clickdungeon.model.Monster;
+import com.example.clickdungeon.model.PlayerClass;
+import com.example.clickdungeon.util.MonsterAnimationHelper;
 
 /**
  * Dialog fragment that renders an interactive combat encounter between the player's character
@@ -51,6 +60,11 @@ public class CombatDialogFragment extends DialogFragment {
     private static final String ARG_GOLD_REWARD = "arg_gold_reward";
 
     private static final int HEALING_POTION_STRENGTH = 6;
+    private static final long ANIMATION_FRAME_DELAY_MS = 80L;
+    private static final int PLAYER_FRAME_WIDTH = 64;
+    private static final int PLAYER_FRAME_HEIGHT = 64;
+    private static final int PLAYER_FRAME_COUNT = 4;
+    private static final long PLAYER_FRAME_DURATION_MS = 120L;
 
     @Nullable
     private CombatCallbacks callbacks;
@@ -69,6 +83,10 @@ public class CombatDialogFragment extends DialogFragment {
     private Button fleeButton;
     private Button closeButton;
     private ProgressBar monsterIntentBar;
+    private ProgressBar playerHpBar;
+    private ProgressBar monsterHpBar;
+    private ImageView playerAnimationView;
+    private ImageView monsterAnimationView;
 
     private final StringBuilder logBuilder = new StringBuilder();
     private final java.util.Random random = new java.util.Random();
@@ -80,6 +98,21 @@ public class CombatDialogFragment extends DialogFragment {
     private int turnsTaken;
     private int potionsUsed;
     private boolean summaryVisible;
+    @Nullable
+    private AnimatedPlayer animatedPlayer;
+    @Nullable
+    private AnimatedMonster animatedMonster;
+    @Nullable
+    private Handler animationHandler;
+    private final Runnable animationTick = new Runnable() {
+        @Override
+        public void run() {
+            updateAnimationFrames();
+            if (animationHandler != null) {
+                animationHandler.postDelayed(this, ANIMATION_FRAME_DELAY_MS);
+            }
+        }
+    };
 
     public static CombatDialogFragment newInstance(@NonNull Monster monster) {
         CombatDialogFragment fragment = new CombatDialogFragment();
@@ -134,6 +167,10 @@ public class CombatDialogFragment extends DialogFragment {
         potionButton = root.findViewById(R.id.buttonUsePotion);
         fleeButton = root.findViewById(R.id.buttonFlee);
         closeButton = root.findViewById(R.id.buttonCloseSummary);
+        playerHpBar = root.findViewById(R.id.playerHpBar);
+        monsterHpBar = root.findViewById(R.id.monsterHpBar);
+        playerAnimationView = root.findViewById(R.id.imagePlayerAnimation);
+        monsterAnimationView = root.findViewById(R.id.imageMonsterAnimation);
 
         Monster monsterData = monster;
         CharacterProfile profileData = profile;
@@ -157,6 +194,8 @@ public class CombatDialogFragment extends DialogFragment {
             dismissAllowingStateLoss();
             return new AlertDialog.Builder(requireContext()).create();
         }
+
+        prepareAnimatedCombatants(profileData, monsterData);
 
         Bundle argsBundle = getArguments();
         if (argsBundle != null) {
@@ -188,6 +227,7 @@ public class CombatDialogFragment extends DialogFragment {
         appendLog(getString(R.string.combat_log_intro, monsterData.getMonsterType()));
         refreshStatBlocks();
         rollNextMonsterIntent(true);
+        startAnimationLoop();
 
         attackButton.setOnClickListener(v -> handleAttack());
         potionButton.setOnClickListener(v -> handleUsePotion());
@@ -212,6 +252,8 @@ public class CombatDialogFragment extends DialogFragment {
         totalDamageDealt += damageToMonster;
         appendLog(getString(R.string.combat_log_player_attack, damageToMonster, monster.getMonsterType()));
         animatePulse(monsterStatsView);
+        triggerPlayerAction("attack");
+        triggerMonsterAction("defend");
 
         notifyStateChanged();
         refreshStatBlocks();
@@ -229,6 +271,7 @@ public class CombatDialogFragment extends DialogFragment {
             if (callbacks != null) {
                 callbacks.onCombatVictory(monster);
             }
+            triggerMonsterAction("defend");
             return;
         }
 
@@ -254,6 +297,7 @@ public class CombatDialogFragment extends DialogFragment {
             refreshStatBlocks();
             showTransientSummary(getString(R.string.combat_summary_potion_used, HEALING_POTION_STRENGTH));
             animatePulse(playerStatsView);
+            triggerPlayerAction("defend");
         } else {
             appendLog(getString(R.string.combat_log_no_potions));
         }
@@ -273,6 +317,8 @@ public class CombatDialogFragment extends DialogFragment {
                 Math.max(1, turnsTaken),
                 Math.max(0, totalDamageDealt),
                 penalty));
+        triggerPlayerAction("move");
+        refreshStatBlocks();
     }
 
     private void executeMonsterTurn() {
@@ -293,9 +339,12 @@ public class CombatDialogFragment extends DialogFragment {
             totalDamageTaken += damageToPlayer;
             appendLog(getString(R.string.combat_log_monster_attack, monster.getMonsterType(), damageToPlayer));
             animatePulse(playerStatsView);
+            triggerPlayerAction("defend");
         } else {
             appendLog(getString(R.string.combat_log_monster_glancing, monster.getMonsterType()));
+            triggerPlayerAction("move");
         }
+        triggerMonsterAction("attack");
 
         notifyStateChanged();
         refreshStatBlocks();
@@ -470,6 +519,7 @@ public class CombatDialogFragment extends DialogFragment {
         playerStatsView.setText(playerStats);
         monsterStatsView.setText(monsterStats);
         combatLogView.setText(logBuilder.toString());
+        updateHpMeters();
     }
 
     private void appendLog(String line) {
@@ -507,4 +557,121 @@ public class CombatDialogFragment extends DialogFragment {
         super.onDetach();
         callbacks = null;
     }
-}
+
+    @Override
+    public void onDestroyView() {
+        stopAnimationLoop();
+        animationHandler = null;
+        animatedPlayer = null;
+        animatedMonster = null;
+        playerAnimationView = null;
+        monsterAnimationView = null;
+        playerHpBar = null;
+        monsterHpBar = null;
+        super.onDestroyView();
+    }
+
+    private void prepareAnimatedCombatants(@NonNull CharacterProfile profileData,
+                                           @NonNull Monster monsterData) {
+        ensureAnimatedPlayer(profileData);
+        animatedPlayer = profileData.getAnimatedPlayer();
+        if (playerAnimationView != null && animatedPlayer == null) {
+            playerAnimationView.setImageResource(getPlayerPlaceholderIcon(profileData.getPlayerClass()));
+        }
+
+        if (monsterData instanceof AnimatedMonster) {
+            animatedMonster = (AnimatedMonster) monsterData;
+        } else {
+            animatedMonster = MonsterAnimationHelper.createAnimatedClone(requireContext(), monsterData);
+        }
+
+        if (animatedMonster != null) {
+            this.monster = animatedMonster;
+        }
+    }
+
+    private void ensureAnimatedPlayer(@NonNull CharacterProfile profileData) {
+        if (profileData.getAnimatedPlayer() == null) {
+            profileData.setAnimatedPlayer(new AnimatedPlayer(
+                    requireContext().getApplicationContext(),
+                    profileData.getPlayerClass(),
+                    PLAYER_FRAME_WIDTH,
+                    PLAYER_FRAME_HEIGHT,
+                    PLAYER_FRAME_COUNT,
+                    PLAYER_FRAME_DURATION_MS));
+        } else {
+            profileData.getAnimatedPlayer().reset();
+        }
+    }
+
+    private void startAnimationLoop() {
+        if (animationHandler == null) {
+            animationHandler = new Handler(Looper.getMainLooper());
+        }
+        animationHandler.removeCallbacks(animationTick);
+        updateAnimationFrames();
+        animationHandler.post(animationTick);
+    }
+
+    private void stopAnimationLoop() {
+        if (animationHandler != null) {
+            animationHandler.removeCallbacks(animationTick);
+        }
+    }
+
+    private void updateAnimationFrames() {
+        if (playerAnimationView != null && animatedPlayer != null) {
+            Bitmap frame = animatedPlayer.getCurrentFrame();
+            if (frame != null) {
+                playerAnimationView.setImageBitmap(frame);
+            }
+        }
+        if (monsterAnimationView != null && animatedMonster != null) {
+            Bitmap frame = animatedMonster.getCurrentFrame();
+            if (frame != null) {
+                monsterAnimationView.setImageBitmap(frame);
+            }
+        }
+    }
+
+    private void updateHpMeters() {
+        if (playerHpBar != null && profile != null) {
+            playerHpBar.setMax(Math.max(1, profile.getMaxHP()));
+            playerHpBar.setProgress(Math.max(0, profile.getCurrentHP()));
+        }
+        if (monsterHpBar != null && monster != null) {
+            monsterHpBar.setMax(Math.max(1, monster.getMaxHP()));
+            monsterHpBar.setProgress(Math.max(0, monster.getCurrentHP()));
+        }
+    }
+
+    private void triggerPlayerAction(@NonNull String action) {
+        if (animatedPlayer != null) {
+            animatedPlayer.setAction(action);
+        }
+    }
+
+    private void triggerMonsterAction(@NonNull String action) {
+        if (animatedMonster == null) {
+            return;
+        }
+        Context context = getContext();
+        if (context != null) {
+            animatedMonster.setAction(action, context);
+        }
+    }
+
+    private int getPlayerPlaceholderIcon(@Nullable PlayerClass playerClass) {
+        if (playerClass == null) {
+            return R.drawable.icon_knight;
+        }
+        switch (playerClass) {
+            case WIZARD:
+                return R.drawable.icon_wizard;
+            case THIEF:
+                return R.drawable.icon_thief;
+            case KNIGHT:
+            default:
+                return R.drawable.icon_knight;
+        }
+    }

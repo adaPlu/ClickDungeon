@@ -7,11 +7,14 @@ import android.content.Context;
 //import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
+import android.util.LruCache;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
@@ -28,6 +31,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
+import com.example.clickdungeon.model.AnimatedMonster;
 import com.example.clickdungeon.model.AnimatedPlayer;
 import com.example.clickdungeon.model.CharacterProfile;
 import com.example.clickdungeon.model.Monster;
@@ -36,15 +40,18 @@ import com.example.clickdungeon.model.Tile;
 import com.example.clickdungeon.model.TileType;
 import com.example.clickdungeon.ui.CombatDialogFragment;
 import com.example.clickdungeon.util.AchievementManager;
-import com.example.clickdungeon.util.FeedbackManager;
 import com.example.clickdungeon.util.DungeonGenerator;
+import com.example.clickdungeon.util.FeedbackManager;
 import com.example.clickdungeon.util.GameBalance;
 import com.example.clickdungeon.util.InventoryManager;
+import com.example.clickdungeon.util.MonsterAnimationHelper;
 import com.example.clickdungeon.util.OnboardingManager;
 import com.example.clickdungeon.util.SaveManager;
 import com.example.clickdungeon.util.SettingsManager;
 import com.google.gson.Gson;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 
 public class GameActivity extends AppCompatActivity implements CombatDialogFragment.CombatCallbacks {
@@ -74,6 +81,7 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
     private static final int TOTAL_SAVE_SLOTS = 4;
     private static final int DEFAULT_SLOT_INDEX = 0;
     private static final String TAG_COMBAT_DIALOG = "CombatDialog";
+    private static final long GRID_ANIMATION_FRAME_DELAY_MS = 120L;
     private GridLayout gridLayout;
     private TextView goldCounterText, hpCounterText, statusEffectText, floorText;
     private Button classAbilityButton;
@@ -116,9 +124,23 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
     private int knightShieldStrength = 0;
     private int knightShieldRow = -1;
     private int knightShieldCol = -1;
+    private final Map<String, AnimatedMonster> gridMonsterAnimations = new HashMap<>();
+    private final Handler gridAnimationHandler = new Handler(Looper.getMainLooper());
+    private boolean gridAnimationRunning = false;
+    private final Runnable gridAnimationRunnable = new Runnable() {
+        @Override
+        public void run() {
+            if (!gridAnimationRunning) {
+                return;
+            }
+            animateGridFrame();
+            gridAnimationHandler.postDelayed(this, GRID_ANIMATION_FRAME_DELAY_MS);
+        }
+    };
     private View activePlayerTileView = null;
     private int lastPlayerRow = -1;
     private int lastPlayerCol = -1;
+    private LruCache<String, Bitmap> monsterBitmapCache;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -134,8 +156,8 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         statusEffectText = findViewById(R.id.textStatus);
         floorText = findViewById(R.id.textFloor);
         classAbilityButton = findViewById(R.id.btnClassAbility);
-
         AchievementManager.loadAchievements(this);
+        initBitmapCache();
 
         saveManager = new SaveManager(this);
         Intent launchIntent = getIntent();
@@ -162,6 +184,7 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
                 currentFloor = gameState.currentFloor;
                 currentGold = gameState.currentGold;
                 dungeonGrid = gameState.dungeonGrid;
+                gridMonsterAnimations.clear();
                 recalculateSafeTileTargets(dungeonGrid);
                 restoreLockedStairStateFromGrid(dungeonGrid);
                 InventoryManager.syncGoldWithCurrentRun(this, currentGold);
@@ -195,6 +218,7 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         dungeonGrid = result.grid;
         placedLockedStair = result.lockedStair;
         safeTilesToReveal = result.safeTiles;
+        gridMonsterAnimations.clear();
     }
 
     private void startNewRunForActiveSlot() {
@@ -450,6 +474,7 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
             }
             bindTileView(tileView, tile, row, col);
         }
+        animateGridFrame();
     }
 
     private String getTileDisplay(Tile tile) {
@@ -600,13 +625,26 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         tileText.setVisibility(View.VISIBLE);
 
         String description;
+        String coordKey = coordinateKey(row, col);
         if (tile == null || !tile.isRevealed()) {
+            gridMonsterAnimations.remove(coordKey);
             tileText.setText("?");
             description = getString(R.string.tile_desc_hidden);
         } else if (tile.getType() == TileType.ENEMY && tile.hasMonster()) {
             tileText.setVisibility(View.GONE);
             tileImage.setVisibility(View.VISIBLE);
-            tileImage.setImageResource(getMonsterSpriteResource(tile.getMonster()));
+            AnimatedMonster animator = ensureGridAnimatedMonster(row, col, tile);
+            Bitmap sprite = animator != null ? animator.getCurrentFrame() : null;
+            if (sprite != null) {
+                tileImage.setImageBitmap(sprite);
+            } else {
+                Bitmap fallback = getMonsterBitmap(tile.getMonster());
+                if (fallback != null) {
+                    tileImage.setImageBitmap(fallback);
+                } else {
+                    tileImage.setImageResource(getMonsterSpriteResource(tile.getMonster()));
+                }
+            }
             hpBar.setVisibility(View.VISIBLE);
             hpBar.setMax(Math.max(1, tile.getMonster().getMaxHP()));
             hpBar.setProgress(Math.max(0, tile.getMonster().getCurrentHP()));
@@ -618,6 +656,7 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
                     tile.getMonster().getCurrentHP(),
                     tile.getMonster().getMaxHP());
         } else {
+            gridMonsterAnimations.remove(coordKey);
             tileText.setVisibility(View.VISIBLE);
             tileText.setText(getTileDisplay(tile));
             description = getTileContentDescription(tile);
@@ -628,6 +667,17 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
             overlay.setVisibility(View.VISIBLE);
             overlay.setBackgroundColor(getColorCompat(R.color.player_highlight_overlay));
             overlay.setAlpha(0.5f);
+            tileText.setVisibility(View.GONE);
+            tileImage.setVisibility(View.VISIBLE);
+            Bitmap frame = null;
+            if (profile != null && profile.getAnimatedPlayer() != null) {
+                frame = profile.getAnimatedPlayer().getCurrentFrame();
+            }
+            if (frame != null) {
+                tileImage.setImageBitmap(frame);
+            } else {
+                tileImage.setImageResource(getPlayerIconResource());
+            }
             activePlayerTileView = tileView;
             description = getString(R.string.tile_desc_player_here, description);
         } else {
@@ -635,6 +685,81 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         }
 
         tileView.setContentDescription(description);
+    }
+
+    private String coordinateKey(int row, int col) {
+        return row + "_" + col;
+    }
+
+    @Nullable
+    private AnimatedMonster ensureGridAnimatedMonster(int row,
+                                                      int col,
+                                                      @NonNull Tile tile) {
+        if (!tile.hasMonster()) {
+            gridMonsterAnimations.remove(coordinateKey(row, col));
+            return null;
+        }
+        String key = coordinateKey(row, col);
+        AnimatedMonster animator = gridMonsterAnimations.get(key);
+        if (animator == null) {
+            animator = MonsterAnimationHelper.createAnimatedClone(this, tile.getMonster());
+            if (animator != null) {
+                gridMonsterAnimations.put(key, animator);
+            }
+        }
+        return animator;
+    }
+
+    private void animateGridFrame() {
+        if (gridLayout == null || dungeonGrid == null) {
+            return;
+        }
+        AnimatedPlayer playerAnimator = profile != null ? profile.getAnimatedPlayer() : null;
+        for (int i = 0; i < gridLayout.getChildCount(); i++) {
+            View tileView = gridLayout.getChildAt(i);
+            Object tagRow = tileView.getTag(R.id.tag_row);
+            Object tagCol = tileView.getTag(R.id.tag_col);
+            if (!(tagRow instanceof Integer) || !(tagCol instanceof Integer)) {
+                continue;
+            }
+            int row = (Integer) tagRow;
+            int col = (Integer) tagCol;
+            Tile tile = dungeonGrid[row][col];
+            if (tile == null) {
+                continue;
+            }
+            ImageView tileImage = tileView.findViewById(R.id.imageTile);
+            if (tile.hasPlayer() && playerAnimator != null && tileImage.getVisibility() == View.VISIBLE) {
+                Bitmap frame = playerAnimator.getCurrentFrame();
+                if (frame != null) {
+                    tileImage.setImageBitmap(frame);
+                }
+            } else if (tile.isRevealed() && tile.getType() == TileType.ENEMY && tile.hasMonster()) {
+                AnimatedMonster animator = ensureGridAnimatedMonster(row, col, tile);
+                if (animator != null && tileImage.getVisibility() == View.VISIBLE) {
+                    Bitmap frame = animator.getCurrentFrame();
+                    if (frame != null) {
+                        tileImage.setImageBitmap(frame);
+                    }
+                }
+            }
+        }
+    }
+
+    private void startGridAnimationLoop() {
+        if (gridAnimationRunning) {
+            return;
+        }
+        gridAnimationRunning = true;
+        gridAnimationHandler.post(gridAnimationRunnable);
+    }
+
+    private void stopGridAnimationLoop() {
+        if (!gridAnimationRunning) {
+            return;
+        }
+        gridAnimationRunning = false;
+        gridAnimationHandler.removeCallbacks(gridAnimationRunnable);
     }
 
     private void refreshTileViewAt(int row, int col) {
@@ -693,6 +818,24 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
             default:
                 return R.drawable.slime_main;
         }
+    }
+
+    @Nullable
+    private Bitmap getMonsterBitmap(@NonNull Monster monster) {
+        initBitmapCache();
+        String key = monster.getMonsterType();
+        if (TextUtils.isEmpty(key)) {
+            key = "default";
+        }
+        Bitmap cached = monsterBitmapCache.get(key);
+        if (cached == null) {
+            int resId = getMonsterSpriteResource(monster);
+            cached = BitmapFactory.decodeResource(getResources(), resId);
+            if (cached != null) {
+                monsterBitmapCache.put(key, cached);
+            }
+        }
+        return cached;
     }
 
     private int getPlayerIconResource() {
@@ -817,6 +960,7 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
             dungeonGrid[playerRow][playerCol].setHasPlayer(true);
             lastPlayerRow = playerRow;
             lastPlayerCol = playerCol;
+            refreshTileViewAt(playerRow, playerCol);
         } else {
             lastPlayerRow = -1;
             lastPlayerCol = -1;
@@ -836,6 +980,18 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
                     64,
                     4,
                     120));
+        }
+    }
+
+    private void clearAnimationResources() {
+        gridMonsterAnimations.clear();
+        if (monsterBitmapCache != null) {
+            monsterBitmapCache.evictAll();
+            monsterBitmapCache = null;
+        }
+        if (profile != null && profile.getAnimatedPlayer() != null) {
+            profile.getAnimatedPlayer().reset();
+            profile.setAnimatedPlayer(null);
         }
     }
 
@@ -1082,6 +1238,21 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         refreshPlayerTileFlags();
     }
 
+    private void initBitmapCache() {
+        if (monsterBitmapCache != null) {
+            return;
+        }
+        final int maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
+        final int cacheSize = Math.max(1024, maxMemory / 32);
+        monsterBitmapCache = new LruCache<String, Bitmap>(cacheSize) {
+            @Override
+            protected int sizeOf(String key, Bitmap value) {
+                return value == null ? 0 : value.getByteCount() / 1024;
+            }
+        };
+    }
+
+
     private void restoreRunMetadata(@Nullable SaveManager.RunMetadata metadata) {
         if (metadata == null) {
             resetPlayerPositionToCenter();
@@ -1131,6 +1302,13 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         Intent intent = new Intent(this, MainMenuActivity.class);
         startActivity(intent);
         finish();
+    }
+
+    @Override
+    protected void onDestroy() {
+        stopGridAnimationLoop();
+        clearAnimationResources();
+        super.onDestroy();
     }
 
     private void revealTile(View tileView, TextView tileText, Tile tile) {
@@ -1559,7 +1737,14 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        startGridAnimationLoop();
+    }
+
+    @Override
     protected void onPause() {
+        stopGridAnimationLoop();
         super.onPause();
         persistGameState();
     }

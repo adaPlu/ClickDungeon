@@ -11,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.TooltipCompat;
 
 import com.example.clickdungeon.util.SettingsManager;
+import com.example.clickdungeon.util.SoundManager;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 
 public class SettingsActivity extends AppCompatActivity {
@@ -71,6 +72,12 @@ public class SettingsActivity extends AppCompatActivity {
         audioSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (!isInitializing) {
                 SettingsManager.setAudioEnabled(this, isChecked);
+                SoundManager.syncMuteFromSettings(this);
+                if (isChecked) {
+                    SoundManager.resumeAll();
+                } else {
+                    SoundManager.pauseAll();
+                }
             }
         });
 

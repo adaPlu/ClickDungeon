@@ -1,46 +1,72 @@
 # ClickDungeon Development Roadmap
 
-_Audit date: 2025-11-16_
+_Audit date: 2025-11-18_
 
-This document reflects the **verified** state of the Java/Android code under `app/src/main/java/com/example/clickdungeon`. Each section ties observed behavior back to concrete files or tests so it is clear which features are real, which are partial, and what comes next.
+This roadmap documents the verified state of the ClickDungeon Android project (Java sources under `app/src/main/java/com/example/clickdungeon`). Each assertion references concrete files so future work stays grounded in reality.
 
 ## Project Snapshot
-- Android app targeting SDK 35 using Kotlin Gradle scripts (`build.gradle.kts`, `settings.gradle.kts`) and Java activities for the main menu (`MainMenuActivity.java`), save-slot selection (`ContinueActivity.java`), class setup, dungeon gameplay, shop, achievements, and settings screens.
-- Core loop lives in `GameActivity.java` where `DungeonGenerator.java` builds 5x5 floors populated with `Tile`/`TileType` objects (traps, enemies, gold, keys, stairs) and where progression counters (`safeTilesToReveal`, XP, gold) are enforced.
-- Combat is delivered via `ui/CombatDialogFragment.java`, exposing attack/potion/flee options, intent previews, and summary logging while delegating XP/gold calculations to `util/GameBalance.java`.
-- Persistence is consolidated behind `util/SaveManager.java` (four slots stored in `SaveSlotX` SharedPreferences), `util/InventoryManager.java` (items & gold), and `util/AchievementManager.java` (SharedPreferences + Gson). `MainMenuActivity` now routes both “New Game” and “Continue” through `ContinueActivity` with overwrite-safe flows.
-- Meta/UX systems include `SettingsActivity` + `SettingsManager` for audio/vibration/difficulty/color-blind toggles, `OnboardingManager` for first-run tutorials, `FeedbackManager`/`SoundManager` hooks (partially unused), and `ShopActivity` for mock purchases.
-- Regression coverage: Robolectric tests under `app/src/test/java/com/example/clickdungeon` validate SaveManager interactions (`GameActivitySaveIntegrationTest`), inventory/achievement utilities, settings UI, combat dialog behavior, and new key-pickup scenarios.
+- **Platform & build:** Android app targeting SDK 35, Kotlin-based Gradle scripts (`build.gradle.kts`, `settings.gradle.kts`), and Java activities/fragments for every screen (Main Menu, Continue, Class Selection, Game, Shop, Achievements, Settings). Save-slot metadata lives in `util/SaveManager.java`.
+- **Core loop:** `GameActivity.java` orchestrates dungeon generation (`DungeonGenerator.java`), tile metadata (`Tile.java`/`TileType.java`), trap/status resolution, class abilities, inventory, gold, XP, and save persistence. Shared managers (`InventoryManager`, `AchievementManager`, `GameBalance`) keep the meta-layer consistent.
+- **Combat & feedback:** `ui/CombatDialogFragment.java` owns combat turns, XP/gold previews, summary logs, and now renders dedicated player/monster animation slots driven by `AnimatedPlayer` and `AnimatedMonster` (frame loop + SoundManager hooks). The dungeon grid also animates revealed enemies and the hero via a handler-based loop.
+- **Audio & settings:** `util/SoundManager.java` loads class/monster/effect cues once at app startup (`ClickDungeonApp.java`) with graceful fallbacks when a raw asset is absent. `FeedbackManager` uses the same SoundPool and respects settings from `SettingsManager`. Audio/vibration/difficulty/color-blind preferences wire directly into `SettingsActivity`.
+- **Persistence/UI surface:** Inventory, achievements, onboarding tips, and shop purchases are shared across runs via SharedPreferences + Gson. Multi-slot save/continue flows use `ContinueActivity` and `GameActivity` auto-persistence on pause.
+- **Tests:** Robolectric suites in `app/src/test/java` cover SaveManager integration, CombatDialog interactions (now including animation/sound behavior), Settings UI, inventory/achievement helpers, dungeon generator, and tile binding for the new grid visuals. `robolectric.properties` pins SDK 34 for deterministic runs (local JDK 17 still required).
 
 ## Confirmed Feature Coverage
+1. **Dungeon exploration & status effects**
+   - `GameActivity.java:323-1180` + `DungeonGenerator.java:21-102` implement 5×5 floors with fire/poison/acid/freeze/pitfall traps, random loot/enemy layouts, stair up/down/locked variations, key placement/consumption, and poison/freeze timers that persist between turns.
+   - Grid tiles are now reusable view holders with sprite+HP overlays (see `item_tile.xml`, `GameActivity.bindTileView`), and a `Handler` tick updates animated frames for revealed enemies and the hero.
 
-### Core gameplay & persistence
-- **Dungeon exploration** (`GameActivity.java:323-640`, `DungeonGenerator.java:21-90`): supports random trap types (fire/poison/acid/freeze/pitfall), multi-floor stair up/down, pitfall drops, safe-tile tracking, and poison/freeze status effects.
-- **Combat loop** (`CombatDialogFragment.java`, `GameActivity.java:700-850`): enemies scale by floor, telegraph intents, support potions/flee penalties, and reward XP/gold through `GameBalance`.
-- **Multi-slot saves** (`MainMenuActivity.java`, `ContinueActivity.java`, `GameActivity.java:120-214`, `util/SaveManager.java`): four slots can be created, overwritten, or resumed via `ContinueActivity.EXTRA_FORCE_NEW_GAME`, and `GameActivity` auto-persists on pause.
-- **Key & lock progression** (`DungeonGenerator.java:40-75`, `GameActivity.java:566-637`, `InventoryManager.java`): keys include floor labels, feed into the shared inventory, and locked stairs consume the matching key item before permitting descent.
-- **Class abilities** (`GameActivity.java:120-940`): Wizard fireballs, Thief trap scans, and Knight shields share a two-floor cooldown and three-tile range, giving each class a tactical utility beyond raw stats.
-- **Player feedback & settings** (`SettingsActivity.java`, `OnboardingManager.java`, `FeedbackManager.java`): difficulty, audio, vibration, color-blind mode, and tutorial hints are persisted and referenced throughout gameplay (tile glyph suffixes, tutorials, vibration cues).
-- **Achievements, shop, and meta UI** (`AchievementsActivity.java`, `ShopActivity.java`, adapters/models): achievements load via `AchievementManager`, the shop adjusts gold/items through `InventoryManager`, and navigation between activities is wired from the main menu.
+2. **Combat loop & class abilities**
+   - `CombatDialogFragment.java:160-640` provides attack/potion/flee options, monster intent telegraphs, summary logging, XP/gold payouts, and now hero/monster animation panels with HP bars. The handler-driven frame loop resets on dialog dismissal to prevent leaks.
+   - `GameActivity.java:940-1150` ensures Wizard fireball, Thief scan, and Knight shield share a two-floor cooldown, enforce the three-tile targeting radius, and integrate with inventory/shield metadata throughout a run.
 
-### Supporting infrastructure
-- Shared models for characters (`CharacterProfile`), monsters (including animated subclasses), tiles, achievements, shop items, and inventory entries exist and are used consistently.
-- `SoundManager.java` and `AnimatedPlayer`/`AnimatedMonster` provide ready-to-use audiovisual hooks even though they are not yet integrated into the UI.
-- Automated tests cover persistence helpers, onboarding prompts, save/load flows, and now key pickup, giving confidence in regression-sensitive areas.
+3. **Persistence, inventory, and achievements**
+   - `SaveManager.java`, `InventoryManager.java`, and `AchievementManager.java` manage four save slots, gold/items, and unlocks. `ContinueActivity` routes both “New Game” and “Continue” flows, ensures overwrite confirmation, and passes slot metadata to `GameActivity`.
+   - Achievements and the shop UI remain active (`AchievementsActivity.java`, `ShopActivity.java`); purchases adjust gold/items via `InventoryManager` and reflect immediately in the HUD.
+
+4. **Settings, onboarding, and feedback**
+   - `SettingsActivity.java` exposes audio/vibration/difficulty/color-blind/tutorial toggles that propagate through `SettingsManager`. `OnboardingManager` respects these flags when showing contextual tips.
+   - `ClickDungeonApp.java` initializes SoundManager on startup, registers lifecycle callbacks, and pauses/resumes sound streams whenever activities move between foreground/background.
+
+5. **Automated tests**
+   - `CombatDialogFragmentTest.java` verifies potions/flee/victory flows and now asserts animation bitmaps + sound playback when attacks fire.
+   - `GameActivityTileViewTest.java` covers tile binding behaviour (hidden tiles, enemy tiles with HP bars, hero overlay).
+   - Utility suites (e.g., `InventoryManagerTest`, `SettingsActivityTest`, `DungeonGeneratorTest`, `GameActivitySaveIntegrationTest`) continue to guard persistence and configuration logic.
 
 ## Current Gaps & Technical Debt
-1. **Animations and advanced audio are unused.** `CharacterProfile` exposes `AnimatedPlayer`, `MonsterFactory` builds `AnimatedMonster`, and `SoundManager` loads sprite/audio assets, but nothing renders or plays them. Combat and exploration still rely on emoji glyphs and ToneGenerator cues (`AnimatedPlayer.java`, `AnimatedMonster.java`, `SoundManager.java`).
-2. **Economy & inventory UX is minimal.** The shop sells a static mock list, gold adjustments happen silently, there is no in-run inventory screen, and dungeon rewards besides gold/keys do not surface. Balance knobs (`GameBalance.java`) exist but lack tooling/tests around tuning.
-3. **Testing gaps remain.** While key pickups and save flows are covered, there are no automated tests for the refreshed ability button, trap scanning targets, or inventory/shop interactions.
+1. **Audio/animation still mid-integration.** Combat and grid sprites animate, but exploration actions (tile reveals, trap hits, ability triggers) still rely on `FeedbackManager` vibration/toasts rather than SoundManager cues. There’s no dynamic throttling—off-screen enemies animate until their view is recycled.
+2. **Inventory & economy UX remains barebones.** No in-run inventory panel, no toast/snackbar when keys or trap kits are acquired/consumed, and Shop items are static with placeholder prices. `GameBalance` tuning knobs lack tooling/tests for iterative balance.
+3. **Testing gaps.** Ability targeting, trap-scan coverage, shop transactions, and inventory state changes have no direct tests. Grid animation handler isn’t covered beyond the binding unit test, so regressions in frame loops would go unnoticed.
+4. **Persistence/security trade-offs.** Saves/inventory/achievements use plain SharedPreferences + JSON without encryption or validation. That’s acceptable for local QA but needs documentation or mitigation before commercial release.
+5. **Build/test friction.** The current environment can’t run `./gradlew test` due to console handle issues (requires Windows console + JDK 17). Until CI or local developers can verify Robolectric suites, regressions may slip by.
 
-## Near-Term Roadmap (next 1-2 iterations)
-1. **Integrate animations & richer feedback.** Instantiate `AnimatedPlayer`/`AnimatedMonster` sprites in the dungeon and combat screens, pipe actions through `SoundManager`, and provide graceful fallbacks for devices lacking the assets.
-2. **Improve inventory/economy UX.** Add a lightweight inventory view (from the main menu and/or in-run pause), inform players when items (Trap Disarm Kits, keys, consumables) are granted or consumed, and expand shop offerings tied to `GameBalance`.
-3. **Expand automated coverage.** Add tests around the new class abilities, shop transactions, and inventory display so regressions in core progression and economy flows are caught early.
+## Near-Term Action Plan (next 1–2 iterations)
+1. **Complete audiovisual integration**
+   - Route tile reveal, trap hit, ability activation, and class-specific effects through `SoundManager`; add fallbacks when assets are missing (the new `register()` guard prevents crashes, but we still need user-facing cues).
+   - Pause grid animation frames when tiles are off-screen or invisible; consider battery-friendly throttling (e.g., animate only the hero tile and the currently selected enemy).
 
-## Longer-Term Milestones
-- **Boss floor launch.** Scripted boss encounters, multi-phase behaviors, and unique loot pacing to cap each run.
-- **Class & progression overhaul.** Additional classes or perk trees, reworked achievements, and advanced builds once core abilities are stable.
-- **Monetization & live ops.** Cosmetic/IAP hooks, rewarded ads, analytics/remote config, and data-driven tuning layered atop the hardened economy.
-- **UX polish & localization.** Visual updates, animation polish, deeper accessibility, richer haptics/audio, and externalized strings for translation.
-- **Connected services.** Cloud saves, leaderboards, rotating challenges, and social features after local persistence and live ops are dependable.
+2. **Inventory/economy UX improvements**
+   - Introduce an inventory dialog accessible from `GameActivity` and the main menu that lists gold, keys, consumables, and class kits. Show contextual toasts/snackbars when loot is acquired or expended.
+   - Expand `ShopActivity` to pull data from `GameBalance`, add limited-time offers, and write tests verifying price/stock logic.
+
+3. **Testing & tooling**
+   - Add Robolectric coverage for class abilities (range checks, shield persistence, scan outcomes), shop purchase flows, and SoundManager invocations in the overworld.
+   - Document or script the JDK 17 + console prerequisites so contributors can run `./gradlew test` reliably; consider wiring a CI job that already meets those constraints.
+
+4. **Persistence hardening**
+   - Add metadata/versioning to `SaveManager` records to detect incompatible saves. Evaluate encrypted SharedPreferences or a lightweight Room database if commercial builds demand tamper resistance.
+
+## Mid-Term Milestones
+1. **Boss/elite encounters** – Scripted floors with multi-phase enemies, bespoke loot pacing, and achievement hooks once core combat/animation loops are fully reliable.
+2. **Class & progression depth** – New classes or perk trees, expanded achievements, and balance passes informed by the upcoming inventory/shop telemetry.
+3. **Monetization & live ops** – Cosmetic/IAP scaffolding, rewarded ads, analytics hooks (Firebase/Remote Config), and seasonal dungeon modifiers after economy UX is production-ready.
+4. **UX polish & localization** – Additional animation states, haptic/particle FX, richer accessibility cues, and externalized strings/assets for translation.
+5. **Connected services** – Cloud saves, leaderboards, challenge modes, and social features once persistence, security, and telemetry foundations are in place.
+
+## Known Risks & Code-Quality Notes
+- **Sound asset resilience:** `SoundManager.register()` now guards against missing `.ogg` files, but missing keys silently disable cues. Consider logging which sounds failed to load so QA can spot packaging issues.
+- **Handler lifecycle:** `GameActivity` and `CombatDialogFragment` stop their animation handlers on pause/destroy, but the grid loop still iterates over every tile even when the game is backgrounded just before pause completes. Monitor for ANR reports if the dungeon ever exceeds 5×5.
+- **SharedPreferences storage:** All saves and inventory data are human-readable. Document this in release notes or introduce integrity checks before shipping on Play Store.
+
+_Next audit:_ after integrating SoundManager cues into overworld actions + inventory UI improvements (target early 2026 or once the above Near-Term actions are complete).

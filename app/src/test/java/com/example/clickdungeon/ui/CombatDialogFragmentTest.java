@@ -6,18 +6,23 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import android.app.Dialog;
+import android.widget.ImageView;
+import android.widget.ProgressBar;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.FragmentActivity;
 
 import com.example.clickdungeon.R;
+import com.example.clickdungeon.model.AnimatedPlayer;
 import com.example.clickdungeon.model.CharacterProfile;
 import com.example.clickdungeon.model.Monster;
 import com.example.clickdungeon.model.PlayerClass;
 import com.example.clickdungeon.ui.CombatDialogFragment.CombatCallbacks;
+import com.example.clickdungeon.util.SoundManager;
 
 import java.util.Random;
 
+import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
@@ -28,6 +33,11 @@ import org.robolectric.util.ReflectionHelpers;
 
 @RunWith(RobolectricTestRunner.class)
 public class CombatDialogFragmentTest {
+
+    @After
+    public void clearSoundListener() {
+        SoundManager.setTestPlaybackListener(null);
+    }
 
     @Test
     public void usePotion_consumesHealingWhenBelowMax() {
@@ -171,6 +181,85 @@ public class CombatDialogFragmentTest {
         assertTrue(callbacks.defeatCalled);
     }
 
+    @Test
+    public void attack_updatesHpBarAndAnimationState() {
+        FragmentActivity activity = buildThemedActivity();
+
+        CharacterProfile profile = new CharacterProfile("Ida", PlayerClass.KNIGHT);
+        Monster monster = new Monster("Slime", 3, 1, 0, "🟢");
+
+        CombatDialogFragment fragment = CombatDialogFragment.newInstance(monster);
+        fragment.setCombatants(profile, monster);
+        fragment.show(activity.getSupportFragmentManager(), "combat_animation");
+
+        ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
+        Dialog dialog = fragment.getDialog();
+        assertNotNull(dialog);
+
+        ProgressBar hpBar = dialog.findViewById(R.id.monsterHpBar);
+        assertNotNull(hpBar);
+        assertEquals(3, hpBar.getMax());
+
+        dialog.findViewById(R.id.buttonAttack).performClick();
+        ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
+
+        AnimatedPlayer animatedPlayer = profile.getAnimatedPlayer();
+        assertNotNull(animatedPlayer);
+        assertEquals("attack", animatedPlayer.getCurrentAction());
+
+        Monster trackedMonster = ReflectionHelpers.getField(fragment, "monster");
+        assertNotNull(trackedMonster);
+        assertEquals(trackedMonster.getCurrentHP(), hpBar.getProgress());
+    }
+
+    @Test
+    public void show_initializesAnimationFrames() {
+        FragmentActivity activity = buildThemedActivity();
+
+        CharacterProfile profile = new CharacterProfile("Ezra", PlayerClass.THIEF);
+        Monster monster = new Monster("Goblin", 5, 3, 1, "👺");
+
+        CombatDialogFragment fragment = CombatDialogFragment.newInstance(monster);
+        fragment.setCombatants(profile, monster);
+        fragment.show(activity.getSupportFragmentManager(), "combat_animation_init");
+
+        ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
+        Dialog dialog = fragment.getDialog();
+        assertNotNull(dialog);
+
+        ImageView playerImage = dialog.findViewById(R.id.imagePlayerAnimation);
+        ImageView monsterImage = dialog.findViewById(R.id.imageMonsterAnimation);
+        assertNotNull(playerImage);
+        assertNotNull(monsterImage);
+
+        ReflectionHelpers.callInstanceMethod(fragment, "updateAnimationFrames");
+        ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
+
+        assertNotNull(playerImage.getDrawable());
+        assertNotNull(monsterImage.getDrawable());
+    }
+
+    @Test
+    public void handleAttack_triggersClassSound() {
+        FragmentActivity activity = buildThemedActivity();
+
+        CharacterProfile profile = new CharacterProfile("Bran", PlayerClass.KNIGHT);
+        Monster monster = new Monster("Imp", 2, 1, 0, "😈");
+
+        CombatDialogFragment fragment = CombatDialogFragment.newInstance(monster);
+        fragment.setCombatants(profile, monster);
+        fragment.show(activity.getSupportFragmentManager(), "combat_sound");
+
+        ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
+        TestPlaybackListener listener = new TestPlaybackListener();
+        SoundManager.setTestPlaybackListener(listener);
+
+        ReflectionHelpers.callInstanceMethod(fragment, "handleAttack");
+        ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
+
+        assertEquals("knight_attack", listener.lastKey);
+    }
+
     private FragmentActivity buildThemedActivity() {
         ActivityController<FragmentActivity> controller = Robolectric.buildActivity(FragmentActivity.class);
         FragmentActivity activity = controller.setup().get();
@@ -214,6 +303,15 @@ public class CombatDialogFragmentTest {
             profile.setCurrentHP(profile.getCurrentHP() + healAmount);
             potionConsumed = true;
             return true;
+        }
+    }
+
+    private static final class TestPlaybackListener implements SoundManager.PlaybackListener {
+        String lastKey;
+
+        @Override
+        public void onPlayRequest(String key) {
+            lastKey = key;
         }
     }
 }

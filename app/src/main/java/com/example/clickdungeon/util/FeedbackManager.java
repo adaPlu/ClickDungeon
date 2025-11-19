@@ -1,8 +1,6 @@
 package com.example.clickdungeon.util;
 
 import android.content.Context;
-import android.media.AudioManager;
-import android.media.ToneGenerator;
 import android.os.Build;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
@@ -16,23 +14,17 @@ import androidx.annotation.NonNull;
  */
 public final class FeedbackManager {
 
-    private static final Object LOCK = new Object();
-    private static ToneGenerator toneGenerator;
-
     private FeedbackManager() {
         // No instances.
     }
 
     public static void playSound(@NonNull Context context, @NonNull SoundEffect effect) {
         if (!SettingsManager.isAudioEnabled(context)) {
+            SoundManager.syncMuteFromSettings(context);
             return;
         }
-        try {
-            ToneGenerator generator = obtainToneGenerator();
-            generator.startTone(effect.getToneType(), effect.getDurationMs());
-        } catch (RuntimeException ignored) {
-            // Some devices can throw if audio focus is unavailable. We silently ignore failures.
-        }
+        SoundManager.syncMuteFromSettings(context);
+        SoundManager.playEffect(effect.getSoundKey());
     }
 
     public static void vibrate(@NonNull Context context, @NonNull VibrationPattern pattern) {
@@ -52,36 +44,21 @@ public final class FeedbackManager {
         }
     }
 
-    private static ToneGenerator obtainToneGenerator() {
-        synchronized (LOCK) {
-            if (toneGenerator == null) {
-                toneGenerator = new ToneGenerator(AudioManager.STREAM_MUSIC, 70);
-            }
-            return toneGenerator;
-        }
-    }
-
     public enum SoundEffect {
-        TREASURE(ToneGenerator.TONE_PROP_ACK, 150),
-        POSITIVE(ToneGenerator.TONE_PROP_BEEP2, 180),
-        TRAP(ToneGenerator.TONE_SUP_ERROR, 220),
-        COMBAT_VICTORY(ToneGenerator.TONE_CDMA_ALERT_CALL_GUARD, 280),
-        COMBAT_DEFEAT(ToneGenerator.TONE_CDMA_ABBR_ALERT, 350);
+        TREASURE(SoundManager.KEY_EFFECT_TREASURE),
+        POSITIVE(SoundManager.KEY_EFFECT_POSITIVE),
+        TRAP(SoundManager.KEY_EFFECT_TRAP),
+        COMBAT_VICTORY(SoundManager.KEY_EFFECT_VICTORY),
+        COMBAT_DEFEAT(SoundManager.KEY_EFFECT_DEFEAT);
 
-        private final int toneType;
-        private final int durationMs;
+        private final String soundKey;
 
-        SoundEffect(int toneType, int durationMs) {
-            this.toneType = toneType;
-            this.durationMs = durationMs;
+        SoundEffect(String soundKey) {
+            this.soundKey = soundKey;
         }
 
-        int getToneType() {
-            return toneType;
-        }
-
-        int getDurationMs() {
-            return durationMs;
+        public String getSoundKey() {
+            return soundKey;
         }
     }
 

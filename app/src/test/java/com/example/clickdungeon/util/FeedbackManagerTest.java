@@ -1,7 +1,7 @@
 package com.example.clickdungeon.util;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
@@ -10,16 +10,16 @@ import android.os.Vibrator;
 
 import androidx.test.core.app.ApplicationProvider;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowVibrator;
-import org.robolectric.util.ReflectionHelpers;
 
 @RunWith(RobolectricTestRunner.class)
-@Config(sdk = 33)
+@Config(sdk = 34)
 @SuppressWarnings("deprecation")
 public class FeedbackManagerTest {
 
@@ -28,22 +28,35 @@ public class FeedbackManagerTest {
     @Before
     public void setUp() {
         context = ApplicationProvider.getApplicationContext();
-        resetToneGenerator();
         SettingsManager.setAudioEnabled(context, true);
         SettingsManager.setVibrationEnabled(context, true);
+        SoundManager.release();
+        SoundManager.init(context);
+        SoundManager.syncMuteFromSettings(context);
+        SoundManager.setTestPlaybackListener(null);
+    }
+
+    @After
+    public void tearDown() {
+        SoundManager.setTestPlaybackListener(null);
+        SoundManager.release();
     }
 
     @Test
-    public void playSound_audioDisabled_doesNotInitializeToneGenerator() {
+    public void playSound_audioDisabled_doesNotTriggerEffect() {
         SettingsManager.setAudioEnabled(context, false);
+        SoundManager.syncMuteFromSettings(context);
+
         FeedbackManager.playSound(context, FeedbackManager.SoundEffect.POSITIVE);
-        assertNull(getToneGenerator());
+
+        assertNull(SoundManager.getLastPlayedKey());
     }
 
     @Test
-    public void playSound_audioEnabled_initializesToneGenerator() {
+    public void playSound_audioEnabled_routesThroughSoundManager() {
         FeedbackManager.playSound(context, FeedbackManager.SoundEffect.TREASURE);
-        assertNotNull(getToneGenerator());
+
+        assertEquals(SoundManager.KEY_EFFECT_TREASURE, SoundManager.getLastPlayedKey());
     }
 
     @Test
@@ -67,14 +80,6 @@ public class FeedbackManagerTest {
         FeedbackManager.vibrate(context, FeedbackManager.VibrationPattern.HEAVY);
 
         assertTrue(hasRecordedVibration(shadowVibrator));
-    }
-
-    private void resetToneGenerator() {
-        ReflectionHelpers.setStaticField(FeedbackManager.class, "toneGenerator", null);
-    }
-
-    private Object getToneGenerator() {
-        return ReflectionHelpers.getStaticField(FeedbackManager.class, "toneGenerator");
     }
 
     private void clearShadowVibration(ShadowVibrator shadowVibrator) {
