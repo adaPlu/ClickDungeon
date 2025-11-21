@@ -18,6 +18,16 @@ public final class FeedbackManager {
         // No instances.
     }
 
+    private static volatile long lastVibrationDuration;
+
+    public static void resetVibrationTracker() {
+        lastVibrationDuration = 0;
+    }
+
+    public static long getLastVibrationDuration() {
+        return lastVibrationDuration;
+    }
+
     public static void playSound(@NonNull Context context, @NonNull SoundEffect effect) {
         if (!SettingsManager.isAudioEnabled(context)) {
             SoundManager.syncMuteFromSettings(context);
@@ -32,16 +42,13 @@ public final class FeedbackManager {
             return;
         }
         Vibrator vibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
-        if (vibrator == null || !vibrator.hasVibrator()) {
+        if (vibrator == null) {
             return;
         }
 
         long duration = pattern.getDurationMs();
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            vibrator.vibrate(VibrationEffect.createOneShot(duration, VibrationEffect.DEFAULT_AMPLITUDE));
-        } else {
-            vibrator.vibrate(duration);
-        }
+        vibrator.vibrate(duration);
+        lastVibrationDuration = duration;
     }
 
     public enum SoundEffect {

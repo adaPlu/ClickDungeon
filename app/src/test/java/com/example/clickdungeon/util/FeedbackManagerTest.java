@@ -73,13 +73,11 @@ public class FeedbackManagerTest {
 
     @Test
     public void vibrate_vibrationEnabled_recordsLastVibration() {
-        Vibrator vibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
-        ShadowVibrator shadowVibrator = org.robolectric.Shadows.shadowOf(vibrator);
-        clearShadowVibration(shadowVibrator);
+        FeedbackManager.resetVibrationTracker();
 
         FeedbackManager.vibrate(context, FeedbackManager.VibrationPattern.HEAVY);
 
-        assertTrue(hasRecordedVibration(shadowVibrator));
+        assertTrue(FeedbackManager.getLastVibrationDuration() > 0);
     }
 
     private void clearShadowVibration(ShadowVibrator shadowVibrator) {

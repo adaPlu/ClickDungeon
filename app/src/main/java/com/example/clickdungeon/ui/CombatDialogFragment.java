@@ -252,8 +252,8 @@ public class CombatDialogFragment extends DialogFragment {
         totalDamageDealt += damageToMonster;
         appendLog(getString(R.string.combat_log_player_attack, damageToMonster, monster.getMonsterType()));
         animatePulse(monsterStatsView);
+        triggerMonsterAction("defend", false);
         triggerPlayerAction("attack");
-        triggerMonsterAction("defend");
 
         notifyStateChanged();
         refreshStatBlocks();
@@ -339,10 +339,8 @@ public class CombatDialogFragment extends DialogFragment {
             totalDamageTaken += damageToPlayer;
             appendLog(getString(R.string.combat_log_monster_attack, monster.getMonsterType(), damageToPlayer));
             animatePulse(playerStatsView);
-            triggerPlayerAction("defend");
         } else {
             appendLog(getString(R.string.combat_log_monster_glancing, monster.getMonsterType()));
-            triggerPlayerAction("move");
         }
         triggerMonsterAction("attack");
 
@@ -652,12 +650,16 @@ public class CombatDialogFragment extends DialogFragment {
     }
 
     private void triggerMonsterAction(@NonNull String action) {
+        triggerMonsterAction(action, true);
+    }
+
+    private void triggerMonsterAction(@NonNull String action, boolean playSound) {
         if (animatedMonster == null) {
             return;
         }
         Context context = getContext();
         if (context != null) {
-            animatedMonster.setAction(action, context);
+            animatedMonster.setAction(action, context, playSound);
         }
     }
 
@@ -675,3 +677,5 @@ public class CombatDialogFragment extends DialogFragment {
                 return R.drawable.icon_knight;
         }
     }
+
+}

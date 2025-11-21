@@ -140,6 +140,8 @@
 <string name="combat_intent_guard_break">Guard break</string>
 <string name="combat_intent_display">Next up: %1$s (~%2$d dmg)</string>
 <string name="combat_summary_button_continue">Continue</string>
+<string name="combat_player_animation_desc">Animated portrait showing the player action.</string>
+<string name="combat_monster_animation_desc">Animated portrait showing the monster intent.</string>
     <string name="combat_summary_victory">Victory! %1$d XP, %2$d gold after %3$d turns. You dealt %4$d damage, took %5$d, and used %6$d potions.</string>
     <string name="combat_summary_flee">Retreat! Escaped in %1$d turns after dealing %2$d damage, suffering %3$d on the way out.</string>
     <string name="combat_summary_ready">Choose your next move.</string>

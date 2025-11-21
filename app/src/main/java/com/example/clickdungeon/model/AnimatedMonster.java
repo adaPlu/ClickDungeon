@@ -42,14 +42,20 @@ public class AnimatedMonster extends Monster {
     }
 
     public void setAction(String action, Context context) {
+        setAction(action, context, true);
+    }
+
+    public void setAction(String action, Context context, boolean playSound) {
         if (!currentAction.equals(action)) {
             currentAction = action;
             currentFrame = 0;
             lastFrameChangeTime = System.currentTimeMillis();
             actionStartTime = lastFrameChangeTime;
 
-            // Use SoundManager
-            SoundManager.playForMonster(getMonsterType(), action);
+            // Use SoundManager when allowed
+            if (playSound) {
+                SoundManager.playForMonster(getMonsterType(), action);
+            }
         }
     }
 
