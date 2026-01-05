@@ -52,6 +52,8 @@ public class SaveManagerTest {
                 new SaveManager.RunMetadata(-1, -1, false, 0, -1, -1, 1);
         saveManager.saveGame(1, profile, 3, 42, grid, metadata);
 
+        assertTrue(saveManager.isSlotOccupied(1));
+
         SaveManager.GameState state = saveManager.loadGame(1);
         assertNotNull(state);
         assertEquals(3, state.currentFloor);
@@ -63,5 +65,11 @@ public class SaveManagerTest {
 
         saveManager.deleteSave(1);
         assertNull(saveManager.loadGame(1));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void invalidSlotIndexThrows() {
+        SaveManager saveManager = new SaveManager(context);
+        saveManager.isSlotOccupied(99);
     }
 }

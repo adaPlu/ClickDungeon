@@ -43,6 +43,7 @@ public final class DungeonGenerator {
         TileType selectedKeyType = keyTypes[keyIndex];
         TileType lockedStair = lockTypes[keyIndex];
 
+        // Rotate key/lock pairs by floor so each level introduces a different lock.
         String keyName = selectedKeyType.name().replace("_KEY", " Key (F" + floor + ")");
 
         pool.add(new Tile(selectedKeyType, keyName));
@@ -65,6 +66,7 @@ public final class DungeonGenerator {
             for (int col = 0; col < gridSize; col++) {
                 Tile tile = pool.get(index++);
                 grid[row][col] = tile;
+                // Count tiles that are safe to reveal for victory tracking.
                 if (tile.getType() != TileType.ENEMY) {
                     safeTiles++;
                 }

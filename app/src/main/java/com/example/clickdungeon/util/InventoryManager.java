@@ -56,12 +56,14 @@ public class InventoryManager {
 
         if (newQuantity <= 0) {
             if (index >= 0) {
+                // Remove empty stacks instead of persisting zero quantities.
                 inventory.remove(index);
                 saveInventory(context, inventory);
             }
             return;
         }
 
+        // Clamp stacks to a positive range so callers cannot persist negative or zero values.
         newQuantity = Math.min(newQuantity, Math.max(1, maxQuantity));
         InventoryItem updated = new InventoryItem(itemName, newQuantity);
         if (index >= 0) {
@@ -94,6 +96,29 @@ public class InventoryManager {
     public static synchronized int adjustGold(Context context, int delta) {
         int updated = getGold(context) + delta;
         return setGold(context, updated);
+    }
+
+    /**
+     * Test/support hook to wipe inventory state for a fresh scenario.
+     */
+    public static synchronized void clearInventory(Context context) {
+        saveInventory(context, new ArrayList<>());
+    }
+
+    /**
+     * Convenience lookup used in tests; returns the first matching item or null.
+     */
+    public static synchronized InventoryItem getInventoryItem(Context context, String itemName) {
+        if (itemName == null) {
+            return null;
+        }
+        List<InventoryItem> inventory = loadInventory(context);
+        for (InventoryItem item : inventory) {
+            if (itemName.equals(item.getName())) {
+                return item;
+            }
+        }
+        return null;
     }
 
     public static synchronized void syncGoldWithCurrentRun(Context context, int runGold) {

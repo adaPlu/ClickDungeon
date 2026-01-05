@@ -80,6 +80,16 @@ public class FeedbackManagerTest {
         assertTrue(FeedbackManager.getLastVibrationDuration() > 0);
     }
 
+    @Test
+    public void resetVibrationTrackerClearsLastDuration() {
+        FeedbackManager.vibrate(context, FeedbackManager.VibrationPattern.LIGHT);
+        assertTrue(FeedbackManager.getLastVibrationDuration() > 0);
+
+        FeedbackManager.resetVibrationTracker();
+
+        assertEquals(0, FeedbackManager.getLastVibrationDuration());
+    }
+
     private void clearShadowVibration(ShadowVibrator shadowVibrator) {
         try {
             ShadowVibrator.class.getMethod("clear").invoke(shadowVibrator);

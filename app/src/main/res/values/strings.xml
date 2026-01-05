@@ -47,6 +47,7 @@
 <!-- Shop -->
 <string name="purchase_successful">Purchased: %1$s</string>
 <string name="not_enough_gold">Not enough gold!</string>
+<string name="item_out_of_stock">Item is out of stock.</string>
 <string name="gold_display">Gold:</string>
 <string name="gold_display_dynamic">Gold: %1$d</string>
 <string name="gold_found_message">You found %1$d gold!</string>
@@ -87,6 +88,16 @@
 <string name="main_menu">Main Menu</string>
 <string name="play_again">Play Again</string>
 <string name="use_ability">Use Ability</string>
+<string name="inventory_dialog_title">Inventory</string>
+<string name="inventory_empty">No items collected yet.</string>
+<string name="inventory_change_log_title">Recent changes:</string>
+<string name="inventory_gain_message">+1 %1$s</string>
+<string name="inventory_use_message">Used 1 %1$s</string>
+<string name="shop_out_of_stock">Item out of stock.</string>
+<string name="shop_purchase_failed">Purchase failed.</string>
+<string name="shop_purchase_success">Purchased: %1$s</string>
+<string name="shop_refresh_failed">Failed to load shop data; using defaults.</string>
+<string name="open_inventory">Open Inventory</string>
 <string name="slot_display_label">Slot: %1$d</string>
 <string name="game_over_title">Game Over</string>
 <string name="game_over_message">You have been defeated. Would you like to restart or return to the main menu?</string>
@@ -135,10 +146,11 @@
 <string name="combat_tile_cleared">✅</string>
 <string name="combat_result_victory">You defeated %1$s! +%2$d XP, +%3$d gold.</string>
 <string name="combat_result_flee">You fled the battle, taking %1$d damage.</string>
-<string name="combat_intent_quick">Quick strike</string>
-<string name="combat_intent_heavy">Heavy swing</string>
-<string name="combat_intent_guard_break">Guard break</string>
-<string name="combat_intent_display">Next up: %1$s (~%2$d dmg)</string>
+    <string name="combat_intent_quick">Quick strike</string>
+    <string name="combat_intent_heavy">Heavy swing</string>
+    <string name="combat_intent_guard_break">Guard break</string>
+    <string name="combat_intent_ranged">Ranged shot</string>
+    <string name="combat_intent_display">Next up: %1$s (~%2$d dmg)</string>
 <string name="combat_summary_button_continue">Continue</string>
 <string name="combat_player_animation_desc">Animated portrait showing the player action.</string>
 <string name="combat_monster_animation_desc">Animated portrait showing the monster intent.</string>
@@ -183,6 +195,7 @@
 <string name="tile_desc_trap_pitfall">Pitfall trap</string>
 <string name="tile_desc_enemy_with_hp">%1$s (%2$d/%3$d HP)</string>
 <string name="tile_desc_player_here">%1$s (hero present)</string>
+<string name="inventory_title">Inventory</string>
 <string name="onboarding_dungeon_title">Welcome to ClickDungeon</string>
 <string name="onboarding_dungeon_message">You are delving in on %1$s difficulty.
 

@@ -1,6 +1,7 @@
 package com.example.clickdungeon.util;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import android.content.Context;
@@ -66,5 +67,34 @@ public class InventoryManagerTest {
 
         InventoryManager.adjustGold(context, -1000);
         assertEquals(0, InventoryManager.getGold(context));
+    }
+
+    @Test
+    public void clearInventoryRemovesAllItems() {
+        InventoryManager.adjustItemQuantity(context, "Potion", 2);
+        InventoryManager.adjustItemQuantity(context, "Trap Disarm Kit", 1);
+
+        InventoryManager.clearInventory(context);
+
+        assertTrue(InventoryManager.loadInventory(context).isEmpty());
+    }
+
+    @Test
+    public void getInventoryItemReturnsFirstMatchOrNull() {
+        assertNull(InventoryManager.getInventoryItem(context, "Unknown"));
+
+        InventoryManager.adjustItemQuantity(context, "Potion", 2);
+        InventoryItem item = InventoryManager.getInventoryItem(context, "Potion");
+
+        assertEquals("Potion", item.getName());
+        assertEquals(2, item.getQuantity());
+    }
+
+    @Test
+    public void syncGoldWithCurrentRunUpdatesStoredGold() {
+        InventoryManager.setGold(context, 100);
+        InventoryManager.syncGoldWithCurrentRun(context, 250);
+
+        assertEquals(250, InventoryManager.getGold(context));
     }
 }

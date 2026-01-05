@@ -3,7 +3,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:padding="16dp"
+    android:background="@drawable/bg_screen_dungeon">
 
     <TextView
         android:id="@+id/textAchievementsTitle"
@@ -11,6 +12,7 @@
         android:layout_height="wrap_content"
         android:text="@string/achievements_title"
         android:textSize="20sp"
+        android:textColor="#F6E6C6"
         android:layout_gravity="center_horizontal"
         android:layout_marginBottom="12dp" />
 
@@ -19,6 +21,9 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
+        android:background="@drawable/panel_bg"
+        android:clipToPadding="false"
+        android:padding="6dp"
         android:scrollbars="vertical" />
 
     <Button
@@ -27,5 +32,7 @@
         android:layout_height="wrap_content"
         android:text="@string/back_to_menu"
         android:layout_gravity="center_horizontal"
-        android:layout_marginTop="12dp" />
+        android:layout_marginTop="12dp"
+        android:background="@drawable/menu_button_bg"
+        android:textColor="#FFF3D5" />
 </LinearLayout>

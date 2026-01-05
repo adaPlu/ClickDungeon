@@ -56,6 +56,7 @@ public class CombatDialogFragment extends DialogFragment {
     private static final String ARG_MONSTER_MAX_HP = "arg_monster_max_hp";
     private static final String ARG_MONSTER_CURRENT_HP = "arg_monster_current_hp";
     private static final String ARG_MONSTER_IMAGE = "arg_monster_image";
+    private static final String ARG_MONSTER_RANGED = "arg_monster_ranged";
     private static final String ARG_XP_REWARD = "arg_xp_reward";
     private static final String ARG_GOLD_REWARD = "arg_gold_reward";
 
@@ -123,6 +124,7 @@ public class CombatDialogFragment extends DialogFragment {
         args.putInt(ARG_MONSTER_MAX_HP, monster.getMaxHP());
         args.putInt(ARG_MONSTER_CURRENT_HP, monster.getCurrentHP());
         args.putString(ARG_MONSTER_IMAGE, monster.getImage());
+        args.putBoolean(ARG_MONSTER_RANGED, monster.hasRangedAttack());
         fragment.setArguments(args);
         return fragment;
     }
@@ -182,7 +184,9 @@ public class CombatDialogFragment extends DialogFragment {
             int attack = args.getInt(ARG_MONSTER_ATTACK, 1);
             int defense = args.getInt(ARG_MONSTER_DEFENSE, 0);
             String image = args.getString(ARG_MONSTER_IMAGE, "");
+            boolean ranged = args.getBoolean(ARG_MONSTER_RANGED, false);
             monsterData = new Monster(name, maxHp, attack, defense, image);
+            monsterData.setHasRangedAttack(ranged);
             int currentHp = args.getInt(ARG_MONSTER_CURRENT_HP, maxHp);
             while (monsterData.getCurrentHP() > currentHp) {
                 monsterData.takeDamage(1);
@@ -368,7 +372,8 @@ public class CombatDialogFragment extends DialogFragment {
         if (monsterIntentView == null || monsterIntentBar == null || monster == null || profile == null) {
             return;
         }
-        MonsterIntentType type = MonsterIntentType.randomType(random);
+        MonsterIntentType type = MonsterIntentType.randomType(random,
+                monster != null && monster.hasRangedAttack());
         currentIntent = new MonsterIntent(type, type.estimateDamage(monster, profile));
         monsterIntentView.setText(getString(R.string.combat_intent_display,
                 getString(type.labelRes), currentIntent.estimatedDamage));
@@ -447,7 +452,8 @@ public class CombatDialogFragment extends DialogFragment {
     private enum MonsterIntentType {
         QUICK(R.string.combat_intent_quick, 0.75f, 0.0f, R.color.intent_quick),
         GUARD_BREAK(R.string.combat_intent_guard_break, 1.05f, 0.5f, R.color.intent_guard),
-        HEAVY(R.string.combat_intent_heavy, 1.35f, 0.15f, R.color.intent_heavy);
+        HEAVY(R.string.combat_intent_heavy, 1.35f, 0.15f, R.color.intent_heavy),
+        RANGED(R.string.combat_intent_ranged, 0.9f, 0.65f, R.color.intent_ranged);
 
         final int labelRes;
         final float attackMultiplier;
@@ -469,9 +475,11 @@ public class CombatDialogFragment extends DialogFragment {
             return Math.max(0, damage);
         }
 
-        static MonsterIntentType randomType(java.util.Random random) {
+        static MonsterIntentType randomType(java.util.Random random, boolean allowRanged) {
             int roll = random.nextInt(100);
-            if (roll < 45) {
+            if (allowRanged && roll < 20) {
+                return RANGED;
+            } else if (roll < 45) {
                 return QUICK;
             } else if (roll < 80) {
                 return GUARD_BREAK;

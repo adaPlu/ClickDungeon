@@ -64,7 +64,9 @@ public class GameActivityAbilityTest {
         GameActivity activity = launchActivity(PlayerClass.THIEF);
         Tile[][] grid = buildEmptyGrid();
         Tile trapTile = new Tile(TileType.TRAP_FIRE);
+        Tile farTrap = new Tile(TileType.TRAP_ACID);
         grid[1][1] = trapTile;
+        grid[4][4] = farTrap;
         setField(activity, "dungeonGrid", grid);
         invoke(activity, "renderGrid");
 
@@ -77,6 +79,7 @@ public class GameActivityAbilityTest {
         invoke(activity, "handleAbilityTargetSelection", 1, 1);
 
         assertTrue("Trap tile should now be revealed", trapTile.isRevealed());
+        assertFalse("Far trap outside scan radius should remain hidden", farTrap.isRevealed());
         int cooldownFloor = (int) getField(activity, "nextAbilityAvailableFloor");
         assertEquals(4, cooldownFloor);
     }

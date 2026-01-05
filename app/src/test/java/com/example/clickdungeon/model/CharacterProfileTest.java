@@ -1,0 +1,77 @@
+package com.example.clickdungeon.model;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
+import android.content.Context;
+
+import androidx.test.core.app.ApplicationProvider;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.Config;
+
+@RunWith(RobolectricTestRunner.class)
+@Config(sdk = 34)
+public class CharacterProfileTest {
+
+    @Test
+    public void constructorSetsStatsPerClass() {
+        CharacterProfile knight = new CharacterProfile("K", PlayerClass.KNIGHT);
+        assertEquals(10, knight.getMaxHP());
+        assertEquals(2, knight.getAttack());
+        assertEquals(3, knight.getDefense());
+
+        CharacterProfile thief = new CharacterProfile("T", PlayerClass.THIEF);
+        assertEquals(6, thief.getMaxHP());
+        assertEquals(4, thief.getAttack());
+        assertEquals(2, thief.getDefense());
+
+        CharacterProfile wizard = new CharacterProfile("W", PlayerClass.WIZARD);
+        assertEquals(4, wizard.getMaxHP());
+        assertEquals(3, wizard.getAttack());
+        assertEquals(1, wizard.getDefense());
+    }
+
+    @Test
+    public void addExperienceLevelsUpAndCarriesRemainder() {
+        CharacterProfile profile = new CharacterProfile("Test", PlayerClass.KNIGHT);
+        profile.addExperience(250);
+
+        assertEquals(2, profile.getLevel());
+        assertEquals(150, profile.getXp());
+        assertEquals(20, profile.getMaxHP());
+        assertEquals(20, profile.getCurrentHP());
+        assertEquals(4, profile.getAttack());
+        assertEquals(4, profile.getDefense());
+    }
+
+    @Test
+    public void takeDamageClampsToZero() {
+        CharacterProfile profile = new CharacterProfile("Test", PlayerClass.THIEF);
+        profile.takeDamage(999);
+
+        assertTrue(profile.isDead());
+        assertEquals(0, profile.getCurrentHP());
+    }
+
+    @Test
+    public void animatedPlayerCanBeStored() {
+        CharacterProfile profile = new CharacterProfile("Test", PlayerClass.KNIGHT);
+        assertNull(profile.getAnimatedPlayer());
+
+        Context context = ApplicationProvider.getApplicationContext();
+        AnimatedPlayer animatedPlayer = new AnimatedPlayer(
+                context,
+                PlayerClass.KNIGHT,
+                64,
+                64,
+                4,
+                120);
+        profile.setAnimatedPlayer(animatedPlayer);
+
+        assertEquals(animatedPlayer, profile.getAnimatedPlayer());
+    }
+}

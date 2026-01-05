@@ -3,6 +3,7 @@ package com.example.clickdungeon.util;
 import android.content.Context;
 import android.media.AudioAttributes;
 import android.media.SoundPool;
+import android.util.Log;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
@@ -14,11 +15,16 @@ import java.util.Map;
 
 public final class SoundManager {
 
+    private static final String TAG = "SoundManager";
     public static final String KEY_EFFECT_TREASURE = "effect_treasure";
     public static final String KEY_EFFECT_POSITIVE = "effect_positive";
     public static final String KEY_EFFECT_TRAP = "effect_trap";
     public static final String KEY_EFFECT_VICTORY = "effect_victory";
     public static final String KEY_EFFECT_DEFEAT = "effect_defeat";
+    public static final String KEY_EFFECT_KEY_PICKUP = "effect_key_pickup";
+    public static final String KEY_EFFECT_LEVEL_UP = "effect_level_up";
+    public static final String KEY_EFFECT_INVENTORY = "effect_inventory";
+    public static final String KEY_EFFECT_SHOP_PURCHASE = "effect_shop_purchase";
 
     private static SoundPool soundPool;
     private static boolean isInitialized = false;
@@ -103,6 +109,10 @@ public final class SoundManager {
         register(context, KEY_EFFECT_TRAP, R.raw.slime_attack);
         register(context, KEY_EFFECT_VICTORY, R.raw.knight_defend);
         register(context, KEY_EFFECT_DEFEAT, R.raw.demon_attack);
+        register(context, KEY_EFFECT_KEY_PICKUP, R.raw.player_move);
+        register(context, KEY_EFFECT_LEVEL_UP, R.raw.wizard_spell_casting);
+        register(context, KEY_EFFECT_INVENTORY, R.raw.player_defend);
+        register(context, KEY_EFFECT_SHOP_PURCHASE, R.raw.knight_attack);
 
         isInitialized = true;
         syncMuteFromSettings(context);
@@ -112,34 +122,39 @@ public final class SoundManager {
         try {
             int soundId = soundPool.load(context, resId, 1);
             soundMap.put(key, soundId);
-        } catch (RuntimeException ignored) {
-            // Missing or invalid sound resource. We skip registration but leave the app running.
+        } catch (RuntimeException ex) {
+            Log.w(TAG, "Failed to register sound for key=" + key + " (resource " + resId + ")", ex);
         }
     }
 
     public static void play(String key) {
+        playAndReport(key);
+    }
+
+    /**
+     * Attempts to play a sound and reports success. Always notifies the test listener so tests can
+     * assert requested keys even if the pool is muted or uninitialised.
+     *
+     * @return true if a sound ID was found and play() was issued, false otherwise.
+     */
+    public static boolean playAndReport(String key) {
         notifyTestListener(key);
         if (!isInitialized || soundPool == null || key == null || key.isEmpty() || isMuted) {
-            return;
+            return false;
         }
 
-        Integer soundId = soundMap.get(key);
-        if (soundId == null && key.contains("_")) {
-            String[] parts = key.split("_", 2);
-            if (parts.length == 2) {
-                String fallbackKey = "player_" + parts[1];
-                soundId = soundMap.get(fallbackKey);
-            }
-        }
-
+        Integer soundId = resolveSoundId(key);
         if (soundId != null) {
             soundPool.play(soundId, 1f, 1f, 1, 0, 1f);
             lastPlayedKey = key;
+            return true;
         }
+        Log.w(TAG, "Sound key not registered: " + key);
+        return false;
     }
 
     public static void playEffect(String key) {
-        play(key);
+        playAndReport(key);
     }
 
     public static void playForMonster(String monsterType, String action) {
@@ -210,6 +225,11 @@ public final class SoundManager {
     }
 
     @VisibleForTesting
+    public static java.util.Set<String> getRegisteredKeys() {
+        return new java.util.HashSet<>(soundMap.keySet());
+    }
+
+    @VisibleForTesting
     public interface PlaybackListener {
         void onPlayRequest(String key);
     }
@@ -223,5 +243,28 @@ public final class SoundManager {
         if (testPlaybackListener != null && key != null && !key.isEmpty()) {
             testPlaybackListener.onPlayRequest(key);
         }
+    }
+
+    @Nullable
+    private static Integer resolveSoundId(@Nullable String key) {
+        if (key == null) {
+            return null;
+        }
+        Integer soundId = soundMap.get(key);
+        if (soundId != null) {
+            return soundId;
+        }
+        if (key.contains("_")) {
+            String[] parts = key.split("_", 2);
+            if (parts.length == 2) {
+                // Fall back to generic player sounds for missing class/monster variants.
+                String fallbackKey = "player_" + parts[1];
+                soundId = soundMap.get(fallbackKey);
+                if (soundId != null) {
+                    Log.d(TAG, "Falling back to generic player sound for key=" + key);
+                }
+            }
+        }
+        return soundId;
     }
 }

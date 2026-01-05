@@ -60,7 +60,7 @@ public class MonsterFactory {
 
             case "dragon":
                 return new AnimatedMonster(context, "Dragon", 12, 6, 4, 4, 150,
-                        R.drawable.demon_sprite_sheet,
+                        R.drawable.dragon_sprite_sheet,
                         R.raw.dragon_move,
                         R.raw.dragon_attack,
                         R.raw.dragon_defend);

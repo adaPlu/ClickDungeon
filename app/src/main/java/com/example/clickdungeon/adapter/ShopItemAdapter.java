@@ -37,8 +37,11 @@ public class ShopItemAdapter extends RecyclerView.Adapter<ShopItemAdapter.ViewHo
         @SuppressLint("DefaultLocale")
         public void bind(final ShopItem item, final OnItemClickListener listener) {
             nameView.setText(item.getName());
-            priceView.setText(String.format("Price: %d", item.getPrice()));
+            String stockLabel = item.getStock() <= 0 ? "(Out of stock)" : "Stock: " + item.getStock();
+            priceView.setText(String.format("Price: %d  %s", item.getPrice(), stockLabel));
 
+            itemView.setAlpha(item.getStock() <= 0 ? 0.5f : 1f);
+            itemView.setEnabled(item.getStock() > 0);
             itemView.setOnClickListener(v -> listener.onItemClick(item));
         }
     }

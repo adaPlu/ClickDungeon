@@ -22,6 +22,7 @@ public class MainMenuActivity extends AppCompatActivity {
         Button btnAchievements = findViewById(R.id.btnAchievements);
         Button btnShop = findViewById(R.id.btnShop);
         Button btnSettings = findViewById(R.id.btnSettings);
+        Button btnInventory = findViewById(R.id.btnInventory);
 
         updateContinueState();
 
@@ -44,6 +45,9 @@ public class MainMenuActivity extends AppCompatActivity {
 
         btnSettings.setOnClickListener(v ->
                 startActivity(new Intent(this, SettingsActivity.class)));
+
+        btnInventory.setOnClickListener(v ->
+                startActivity(new Intent(this, InventoryActivity.class)));
     }
 
     @Override

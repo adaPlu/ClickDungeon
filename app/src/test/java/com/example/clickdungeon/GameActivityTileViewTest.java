@@ -54,9 +54,8 @@ public class GameActivityTileViewTest {
         ImageView imageTile = tileView.findViewById(R.id.imageTile);
         ProgressBar hpBar = tileView.findViewById(R.id.monsterHpBar);
 
-        assertEquals(View.VISIBLE, textTile.getVisibility());
-        assertEquals("?", textTile.getText().toString());
-        assertEquals(View.GONE, imageTile.getVisibility());
+        assertEquals(View.GONE, textTile.getVisibility());
+        assertEquals(View.VISIBLE, imageTile.getVisibility());
         assertEquals(View.GONE, hpBar.getVisibility());
         assertEquals(activity.getString(R.string.tile_desc_hidden), tileView.getContentDescription());
     }

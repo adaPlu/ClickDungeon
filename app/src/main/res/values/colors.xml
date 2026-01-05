@@ -10,5 +10,6 @@
     <color name="intent_quick">#FF4CAF50</color>
     <color name="intent_heavy">#FFE53935</color>
     <color name="intent_guard">#FFFB8C00</color>
+    <color name="intent_ranged">#FF1E88E5</color>
     <color name="player_highlight_overlay">#662196F3</color>
 </resources>

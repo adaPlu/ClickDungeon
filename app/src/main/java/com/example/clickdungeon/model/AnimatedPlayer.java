@@ -26,23 +26,36 @@ public class AnimatedPlayer {
 
     public AnimatedPlayer(Context context, PlayerClass playerClass, int frameWidth, int frameHeight, int frameCount, long frameDuration) {
         this.playerClass = playerClass;
-        this.frameWidth = frameWidth;
-        this.frameHeight = frameHeight;
-        this.frameCount = frameCount;
         this.frameDuration = frameDuration;
 
         int spriteSheetResId = getSpriteResourceForClass(playerClass);
         Bitmap spriteSheet = BitmapFactory.decodeResource(context.getResources(), spriteSheetResId);
 
-        int rows = spriteSheet.getHeight() / frameHeight;
-        int cols = spriteSheet.getWidth() / frameWidth;
+        // Derive frame sizing from the sprite sheet (4 rows: idle/move/attack/defend; columns = frames)
+        int rows = 4;
+        int derivedFrameHeight = rows > 0 ? spriteSheet.getHeight() / rows : spriteSheet.getHeight();
+        if (derivedFrameHeight <= 0) {
+            derivedFrameHeight = spriteSheet.getHeight();
+        }
+        // Derive columns from the sheet dimensions so assets can vary by class without code changes.
+        int derivedFrameCount = Math.max(1, spriteSheet.getWidth() / Math.max(1, derivedFrameHeight));
+        int derivedFrameWidth = spriteSheet.getWidth() / derivedFrameCount;
+
+        this.frameWidth = derivedFrameWidth;
+        this.frameHeight = derivedFrameHeight;
+        this.frameCount = derivedFrameCount;
 
         // Assuming row 0 = idle, 1 = move, 2 = attack, 3 = defend
         String[] actions = {"idle", "move", "attack", "defend"};
         for (int i = 0; i < actions.length && i < rows; i++) {
-            Bitmap[] frames = new Bitmap[frameCount];
-            for (int j = 0; j < frameCount && j < cols; j++) {
-                frames[j] = Bitmap.createBitmap(spriteSheet, j * frameWidth, i * frameHeight, frameWidth, frameHeight);
+            Bitmap[] frames = new Bitmap[this.frameCount];
+            for (int j = 0; j < this.frameCount; j++) {
+                frames[j] = Bitmap.createBitmap(
+                        spriteSheet,
+                        j * this.frameWidth,
+                        i * this.frameHeight,
+                        this.frameWidth,
+                        this.frameHeight);
             }
             animations.put(actions[i], frames);
         }
@@ -69,7 +82,9 @@ public class AnimatedPlayer {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             frames = animations.getOrDefault(currentAction, animations.get("idle"));
         }
-        if (frames == null || frames.length == 0) return null;
+        if (frames == null || frames.length == 0) {
+            return null;
+        }
 
         if (now - lastUpdateTime >= frameDuration) {
             currentFrameIndex = (currentFrameIndex + 1) % frames.length;

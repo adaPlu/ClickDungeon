@@ -21,11 +21,13 @@ public class AchievementAdapter extends RecyclerView.Adapter<AchievementAdapter.
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         TextView titleView, descriptionView;
+        TextView statusView;
 
         public ViewHolder(View view) {
             super(view);
             titleView = view.findViewById(R.id.textAchievementTitle);
             descriptionView = view.findViewById(R.id.textAchievementDescription);
+            statusView = view.findViewById(R.id.textAchievementStatus);
         }
     }
 
@@ -42,6 +44,9 @@ public class AchievementAdapter extends RecyclerView.Adapter<AchievementAdapter.
         Achievement achievement = achievements.get(position);
         holder.titleView.setText(achievement.getTitle());
         holder.descriptionView.setText(achievement.getDescription());
+        boolean unlocked = achievement.isUnlocked();
+        holder.statusView.setText(unlocked ? "Completed" : "Locked");
+        holder.itemView.setAlpha(unlocked ? 1f : 0.65f);
     }
 
     @Override

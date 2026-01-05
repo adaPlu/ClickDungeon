@@ -72,12 +72,14 @@ public class SaveManager {
             String profileJson = prefs.getString(KEY_PROFILE, null);
             String gridJson = prefs.getString(KEY_GRID, null);
             if (profileJson == null || gridJson == null) {
+                // Treat partial/corrupt saves as missing to avoid crashes on resume.
                 return null;
             }
 
             CharacterProfile profile = gson.fromJson(profileJson, CharacterProfile.class);
             Tile[][] dungeonGrid = gson.fromJson(gridJson, Tile[][].class);
             if (profile == null || dungeonGrid == null) {
+                // Guard against malformed JSON or schema drift.
                 return null;
             }
 

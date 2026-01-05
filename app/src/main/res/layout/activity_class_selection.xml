@@ -4,13 +4,17 @@
     android:padding="24dp"
     android:gravity="center_horizontal"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_screen_dungeon">
 
     <EditText
         android:id="@+id/editName"
         android:hint="Enter character name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="@drawable/panel_bg"
+        android:textColor="#F6E6C6"
+        android:textColorHint="#C9B28A"
         android:inputType="textPersonName"
         android:maxLines="1"
         android:layout_marginBottom="16dp" />
@@ -24,19 +28,20 @@
         android:contentDescription="Class Preview" />
 
 	<TextView
-		android:id="@+id/textSlotDisplay"
-		android:layout_width="wrap_content"
-		android:layout_height="wrap_content"
-		android:text="Slot: 1"
-		android:textSize="16sp"
-		android:textColor="#888888"
-		android:layout_marginBottom="8dp" />
+        android:id="@+id/textSlotDisplay"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Slot: 1"
+        android:textSize="16sp"
+        android:textColor="#D6C2A5"
+        android:layout_marginBottom="8dp" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Choose your class:"
         android:textSize="18sp"
+        android:textColor="#F6E6C6"
         android:layout_marginBottom="12dp" />
 
     <LinearLayout
@@ -50,6 +55,10 @@
             android:text="Knight"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:background="@drawable/menu_button_bg"
+            android:textColor="#FFF3D5"
+            android:drawableStart="@drawable/icon_knight"
+            android:drawablePadding="8dp"
             android:layout_marginEnd="8dp" />
 
         <Button
@@ -57,13 +66,21 @@
             android:text="Thief"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:background="@drawable/menu_button_bg"
+            android:textColor="#FFF3D5"
+            android:drawableStart="@drawable/icon_thief"
+            android:drawablePadding="8dp"
             android:layout_marginEnd="8dp" />
 
         <Button
             android:id="@+id/btnWizard"
             android:text="Wizard"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:background="@drawable/menu_button_bg"
+            android:textColor="#FFF3D5"
+            android:drawableStart="@drawable/icon_wizard"
+            android:drawablePadding="8dp" />
     </LinearLayout>
 
     <Button
@@ -71,5 +88,7 @@
         android:text="Start Adventure"
         android:layout_marginTop="24dp"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:background="@drawable/menu_button_bg"
+        android:textColor="#FFF3D5" />
 </LinearLayout>

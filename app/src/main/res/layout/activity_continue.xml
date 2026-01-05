@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_screen_dungeon">
 
     <LinearLayout 
         android:layout_width="match_parent"
@@ -14,7 +15,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:padding="8dp">
+            android:padding="12dp"
+            android:layout_marginBottom="12dp"
+            android:background="@drawable/panel_bg">
 
             <TextView
                 android:id="@+id/slot1Info"
@@ -22,13 +25,16 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="Slot 1 Info"
-                android:textSize="16sp" />
+                android:textSize="16sp"
+                android:textColor="#F6E6C6" />
 
             <Button
                 android:id="@+id/slot1Button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Slot 1 Action" />
+                android:text="Slot 1 Action"
+                android:background="@drawable/menu_button_bg"
+                android:textColor="#FFF3D5" />
         </LinearLayout>
 
         <!-- Slot 2 -->
@@ -36,7 +42,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:padding="8dp">
+            android:padding="12dp"
+            android:layout_marginBottom="12dp"
+            android:background="@drawable/panel_bg">
 
             <TextView
                 android:id="@+id/slot2Info"
@@ -44,13 +52,16 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="Slot 2 Info"
-                android:textSize="16sp" />
+                android:textSize="16sp"
+                android:textColor="#F6E6C6" />
 
             <Button
                 android:id="@+id/slot2Button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Slot 2 Action" />
+                android:text="Slot 2 Action"
+                android:background="@drawable/menu_button_bg"
+                android:textColor="#FFF3D5" />
         </LinearLayout>
 
         <!-- Slot 3 -->
@@ -58,7 +69,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:padding="8dp">
+            android:padding="12dp"
+            android:layout_marginBottom="12dp"
+            android:background="@drawable/panel_bg">
 
             <TextView
                 android:id="@+id/slot3Info"
@@ -66,13 +79,16 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="Slot 3 Info"
-                android:textSize="16sp" />
+                android:textSize="16sp"
+                android:textColor="#F6E6C6" />
 
             <Button
                 android:id="@+id/slot3Button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Slot 3 Action" />
+                android:text="Slot 3 Action"
+                android:background="@drawable/menu_button_bg"
+                android:textColor="#FFF3D5" />
         </LinearLayout>
 
         <!-- Slot 4 -->
@@ -80,7 +96,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:padding="8dp">
+            android:padding="12dp"
+            android:layout_marginBottom="12dp"
+            android:background="@drawable/panel_bg">
 
             <TextView
                 android:id="@+id/slot4Info"
@@ -88,13 +106,16 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="Slot 4 Info"
-                android:textSize="16sp" />
+                android:textSize="16sp"
+                android:textColor="#F6E6C6" />
 
             <Button
                 android:id="@+id/slot4Button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Slot 4 Action" />
+                android:text="Slot 4 Action"
+                android:background="@drawable/menu_button_bg"
+                android:textColor="#FFF3D5" />
         </LinearLayout>
 
     </LinearLayout>

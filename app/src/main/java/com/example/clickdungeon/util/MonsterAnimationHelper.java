@@ -37,8 +37,10 @@ public final class MonsterAnimationHelper {
                 config.moveSoundRes,
                 config.attackSoundRes,
                 config.defendSoundRes);
+        clone.setHasRangedAttack(source.hasRangedAttack());
         int hpDelta = clone.getCurrentHP() - source.getCurrentHP();
         if (hpDelta > 0) {
+            // Sync the clone's current HP to the source by applying damage delta.
             clone.takeDamage(hpDelta);
         }
         return clone;

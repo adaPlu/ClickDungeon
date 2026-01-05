@@ -81,4 +81,12 @@ public class SettingsManagerTest {
         assertEquals(12, difficulty.scaleXpReward(10));
         assertEquals(12, difficulty.scaleGoldReward(10));
     }
+
+    @Test
+    public void difficultyFromValueFallsBackToDefault() {
+        SettingsManager.setDifficulty(context, "not_a_mode");
+
+        assertEquals(SettingsManager.Difficulty.NORMAL, SettingsManager.getDifficultyMode(context));
+        assertEquals("NORMAL", SettingsManager.getDifficulty(context));
+    }
 }

@@ -4,6 +4,7 @@ public class Monster {
     private int maxHP;
     private int currentHP;
     private int attack;
+    private boolean hasRangedAttack;
 
     private String image;
 
@@ -18,6 +19,7 @@ public class Monster {
         this.attack = attack;
         this.defense = defense;
         this.image = image;
+        this.hasRangedAttack = false;
     }
 
     public int getMaxHP() {
@@ -42,6 +44,14 @@ public class Monster {
 
     public String getImage() {
         return image;
+    }
+
+    public boolean hasRangedAttack() {
+        return hasRangedAttack;
+    }
+
+    public void setHasRangedAttack(boolean hasRangedAttack) {
+        this.hasRangedAttack = hasRangedAttack;
     }
 
     public boolean isDead() {

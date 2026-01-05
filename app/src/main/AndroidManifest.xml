@@ -32,6 +32,7 @@
         <activity android:name=".AchievementsActivity" />
         <activity android:name=".SettingsActivity" />
         <activity android:name=".ShopActivity" />
+        <activity android:name=".InventoryActivity" />
 
     </application>
 </manifest>

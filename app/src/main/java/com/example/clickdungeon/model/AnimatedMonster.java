@@ -62,7 +62,7 @@ public class AnimatedMonster extends Monster {
     public Bitmap getCurrentFrame() {
         long now = System.currentTimeMillis();
 
-        // Automatically reset action back to idle after short delay
+        // Automatically reset action back to idle after a short animation window.
         if (!"idle".equals(currentAction) && now - actionStartTime > 600) {
             currentAction = "idle";
             currentFrame = 0;

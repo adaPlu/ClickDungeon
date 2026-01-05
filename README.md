@@ -44,9 +44,10 @@
    - Turn-based combat dialog with attack, potion, and flee options.
    - Enemies telegraph upcoming attacks with animated intent bars and contextual combat summaries that call out turns, damage dealt/taken, and potion usage on victory, retreat, or defeat.
    - Monsters scale per floor, drawing from a template pool with unique emoji and damage variance.
+   - Animated combatants use `AnimatedPlayer`/`AnimatedMonster` sprite sheets with class/monster audio cues.
 
 9. **Modular Architecture**
-   - **SharedPreferences** used throughout for saving grid states, gold, and achievements.
+   - **SharedPreferences** used throughout for saving grid states, gold, and achievements (plain JSON with no integrity/encryption; see Security note).
    - Separate activities for each feature (shop, achievements, settings, etc.).
    - Clean codebase supports expansions like IAP, ads, new classes, and more.
 
@@ -60,8 +61,8 @@
     - First-run tutorial surfaces difficulty-aware tips that respect player preferences.
 
 12. **Automated Verification**
-    - Robolectric suites cover settings (including the Settings screen UI), inventory, achievement, save-slot, balance, onboarding, feedback, and game state helpers.
-    - Grid generation and reward tuning now have regression protection via deterministic tests.
+    - Robolectric suites cover settings UI, inventory, achievements, save slots, balance, onboarding, feedback, and combat flows.
+    - Expanded unit tests now cover model classes, adapters, shop flows, and animation helpers.
 
 ---
 
@@ -146,6 +147,8 @@ ClickDungeon/
 - [x] Resume game from main menu with save slots  
 - [x] Key/stair integration and colored stair mechanics
 - [x] Combat with various monsters
+- [x] Animated combatants and grid sprite updates
+- [x] Expanded Robolectric/unit test coverage for models, adapters, and flows
 - [ ] Boss floors & advanced enemy AI (planned)  
 - [ ] Additional classes and abilities (planned)
 
@@ -154,11 +157,11 @@ ClickDungeon/
 ## 🗺️ Roadmap
 
 ### Near-Term Priorities
-1. **Integrate animations & richer feedback** — Hook up `AnimatedPlayer`/`AnimatedMonster` sprites and route events through `SoundManager` for a more tactile feel.
-2. **Improve inventory & economy UX** — Surface a lightweight inventory panel, emit feedback when items drop/are consumed, and broaden shop offerings tied to `GameBalance`.
-3. **Expand automated coverage** — Add Robolectric tests around the new ability cooldowns, shop flows, and inventory UI to catch regressions early.
-4. **Prototype boss and class expansions** — Outline boss floor structure plus perk trees or new abilities that build on the balanced combat loop.
-5. **Instrumentation & localization prep** — Add analytics/remote config hooks and ready strings/tooltips for future translation.
+1. **Improve inventory & economy UX** -> Surface a lightweight inventory panel, emit feedback when items drop/are consumed, and broaden shop offerings tied to `GameBalance`.
+2. **Prototype boss and class expansions** -> Outline boss floor structure plus perk trees or new abilities that build on the balanced combat loop.
+3. **Balance pass on rewards** -> Validate gold/xp pacing across difficulties and floors with targeted playtest scripts.
+4. **Instrumentation & localization prep** -> Add analytics/remote config hooks and ready strings/tooltips for future translation.
+5. **Polish accessibility copy** -> Refine screen reader strings and onboarding hints for clarity.
 
 ### Long-Term Milestones
 - **Milestone A — Boss Floor Launch:** Boss-only floors with scripted encounters, multi-phase combat behaviors, and tailored loot pacing to capstone each dungeon run.
