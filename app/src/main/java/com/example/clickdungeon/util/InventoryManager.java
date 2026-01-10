@@ -15,6 +15,7 @@ public class InventoryManager {
 
     private static final String PREFS_NAME = "player_prefs";
     private static final String INVENTORY_KEY = "inventory";
+    private static final int INVENTORY_SCHEMA_VERSION = 1;
     private static final String GOLD_KEY = "gold";
     private static final String PLATINUM_KEY = "platinum";
     private static final int DEFAULT_GOLD = GameBalance.STARTING_GOLD;
@@ -24,20 +25,20 @@ public class InventoryManager {
     }
 
     private static SharedPreferences getPrefs(Context context) {
-        return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        return SecurePreferences.get(context, PREFS_NAME);
     }
 
     public static synchronized List<InventoryItem> loadInventory(Context context) {
-        SharedPreferences prefs = getPrefs(context);
-        String json = prefs.getString(INVENTORY_KEY, null);
+        PersistedBlobStore.LoadResult result =
+                PersistedBlobStore.load(context, PREFS_NAME, INVENTORY_KEY, INVENTORY_SCHEMA_VERSION);
+        String json = result.status == PersistedBlobStore.LoadResult.Status.OK ? result.json : null;
         Type type = new TypeToken<List<InventoryItem>>() {}.getType();
         return json != null ? new Gson().fromJson(json, type) : new ArrayList<>();
     }
 
     public static synchronized void saveInventory(Context context, List<InventoryItem> inventory) {
-        SharedPreferences prefs = getPrefs(context);
         String json = new Gson().toJson(inventory);
-        prefs.edit().putString(INVENTORY_KEY, json).apply();
+        PersistedBlobStore.save(context, PREFS_NAME, INVENTORY_KEY, INVENTORY_SCHEMA_VERSION, json);
     }
 
     public static synchronized void adjustItemQuantity(Context context, String itemName, int delta) {
@@ -119,7 +120,7 @@ public class InventoryManager {
      * Test/support hook to wipe inventory state for a fresh scenario.
      */
     public static synchronized void clearInventory(Context context) {
-        saveInventory(context, new ArrayList<>());
+        PersistedBlobStore.clear(context, PREFS_NAME, INVENTORY_KEY);
     }
 
     /**

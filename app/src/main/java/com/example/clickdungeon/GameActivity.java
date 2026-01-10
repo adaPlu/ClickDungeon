@@ -74,8 +74,16 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
     private enum AbilityTargetMode {
         NONE,
         WIZARD_FIREBALL,
+        WIZARD_FROST_NOVA,
+        WIZARD_CHAIN_LIGHTNING,
+        WIZARD_METEOR,
         THIEF_SCAN,
-        KNIGHT_SHIELD
+        THIEF_SHADOWSTEP,
+        THIEF_DISARM_EXPERT,
+        THIEF_AMBUSH,
+        KNIGHT_SHIELD,
+        KNIGHT_TAUNT,
+        KNIGHT_VALIANT_STRIKE
     }
 
     public static final String EXTRA_SLOT_INDEX = "com.example.clickdungeon.extra.SLOT_INDEX";
@@ -170,6 +178,7 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
     private int knightShieldStrength = 0;
     private int knightShieldRow = -1;
     private int knightShieldCol = -1;
+    private int smokeVeilCharges = 0;
     private int lastFloorClearAwarded = -1;
     private final Map<String, AnimatedMonster> gridMonsterAnimations = new HashMap<>();
     private final Map<String, Long> gridAnimationLastFrameMs = new HashMap<>();
@@ -295,6 +304,7 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         clearKnightShield(0);
         pendingAbilityTargetMode = AbilityTargetMode.NONE;
         nextAbilityAvailableFloor = currentFloor;
+        smokeVeilCharges = 0;
         int potionCount = 3;
         if (profile != null && profile.getPlayerClass() == PlayerClass.WIZARD) {
             potionCount = 5;
@@ -318,6 +328,7 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         resetPlayerPositionToCenter();
         clearKnightShield(0);
         pendingAbilityTargetMode = AbilityTargetMode.NONE;
+        smokeVeilCharges = 0;
         renderGrid();
         updateFloorDisplay();
         frozenTurnsLeft = 0;
@@ -393,30 +404,113 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
             return;
         }
         PlayerClass playerClass = profile.getPlayerClass();
+        String abilityName = ability != null ? ability.getName() : "";
         switch (playerClass) {
             case WIZARD:
-                if (!consumeWizardMp()) {
-                    Toast.makeText(this, R.string.not_enough_mp, Toast.LENGTH_SHORT).show();
-                    return;
+                if (PlayerClass.ABILITY_WIZARD_ARCANE_SHIELD.equals(abilityName)) {
+                    if (!consumeWizardMp(abilityName)) {
+                        Toast.makeText(this, R.string.not_enough_mp, Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    if (executeWizardArcaneShield()) {
+                        consumeAbilityUse();
+                        persistGameState();
+                    }
+                    break;
                 }
-                beginAbilityTargeting(AbilityTargetMode.WIZARD_FIREBALL, R.plurals.ability_target_prompt_fireball);
+                if (PlayerClass.ABILITY_WIZARD_FIREBALL.equals(abilityName)) {
+                    if (!consumeWizardMp(abilityName)) {
+                        Toast.makeText(this, R.string.not_enough_mp, Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    beginAbilityTargeting(AbilityTargetMode.WIZARD_FIREBALL, R.plurals.ability_target_prompt_fireball);
+                    break;
+                }
+                if (PlayerClass.ABILITY_WIZARD_FROST_NOVA.equals(abilityName)) {
+                    if (!consumeWizardMp(abilityName)) {
+                        Toast.makeText(this, R.string.not_enough_mp, Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    beginAbilityTargeting(AbilityTargetMode.WIZARD_FROST_NOVA, R.plurals.ability_target_prompt_frost_nova);
+                    break;
+                }
+                if (PlayerClass.ABILITY_WIZARD_CHAIN_LIGHTNING.equals(abilityName)) {
+                    if (!consumeWizardMp(abilityName)) {
+                        Toast.makeText(this, R.string.not_enough_mp, Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    beginAbilityTargeting(AbilityTargetMode.WIZARD_CHAIN_LIGHTNING, R.plurals.ability_target_prompt_chain_lightning);
+                    break;
+                }
+                if (PlayerClass.ABILITY_WIZARD_METEOR.equals(abilityName)) {
+                    if (!consumeWizardMp(abilityName)) {
+                        Toast.makeText(this, R.string.not_enough_mp, Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    beginAbilityTargeting(AbilityTargetMode.WIZARD_METEOR, R.plurals.ability_target_prompt_meteor);
+                }
                 break;
             case THIEF:
-                beginAbilityTargeting(AbilityTargetMode.THIEF_SCAN, R.plurals.ability_target_prompt_scan);
+                if (PlayerClass.ABILITY_THIEF_VEIL_OF_SMOKE.equals(abilityName)) {
+                    if (executeThiefVeilOfSmoke()) {
+                        consumeAbilityUse();
+                        persistGameState();
+                    }
+                    break;
+                }
+                if (PlayerClass.ABILITY_THIEF_TRAP_SCAN.equals(abilityName)) {
+                    beginAbilityTargeting(AbilityTargetMode.THIEF_SCAN, R.plurals.ability_target_prompt_scan);
+                    break;
+                }
+                if (PlayerClass.ABILITY_THIEF_SHADOWSTEP.equals(abilityName)) {
+                    beginAbilityTargeting(AbilityTargetMode.THIEF_SHADOWSTEP, R.plurals.ability_target_prompt_shadowstep);
+                    break;
+                }
+                if (PlayerClass.ABILITY_THIEF_DISARM_EXPERT.equals(abilityName)) {
+                    beginAbilityTargeting(AbilityTargetMode.THIEF_DISARM_EXPERT, R.plurals.ability_target_prompt_disarm);
+                    break;
+                }
+                if (PlayerClass.ABILITY_THIEF_AMBUSH.equals(abilityName)) {
+                    beginAbilityTargeting(AbilityTargetMode.THIEF_AMBUSH, R.plurals.ability_target_prompt_ambush);
+                }
                 break;
             case KNIGHT:
-                beginAbilityTargeting(AbilityTargetMode.KNIGHT_SHIELD, R.plurals.ability_target_prompt_shield);
+                if (PlayerClass.ABILITY_KNIGHT_FORTIFY.equals(abilityName)) {
+                    if (executeKnightFortify()) {
+                        consumeAbilityUse();
+                        persistGameState();
+                    }
+                    break;
+                }
+                if (PlayerClass.ABILITY_KNIGHT_GUARDIANS_OATH.equals(abilityName)) {
+                    if (executeKnightGuardiansOath()) {
+                        consumeAbilityUse();
+                        persistGameState();
+                    }
+                    break;
+                }
+                if (PlayerClass.ABILITY_KNIGHT_SHIELD_WALL.equals(abilityName)) {
+                    beginAbilityTargeting(AbilityTargetMode.KNIGHT_SHIELD, R.plurals.ability_target_prompt_shield);
+                    break;
+                }
+                if (PlayerClass.ABILITY_KNIGHT_TAUNT.equals(abilityName)) {
+                    beginAbilityTargeting(AbilityTargetMode.KNIGHT_TAUNT, R.plurals.ability_target_prompt_taunt);
+                    break;
+                }
+                if (PlayerClass.ABILITY_KNIGHT_VALIANT_STRIKE.equals(abilityName)) {
+                    beginAbilityTargeting(AbilityTargetMode.KNIGHT_VALIANT_STRIKE, R.plurals.ability_target_prompt_valiant_strike);
+                }
                 break;
             default:
                 break;
         }
     }
 
-    private boolean consumeWizardMp() {
+    private boolean consumeWizardMp(String abilityName) {
         if (profile == null || !profile.usesMp()) {
             return true;
         }
-        int cost = 3;
+        int cost = getWizardMpCost(abilityName);
         if (profile.getCurrentMP() < cost) {
             return false;
         }
@@ -424,6 +518,20 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         updateMpCounter();
         persistGameState();
         return true;
+    }
+
+    private int getWizardMpCost(String abilityName) {
+        if (PlayerClass.ABILITY_WIZARD_METEOR.equals(abilityName)) {
+            return 7;
+        }
+        if (PlayerClass.ABILITY_WIZARD_CHAIN_LIGHTNING.equals(abilityName)) {
+            return 5;
+        }
+        if (PlayerClass.ABILITY_WIZARD_FROST_NOVA.equals(abilityName)
+                || PlayerClass.ABILITY_WIZARD_ARCANE_SHIELD.equals(abilityName)) {
+            return 4;
+        }
+        return 3;
     }
 
     private void beginAbilityTargeting(AbilityTargetMode mode, int promptPluralResId) {
@@ -1277,11 +1385,35 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
             case WIZARD_FIREBALL:
                 resolved = executeWizardFireball(row, col);
                 break;
+            case WIZARD_FROST_NOVA:
+                resolved = executeWizardFrostNova(row, col);
+                break;
+            case WIZARD_CHAIN_LIGHTNING:
+                resolved = executeWizardChainLightning(row, col);
+                break;
+            case WIZARD_METEOR:
+                resolved = executeWizardMeteor(row, col);
+                break;
             case THIEF_SCAN:
                 resolved = executeThiefScan(row, col);
                 break;
+            case THIEF_SHADOWSTEP:
+                resolved = executeThiefShadowstep(row, col);
+                break;
+            case THIEF_DISARM_EXPERT:
+                resolved = executeThiefDisarmExpert(row, col);
+                break;
+            case THIEF_AMBUSH:
+                resolved = executeThiefAmbush(row, col);
+                break;
             case KNIGHT_SHIELD:
                 resolved = deployKnightShield(row, col);
+                break;
+            case KNIGHT_TAUNT:
+                resolved = executeKnightTaunt(row, col);
+                break;
+            case KNIGHT_VALIANT_STRIKE:
+                resolved = executeKnightValiantStrike(row, col);
                 break;
             case NONE:
             default:
@@ -1341,6 +1473,95 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         return true;
     }
 
+    private boolean executeWizardFrostNova(int row, int col) {
+        if (!playClassSound("attack")) {
+            playCueWithFallback(SoundManager.KEY_EFFECT_POSITIVE, FeedbackManager.SoundEffect.POSITIVE);
+        }
+        boolean affectedAny = false;
+        int damage = 2 + getAbilityLevelScale();
+        for (int r = row - 1; r <= row + 1; r++) {
+            for (int c = col - 1; c <= col + 1; c++) {
+                if (!isValidGridPosition(r, c)) {
+                    continue;
+                }
+                Tile tile = dungeonGrid[r][c];
+                if (tile == null) {
+                    continue;
+                }
+                tile.reveal();
+                if (isTrapTile(tile)) {
+                    affectedAny = true;
+                }
+                if (tile.hasMonster()) {
+                    affectedAny = true;
+                    applyAbilityDamageToTile(r, c, damage, false);
+                }
+            }
+        }
+        renderGrid();
+        Toast.makeText(this,
+                affectedAny ? R.string.frost_nova_hit : R.string.frost_nova_no_targets,
+                Toast.LENGTH_SHORT).show();
+        return true;
+    }
+
+    private boolean executeWizardChainLightning(int row, int col) {
+        if (!playClassSound("attack")) {
+            playCueWithFallback(SoundManager.KEY_EFFECT_POSITIVE, FeedbackManager.SoundEffect.POSITIVE);
+        }
+        int damage = 3 + getAbilityLevelScale();
+        boolean hitAny = false;
+        hitAny |= applyAbilityDamageToTile(row, col, damage, true);
+        int[][] offsets = { {1,0}, {-1,0}, {0,1}, {0,-1} };
+        for (int[] offset : offsets) {
+            int r = row + offset[0];
+            int c = col + offset[1];
+            if (!isValidGridPosition(r, c)) {
+                continue;
+            }
+            if (applyAbilityDamageToTile(r, c, Math.max(1, damage - 1), false)) {
+                hitAny = true;
+            }
+        }
+        if (!hitAny) {
+            Toast.makeText(this, R.string.chain_lightning_no_targets, Toast.LENGTH_SHORT).show();
+        }
+        return true;
+    }
+
+    private boolean executeWizardMeteor(int row, int col) {
+        if (!playClassSound("attack")) {
+            playCueWithFallback(SoundManager.KEY_EFFECT_POSITIVE, FeedbackManager.SoundEffect.POSITIVE);
+        }
+        int damage = 6 + (getAbilityLevelScale() * 2);
+        boolean affectedAny = false;
+        for (int r = row - 1; r <= row + 1; r++) {
+            for (int c = col - 1; c <= col + 1; c++) {
+                if (!isValidGridPosition(r, c)) {
+                    continue;
+                }
+                Tile tile = dungeonGrid[r][c];
+                if (tile == null) {
+                    continue;
+                }
+                tile.reveal();
+                if (isTrapTile(tile)) {
+                    tile.setType(TileType.EMPTY);
+                    affectedAny = true;
+                }
+                if (tile.hasMonster()) {
+                    affectedAny = true;
+                    applyAbilityDamageToTile(r, c, damage, false);
+                }
+            }
+        }
+        renderGrid();
+        Toast.makeText(this,
+                affectedAny ? R.string.meteor_hit : R.string.meteor_no_targets,
+                Toast.LENGTH_SHORT).show();
+        return true;
+    }
+
     private boolean executeThiefScan(int row, int col) {
         if (!playClassSound("move")) {
             playCueWithFallback(SoundManager.KEY_EFFECT_POSITIVE, FeedbackManager.SoundEffect.POSITIVE);
@@ -1373,6 +1594,101 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         return true;
     }
 
+    private boolean executeThiefShadowstep(int row, int col) {
+        Tile tile = dungeonGrid[row][col];
+        if (tile == null) {
+            return false;
+        }
+        if (!tile.isRevealed() || tile.getType() == TileType.ENEMY || isTrapTile(tile)) {
+            Toast.makeText(this, R.string.shadowstep_invalid_target, Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        tile.reveal();
+        updatePlayerPosition(row, col);
+        if (profile != null && profile.getAnimatedPlayer() != null) {
+            profile.getAnimatedPlayer().setAction("move");
+        }
+        playCueWithFallback(SoundManager.KEY_EFFECT_POSITIVE, FeedbackManager.SoundEffect.POSITIVE);
+        Toast.makeText(this, R.string.shadowstep_success, Toast.LENGTH_SHORT).show();
+        persistGameState();
+        return true;
+    }
+
+    private boolean executeThiefDisarmExpert(int row, int col) {
+        boolean usedKit = InventoryManager.getItemQuantity(this, "Trap Disarm Kit") > 0;
+        boolean affectedAny = false;
+        for (int r = row - 1; r <= row + 1; r++) {
+            for (int c = col - 1; c <= col + 1; c++) {
+                if (!isValidGridPosition(r, c)) {
+                    continue;
+                }
+                Tile tile = dungeonGrid[r][c];
+                if (tile == null || !isTrapTile(tile)) {
+                    continue;
+                }
+                affectedAny = true;
+                tile.reveal();
+                if (usedKit) {
+                    tile.setType(TileType.EMPTY);
+                }
+            }
+        }
+        if (!affectedAny) {
+            Toast.makeText(this, R.string.disarm_no_traps, Toast.LENGTH_SHORT).show();
+            return true;
+        }
+        if (usedKit) {
+            InventoryManager.adjustItemQuantity(this, "Trap Disarm Kit", -1);
+            addInventoryChange("Trap Disarm Kit", false);
+            Toast.makeText(this, R.string.disarm_used_kit, Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(this, R.string.disarm_revealed_traps, Toast.LENGTH_SHORT).show();
+        }
+        renderGrid();
+        return true;
+    }
+
+    private boolean executeThiefAmbush(int row, int col) {
+        Tile tile = dungeonGrid[row][col];
+        if (tile == null || !tile.hasMonster()) {
+            Toast.makeText(this, R.string.ambush_no_target, Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        tile.reveal();
+        int damage = 4 + getAbilityLevelScale();
+        Monster monster = tile.getMonster();
+        monster.takeDamage(damage);
+        if (monster.isDead()) {
+            handleAbilityMonsterDefeat(monster, tile, getTileTextView(row, col), row, col);
+            Toast.makeText(this, R.string.ambush_kill, Toast.LENGTH_SHORT).show();
+            return true;
+        }
+        View tileView = getTileViewAt(row, col);
+        startCombat(tile, tileView);
+        Toast.makeText(this, R.string.ambush_engage, Toast.LENGTH_SHORT).show();
+        return true;
+    }
+
+    private boolean executeThiefVeilOfSmoke() {
+        int centerRow = playerRow;
+        int centerCol = playerCol;
+        for (int r = centerRow - 1; r <= centerRow + 1; r++) {
+            for (int c = centerCol - 1; c <= centerCol + 1; c++) {
+                if (!isValidGridPosition(r, c)) {
+                    continue;
+                }
+                Tile tile = dungeonGrid[r][c];
+                if (tile != null) {
+                    tile.reveal();
+                }
+            }
+        }
+        smokeVeilCharges = 1;
+        renderGrid();
+        Toast.makeText(this, R.string.smoke_veil_ready, Toast.LENGTH_SHORT).show();
+        return true;
+    }
+
     private boolean deployKnightShield(int row, int col) {
         if (isTargetWithinAbilityRangeInvert(row, col)) {
             String message = getResources().getQuantityString(
@@ -1402,6 +1718,81 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
                 R.plurals.knight_shield_activated, knightShieldStrength, knightShieldStrength);
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
         updateAbilityButtonState();
+        return true;
+    }
+
+    private boolean executeKnightTaunt(int row, int col) {
+        Tile tile = dungeonGrid[row][col];
+        if (tile == null || !tile.hasMonster()) {
+            Toast.makeText(this, R.string.taunt_no_target, Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        tile.reveal();
+        View tileView = getTileViewAt(row, col);
+        startCombat(tile, tileView);
+        playCueWithFallback(SoundManager.KEY_EFFECT_POSITIVE, FeedbackManager.SoundEffect.POSITIVE);
+        Toast.makeText(this, R.string.taunt_engage, Toast.LENGTH_SHORT).show();
+        return true;
+    }
+
+    private boolean executeKnightValiantStrike(int row, int col) {
+        Tile tile = dungeonGrid[row][col];
+        if (tile == null || !tile.hasMonster()) {
+            Toast.makeText(this, R.string.valiant_no_target, Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        tile.reveal();
+        int damage = 6 + (getAbilityLevelScale() * 2);
+        Monster monster = tile.getMonster();
+        monster.takeDamage(damage);
+        if (monster.isDead()) {
+            handleAbilityMonsterDefeat(monster, tile, getTileTextView(row, col), row, col);
+            Toast.makeText(this, R.string.valiant_kill, Toast.LENGTH_SHORT).show();
+            return true;
+        }
+        View tileView = getTileViewAt(row, col);
+        startCombat(tile, tileView);
+        Toast.makeText(this, R.string.valiant_engage, Toast.LENGTH_SHORT).show();
+        return true;
+    }
+
+    private boolean executeKnightFortify() {
+        frozenTurnsLeft = 0;
+        poisonTurnsLeft = 0;
+        updateStatusText();
+        int heal = 4 + getAbilityLevelScale();
+        profile.setCurrentHP(Math.min(profile.getMaxHP(), profile.getCurrentHP() + heal));
+        updateHpCounter();
+        playCueWithFallback(SoundManager.KEY_EFFECT_POSITIVE, FeedbackManager.SoundEffect.POSITIVE);
+        Toast.makeText(this, R.string.fortify_ready, Toast.LENGTH_SHORT).show();
+        return true;
+    }
+
+    private boolean executeKnightGuardiansOath() {
+        frozenTurnsLeft = 0;
+        poisonTurnsLeft = 0;
+        updateStatusText();
+        int heal = 6 + (getAbilityLevelScale() * 2);
+        profile.setCurrentHP(Math.min(profile.getMaxHP(), profile.getCurrentHP() + heal));
+        knightShieldStrength = calculateKnightShieldStrength();
+        knightShieldRow = playerRow;
+        knightShieldCol = playerCol;
+        knightShieldActive = true;
+        updateHpCounter();
+        playCueWithFallback(SoundManager.KEY_EFFECT_POSITIVE, FeedbackManager.SoundEffect.POSITIVE);
+        Toast.makeText(this, R.string.guardians_oath_ready, Toast.LENGTH_SHORT).show();
+        return true;
+    }
+
+    private boolean executeWizardArcaneShield() {
+        if (profile == null || !profile.usesMp()) {
+            return false;
+        }
+        int restore = 4 + getAbilityLevelScale();
+        profile.setCurrentMP(Math.min(profile.getMaxMP(), profile.getCurrentMP() + restore));
+        updateMpCounter();
+        playCueWithFallback(SoundManager.KEY_EFFECT_POSITIVE, FeedbackManager.SoundEffect.POSITIVE);
+        Toast.makeText(this, R.string.arcane_shield_ready, Toast.LENGTH_SHORT).show();
         return true;
     }
 
@@ -1454,6 +1845,32 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         return 6 + (level * 3);
     }
 
+    private boolean applyAbilityDamageToTile(int row, int col, int damage, boolean showToast) {
+        if (!isValidGridPosition(row, col)) {
+            return false;
+        }
+        Tile tile = dungeonGrid[row][col];
+        if (tile == null || !tile.hasMonster()) {
+            return false;
+        }
+        tile.reveal();
+        Monster monster = tile.getMonster();
+        monster.takeDamage(damage);
+        if (monster.isDead()) {
+            handleAbilityMonsterDefeat(monster, tile, getTileTextView(row, col), row, col);
+            if (showToast) {
+                Toast.makeText(this, R.string.ability_kill_confirmed, Toast.LENGTH_SHORT).show();
+            }
+            return true;
+        }
+        refreshTileViewAt(row, col);
+        return true;
+    }
+
+    private int getAbilityLevelScale() {
+        return profile != null ? Math.max(1, profile.getLevel()) : 1;
+    }
+
     @Nullable
     private TextView getTileTextView(int row, int col) {
         int index = (row * GRID_SIZE) + col;
@@ -1465,6 +1882,15 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
             return null;
         }
         return child.findViewById(R.id.textTile);
+    }
+
+    @Nullable
+    private View getTileViewAt(int row, int col) {
+        int index = (row * GRID_SIZE) + col;
+        if (index < 0 || index >= gridLayout.getChildCount()) {
+            return null;
+        }
+        return gridLayout.getChildAt(index);
     }
 
     private void verifyShieldAnchor() {
@@ -1888,6 +2314,18 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
     private void handleTrap(TextView tileText, Tile tile) {
         tileText.setText(getTileDisplay(tile));
         tileText.setContentDescription(getTileContentDescription(tile));
+        if (smokeVeilCharges > 0) {
+            smokeVeilCharges = Math.max(0, smokeVeilCharges - 1);
+            tile.setType(TileType.EMPTY);
+            tile.setMonster(null);
+            if (tileText != null) {
+                tileText.setText(getTileDisplay(tile));
+                tileText.setContentDescription(getTileContentDescription(tile));
+            }
+            Toast.makeText(this, R.string.smoke_veil_triggered, Toast.LENGTH_SHORT).show();
+            playCueWithFallback(SoundManager.KEY_EFFECT_POSITIVE, FeedbackManager.SoundEffect.POSITIVE);
+            return;
+        }
         if (InventoryManager.getItemQuantity(this, "Trap Disarm Kit") > 0) {
             Toast.makeText(this, "Trap disarmed!", Toast.LENGTH_SHORT).show();
             InventoryManager.adjustItemQuantity(this, "Trap Disarm Kit", -1);
@@ -2067,7 +2505,7 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
             return;
         }
         int beforeLevel = profile.getLevel();
-        awardExperience(xpReward);
+        profile.addExperience(xpReward);
         if (profile.getLevel() != beforeLevel) {
             updateHpCounter();
             updateMpCounter();

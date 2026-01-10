@@ -1,10 +1,16 @@
 # ClickDungeon Persistence & Security Notes
 
-- Saves, inventory, and achievements are stored in plain SharedPreferences/JSON with no schema versioning, integrity checks, or encryption. Tampering is possible.
-- Planned hardening:
-  - Add `schemaVersion` and checksum/HMAC per saved blob; verify on load and migrate or prompt to reset on mismatch. Keep a “last-known-good” backup to auto-restore on corruption.
-  - Optionally adopt `EncryptedSharedPreferences` (AndroidX Security) or Room with encrypted columns for sensitive fields.
-  - Centralize all preference access through the managers; log checksum/encryption failures (without PII) to aid QA.
-- Testing to add:
-  - Corrupt-save tests that assert validation/migration kicks in.
-  - Old `schemaVersion` tests that confirm migration or user prompt paths.
+## Current State
+- Saves, inventory, and achievements use schema + checksum validation with backup recovery; encrypted prefs are used on API 23+ with fallback.
+
+## Phase 1: Validation + Recovery (implemented)
+- Added `schemaVersion` and checksum/HMAC per saved blob; loads verify integrity and schema before use.
+- Added a last-known-good backup and auto-restore on corruption.
+- Centralized integrity handling through `PersistedBlobStore`; checksum failures are logged without PII.
+
+## Phase 2: Encryption (implemented)
+- `EncryptedSharedPreferences` is used on API 23+ with a fallback to plain prefs if unavailable.
+
+## Phase 3: Testing (implemented)
+- Added corrupt-save tests that assert validation + backup restore behavior.
+- Added schema mismatch tests that ensure mismatch handling is exercised.

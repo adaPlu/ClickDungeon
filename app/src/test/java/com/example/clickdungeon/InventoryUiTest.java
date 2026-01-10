@@ -22,6 +22,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.android.controller.ActivityController;
+import com.example.clickdungeon.util.SecurePreferences;
 
 @RunWith(RobolectricTestRunner.class)
 public class InventoryUiTest {
@@ -31,7 +32,7 @@ public class InventoryUiTest {
     @Before
     public void setUp() {
         context = ApplicationProvider.getApplicationContext();
-        context.getSharedPreferences("player_prefs", Context.MODE_PRIVATE).edit().clear().commit();
+        SecurePreferences.get(context, "player_prefs").edit().clear().commit();
         InventoryManager.setGold(context, 250);
         InventoryManager.setPlatinum(context, 120);
     }

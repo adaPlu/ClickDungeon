@@ -23,7 +23,6 @@ import java.util.Map;
 @RunWith(RobolectricTestRunner.class)
 public class GameActivityAnimationLoopTest {
 
-    @SuppressWarnings("unchecked")
     @Test
     public void animateGridFrame_skipsInvisibleTiles_and_updatesVisibleOnes() {
         android.content.Context context = androidx.test.core.app.ApplicationProvider.getApplicationContext();
@@ -43,7 +42,7 @@ public class GameActivityAnimationLoopTest {
         ReflectionHelpers.callInstanceMethod(activity, "animateGridFrame");
         ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
 
-        Map<String, Long> timestamps = ReflectionHelpers.getField(activity, "gridAnimationLastFrameMs");
+        Map<String, Long> timestamps = getMapField(activity, "gridAnimationLastFrameMs");
         assertTrue("Off-screen tiles should throttle with timestamps", timestamps.size() > 0);
 
         // Make the first tile visible and laid out so getGlobalVisibleRect returns true.
@@ -54,7 +53,17 @@ public class GameActivityAnimationLoopTest {
         ReflectionHelpers.callInstanceMethod(activity, "animateGridFrame");
         ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
 
-        timestamps = ReflectionHelpers.getField(activity, "gridAnimationLastFrameMs");
+        timestamps = getMapField(activity, "gridAnimationLastFrameMs");
         assertTrue("Visible tile should have a frame timestamp", timestamps.size() >= 1);
+    }
+
+    private Map<String, Long> getMapField(GameActivity activity, String fieldName) {
+        Object value = ReflectionHelpers.getField(activity, fieldName);
+        if (value instanceof Map) {
+            @SuppressWarnings("unchecked")
+            Map<String, Long> map = (Map<String, Long>) value;
+            return map;
+        }
+        throw new AssertionError("Expected map for " + fieldName);
     }
 }

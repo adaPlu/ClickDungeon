@@ -112,7 +112,7 @@ public class GameActivityAudioAnimationTest {
 
         // First frame should record a timestamp even though it is skipped visually.
         invoke(activity, "animateGridFrame");
-        Map<String, Long> frameTimes = (Map<String, Long>) getField(activity, "gridAnimationLastFrameMs");
+        Map<String, Long> frameTimes = getLongMapField(activity, "gridAnimationLastFrameMs");
         String key = "0_0";
         long first = frameTimes.get(key);
 
@@ -124,9 +124,10 @@ public class GameActivityAudioAnimationTest {
         // Detach should clear animation bookkeeping.
         GridLayout layout = activity.findViewById(R.id.gridDungeon);
         layout.removeView(tileView);
-        Map<String, ?> animators = (Map<String, ?>) getField(activity, "gridMonsterAnimations");
+        Map<?, ?> animators = getMapField(activity, "gridMonsterAnimations");
+        Map<String, Long> refreshedTimes = getLongMapField(activity, "gridAnimationLastFrameMs");
         assertFalse(animators.containsKey(key));
-        assertFalse(frameTimes.containsKey(key));
+        assertFalse(refreshedTimes.containsKey(key));
     }
 
     private GameActivity launchWithProfile(PlayerClass playerClass) {
@@ -178,6 +179,25 @@ public class GameActivityAudioAnimationTest {
         return ReflectionHelpers.getField(activity, name);
     }
 
+    private Map<?, ?> getMapField(GameActivity activity, String name) {
+        Object value = getField(activity, name);
+        if (value instanceof Map) {
+            return (Map<?, ?>) value;
+        }
+        throw new AssertionError("Expected map for " + name);
+    }
+
+    private Map<String, Long> getLongMapField(GameActivity activity, String name) {
+        Map<?, ?> raw = getMapField(activity, name);
+        Map<String, Long> casted = new java.util.HashMap<>();
+        for (Map.Entry<?, ?> entry : raw.entrySet()) {
+            if (entry.getKey() instanceof String && entry.getValue() instanceof Long) {
+                casted.put((String) entry.getKey(), (Long) entry.getValue());
+            }
+        }
+        return casted;
+    }
+
     private void invoke(GameActivity activity, String methodName, Object... args) throws Exception {
         Class<?>[] types = new Class<?>[args.length];
         for (int i = 0; i < args.length; i++) {
@@ -198,13 +218,28 @@ public class GameActivityAudioAnimationTest {
         method.invoke(activity, args);
     }
 
-    private Object enumValue(Class<?> clazz, String enumName, String constant) throws Exception {
+    private Enum<?> enumValue(Class<?> clazz, String enumName, String constant) {
         Class<?>[] inner = clazz.getDeclaredClasses();
         for (Class<?> candidate : inner) {
             if (candidate.getSimpleName().equals(enumName)) {
-                return Enum.valueOf((Class<Enum>) candidate.asSubclass(Enum.class), constant);
+                return resolveEnum(candidate, constant);
             }
         }
         throw new IllegalArgumentException("Enum not found: " + enumName);
+    }
+
+    private Enum<?> resolveEnum(Class<?> enumClass, String constant) {
+        Object[] constants = enumClass.getEnumConstants();
+        if (constants != null) {
+            for (Object value : constants) {
+                if (value instanceof Enum) {
+                    Enum<?> enumValue = (Enum<?>) value;
+                    if (enumValue.name().equals(constant)) {
+                        return enumValue;
+                    }
+                }
+            }
+        }
+        throw new IllegalArgumentException("Enum constant not found: " + constant);
     }
 }

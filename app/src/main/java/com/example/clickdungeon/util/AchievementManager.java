@@ -16,13 +16,15 @@ public class AchievementManager {
 
     private static final String PREFS_NAME = "player_prefs";
     private static final String KEY = "achievements";
+    private static final int ACHIEVEMENT_SCHEMA_VERSION = 1;
 
     private AchievementManager() {
     }
 
     public static List<Achievement> loadAchievements(Context context) {
-        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-        String json = prefs.getString(KEY, null);
+        PersistedBlobStore.LoadResult result =
+                PersistedBlobStore.load(context, PREFS_NAME, KEY, ACHIEVEMENT_SCHEMA_VERSION);
+        String json = result.status == PersistedBlobStore.LoadResult.Status.OK ? result.json : null;
         Type type = new TypeToken<List<Achievement>>() {}.getType();
         List<Achievement> achievements = json != null ? new Gson().fromJson(json, type) : new ArrayList<>();
 
@@ -34,9 +36,8 @@ public class AchievementManager {
     }
 
     public static void saveAchievements(Context context, List<Achievement> achievements) {
-        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         String json = new Gson().toJson(achievements);
-        prefs.edit().putString(KEY, json).apply();
+        PersistedBlobStore.save(context, PREFS_NAME, KEY, ACHIEVEMENT_SCHEMA_VERSION, json);
     }
 
     public static void unlock(Context context, String achievementTitle) {

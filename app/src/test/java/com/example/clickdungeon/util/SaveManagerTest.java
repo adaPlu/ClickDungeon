@@ -6,6 +6,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 
 import androidx.test.core.app.ApplicationProvider;
 
@@ -29,7 +30,7 @@ public class SaveManagerTest {
     public void setUp() {
         context = ApplicationProvider.getApplicationContext();
         for (int i = 0; i < 4; i++) {
-            context.getSharedPreferences("SaveSlot" + i, Context.MODE_PRIVATE)
+            SecurePreferences.get(context, "SaveSlot" + i)
                     .edit()
                     .clear()
                     .commit();
@@ -76,5 +77,55 @@ public class SaveManagerTest {
     public void invalidSlotIndexThrows() {
         SaveManager saveManager = new SaveManager(context);
         saveManager.isSlotOccupied(99);
+    }
+
+    @Test
+    public void corruptSaveRestoresLastKnownGood() {
+        SaveManager saveManager = new SaveManager(context);
+        CharacterProfile profile = new CharacterProfile("Lia", PlayerClass.THIEF);
+        Tile[][] grid = new Tile[5][5];
+        for (int r = 0; r < 5; r++) {
+            for (int c = 0; c < 5; c++) {
+                grid[r][c] = new Tile(TileType.EMPTY);
+            }
+        }
+        SaveManager.RunMetadata metadata =
+                new SaveManager.RunMetadata(-1, -1, false, 0, -1, -1, 1);
+
+        saveManager.saveGame(0, profile, 2, 10, 1, grid, metadata);
+        saveManager.saveGame(0, profile, 3, 15, 2, grid, metadata);
+
+        SharedPreferences prefs = SecurePreferences.get(context, "SaveSlot0");
+        prefs.edit()
+                .putString("SaveBlob", "corrupt")
+                .apply();
+
+        SaveManager.GameState restored = saveManager.loadGame(0);
+        assertNotNull(restored);
+        assertEquals(2, restored.currentFloor);
+        assertEquals(10, restored.currentGold);
+        assertEquals(1, restored.currentPlatinum);
+    }
+
+    @Test
+    public void schemaMismatchReturnsNull() {
+        SaveManager saveManager = new SaveManager(context);
+        CharacterProfile profile = new CharacterProfile("Lia", PlayerClass.THIEF);
+        Tile[][] grid = new Tile[5][5];
+        for (int r = 0; r < 5; r++) {
+            for (int c = 0; c < 5; c++) {
+                grid[r][c] = new Tile(TileType.EMPTY);
+            }
+        }
+        SaveManager.RunMetadata metadata =
+                new SaveManager.RunMetadata(-1, -1, false, 0, -1, -1, 1);
+        saveManager.saveGame(0, profile, 2, 10, 1, grid, metadata);
+
+        SharedPreferences prefs = SecurePreferences.get(context, "SaveSlot0");
+        prefs.edit()
+                .putInt("SaveBlob" + PersistedBlobStore.SCHEMA_SUFFIX, 99)
+                .apply();
+
+        assertNull(saveManager.loadGame(0));
     }
 }

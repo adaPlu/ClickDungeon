@@ -24,6 +24,7 @@ import org.robolectric.android.controller.ActivityController;
 import org.robolectric.shadows.ShadowAlertDialog;
 import org.robolectric.shadows.ShadowDialog;
 import org.robolectric.shadows.ShadowLooper;
+import com.example.clickdungeon.util.SecurePreferences;
 
 @RunWith(RobolectricTestRunner.class)
 public class GameActivityStatAllocationDialogTest {
@@ -33,8 +34,8 @@ public class GameActivityStatAllocationDialogTest {
     @Before
     public void setUp() {
         context = ApplicationProvider.getApplicationContext();
-        context.getSharedPreferences("SaveSlot0", Context.MODE_PRIVATE).edit().clear().commit();
-        context.getSharedPreferences("player_prefs", Context.MODE_PRIVATE).edit().clear().commit();
+        SecurePreferences.get(context, "SaveSlot0").edit().clear().commit();
+        SecurePreferences.get(context, "player_prefs").edit().clear().commit();
         context.getSharedPreferences("player_profile", Context.MODE_PRIVATE).edit().clear().commit();
         ShadowAlertDialog.reset();
     }

@@ -16,6 +16,8 @@ public class SaveManager {
 
     private static final String PREFS_NAME_PREFIX = "SaveSlot";
     private static final int TOTAL_SLOTS = 4;
+    private static final int SAVE_SCHEMA_VERSION = 1;
+    private static final String KEY_SAVE_BLOB = "SaveBlob";
     private static final String KEY_PROFILE = "CharacterProfile";
     private static final String KEY_FLOOR = "CurrentFloor";
     private static final String KEY_GRID = "DungeonGrid";
@@ -44,67 +46,40 @@ public class SaveManager {
                          Tile[][] dungeonGrid,
                          RunMetadata metadata) {
         validateSlot(slotIndex);
-        SharedPreferences prefs = slotPrefs(slotIndex);
-
-        SharedPreferences.Editor editor = prefs.edit()
-                .putString(KEY_PROFILE, gson.toJson(profile))
-                .putInt(KEY_FLOOR, currentFloor)
-                .putString(KEY_GRID, gson.toJson(dungeonGrid))
-                .putInt(KEY_GOLD, currentGold)
-                .putInt(KEY_PLATINUM, currentPlatinum);
-
-        if (metadata != null) {
-            editor.putInt(KEY_PLAYER_ROW, metadata.playerRow)
-                    .putInt(KEY_PLAYER_COL, metadata.playerCol)
-                    .putBoolean(KEY_SHIELD_ACTIVE, metadata.knightShieldActive)
-                    .putInt(KEY_SHIELD_STRENGTH, metadata.knightShieldStrength)
-                    .putInt(KEY_SHIELD_ROW, metadata.knightShieldRow)
-                    .putInt(KEY_SHIELD_COL, metadata.knightShieldCol)
-                    .putInt(KEY_ABILITY_READY_FLOOR, metadata.nextAbilityAvailableFloor);
-        }
-
-        editor.apply();
+        SaveBlob blob = new SaveBlob(profile,
+                currentFloor,
+                currentGold,
+                currentPlatinum,
+                dungeonGrid,
+                metadata);
+        PersistedBlobStore.save(context, slotPrefsName(slotIndex), KEY_SAVE_BLOB,
+                SAVE_SCHEMA_VERSION, gson.toJson(blob));
+        clearLegacyKeys(slotPrefs(slotIndex));
     }
 
     public GameState loadGame(int slotIndex) {
         validateSlot(slotIndex);
-        SharedPreferences prefs = slotPrefs(slotIndex);
-        if (!prefs.contains(KEY_PROFILE)) {
-            return null;
+        PersistedBlobStore.LoadResult result = PersistedBlobStore.load(
+                context,
+                slotPrefsName(slotIndex),
+                KEY_SAVE_BLOB,
+                SAVE_SCHEMA_VERSION
+        );
+        if (result.status == PersistedBlobStore.LoadResult.Status.OK) {
+            return parseBlob(result.json);
         }
 
-        try {
-            String profileJson = prefs.getString(KEY_PROFILE, null);
-            String gridJson = prefs.getString(KEY_GRID, null);
-            if (profileJson == null || gridJson == null) {
-                // Treat partial/corrupt saves as missing to avoid crashes on resume.
-                return null;
-            }
-
-            CharacterProfile profile = gson.fromJson(profileJson, CharacterProfile.class);
-            Tile[][] dungeonGrid = gson.fromJson(gridJson, Tile[][].class);
-            if (profile == null || dungeonGrid == null) {
-                // Guard against malformed JSON or schema drift.
-                return null;
-            }
-
-            int floor = prefs.getInt(KEY_FLOOR, 1);
-            migrateGrid(dungeonGrid, floor);
-            int gold = prefs.getInt(KEY_GOLD, 0);
-            int platinum = prefs.getInt(KEY_PLATINUM, 0);
-            RunMetadata metadata = new RunMetadata(
-                    prefs.getInt(KEY_PLAYER_ROW, -1),
-                    prefs.getInt(KEY_PLAYER_COL, -1),
-                    prefs.getBoolean(KEY_SHIELD_ACTIVE, false),
-                    prefs.getInt(KEY_SHIELD_STRENGTH, 0),
-                    prefs.getInt(KEY_SHIELD_ROW, -1),
-                    prefs.getInt(KEY_SHIELD_COL, -1),
-                    prefs.getInt(KEY_ABILITY_READY_FLOOR, 1)
-            );
-            return new GameState(profile, floor, gold, platinum, dungeonGrid, metadata);
-        } catch (Exception ignored) {
-            return null;
+        GameState legacy = loadLegacy(slotIndex);
+        if (legacy != null) {
+            saveGame(slotIndex,
+                    legacy.profile,
+                    legacy.currentFloor,
+                    legacy.currentGold,
+                    legacy.currentPlatinum,
+                    legacy.dungeonGrid,
+                    legacy.metadata);
         }
+        return legacy;
     }
 
     private void migrateGrid(Tile[][] grid, int floor) {
@@ -142,7 +117,8 @@ public class SaveManager {
 
     public boolean isSlotOccupied(int slotIndex) {
         validateSlot(slotIndex);
-        return slotPrefs(slotIndex).contains(KEY_PROFILE);
+        SharedPreferences prefs = slotPrefs(slotIndex);
+        return prefs.contains(KEY_SAVE_BLOB) || prefs.contains(KEY_PROFILE);
     }
 
     public void deleteSave(int slotIndex) {
@@ -151,13 +127,92 @@ public class SaveManager {
     }
 
     private SharedPreferences slotPrefs(int slotIndex) {
-        return context.getSharedPreferences(PREFS_NAME_PREFIX + slotIndex, Context.MODE_PRIVATE);
+        return SecurePreferences.get(context, PREFS_NAME_PREFIX + slotIndex);
+    }
+
+    private String slotPrefsName(int slotIndex) {
+        return PREFS_NAME_PREFIX + slotIndex;
     }
 
     private void validateSlot(int slotIndex) {
         if (slotIndex < 0 || slotIndex >= TOTAL_SLOTS) {
             throw new IllegalArgumentException("Invalid slot index" + slotIndex);
         }
+    }
+
+    private GameState parseBlob(String json) {
+        if (json == null) {
+            return null;
+        }
+        try {
+            SaveBlob blob = gson.fromJson(json, SaveBlob.class);
+            if (blob == null || blob.profile == null || blob.dungeonGrid == null) {
+                return null;
+            }
+            migrateGrid(blob.dungeonGrid, blob.currentFloor);
+            return new GameState(blob.profile,
+                    blob.currentFloor,
+                    blob.currentGold,
+                    blob.currentPlatinum,
+                    blob.dungeonGrid,
+                    blob.metadata);
+        } catch (Exception ignored) {
+            return null;
+        }
+    }
+
+    private GameState loadLegacy(int slotIndex) {
+        SharedPreferences prefs = slotPrefs(slotIndex);
+        if (!prefs.contains(KEY_PROFILE)) {
+            return null;
+        }
+        try {
+            String profileJson = prefs.getString(KEY_PROFILE, null);
+            String gridJson = prefs.getString(KEY_GRID, null);
+            if (profileJson == null || gridJson == null) {
+                return null;
+            }
+
+            CharacterProfile profile = gson.fromJson(profileJson, CharacterProfile.class);
+            Tile[][] dungeonGrid = gson.fromJson(gridJson, Tile[][].class);
+            if (profile == null || dungeonGrid == null) {
+                return null;
+            }
+
+            int floor = prefs.getInt(KEY_FLOOR, 1);
+            migrateGrid(dungeonGrid, floor);
+            int gold = prefs.getInt(KEY_GOLD, 0);
+            int platinum = prefs.getInt(KEY_PLATINUM, 0);
+            RunMetadata metadata = new RunMetadata(
+                    prefs.getInt(KEY_PLAYER_ROW, -1),
+                    prefs.getInt(KEY_PLAYER_COL, -1),
+                    prefs.getBoolean(KEY_SHIELD_ACTIVE, false),
+                    prefs.getInt(KEY_SHIELD_STRENGTH, 0),
+                    prefs.getInt(KEY_SHIELD_ROW, -1),
+                    prefs.getInt(KEY_SHIELD_COL, -1),
+                    prefs.getInt(KEY_ABILITY_READY_FLOOR, 1)
+            );
+            return new GameState(profile, floor, gold, platinum, dungeonGrid, metadata);
+        } catch (Exception ignored) {
+            return null;
+        }
+    }
+
+    private void clearLegacyKeys(SharedPreferences prefs) {
+        prefs.edit()
+                .remove(KEY_PROFILE)
+                .remove(KEY_FLOOR)
+                .remove(KEY_GRID)
+                .remove(KEY_GOLD)
+                .remove(KEY_PLATINUM)
+                .remove(KEY_PLAYER_ROW)
+                .remove(KEY_PLAYER_COL)
+                .remove(KEY_SHIELD_ACTIVE)
+                .remove(KEY_SHIELD_STRENGTH)
+                .remove(KEY_SHIELD_ROW)
+                .remove(KEY_SHIELD_COL)
+                .remove(KEY_ABILITY_READY_FLOOR)
+                .apply();
     }
 
     public static class GameState {
@@ -206,6 +261,29 @@ public class SaveManager {
             this.knightShieldRow = knightShieldRow;
             this.knightShieldCol = knightShieldCol;
             this.nextAbilityAvailableFloor = nextAbilityAvailableFloor;
+        }
+    }
+
+    private static class SaveBlob {
+        final CharacterProfile profile;
+        final int currentFloor;
+        final int currentGold;
+        final int currentPlatinum;
+        final Tile[][] dungeonGrid;
+        final RunMetadata metadata;
+
+        SaveBlob(CharacterProfile profile,
+                 int currentFloor,
+                 int currentGold,
+                 int currentPlatinum,
+                 Tile[][] dungeonGrid,
+                 RunMetadata metadata) {
+            this.profile = profile;
+            this.currentFloor = currentFloor;
+            this.currentGold = currentGold;
+            this.currentPlatinum = currentPlatinum;
+            this.dungeonGrid = dungeonGrid;
+            this.metadata = metadata;
         }
     }
 }

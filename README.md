@@ -11,10 +11,11 @@
    - Traps, enemies, and treasure are shuffled each time, creating replay value.
 
 2. **Class Selection & Abilities**  
-   - **Knight**: High STR/CON base kit with a shield ability that absorbs damage while you hold position.  
-   - **Thief**: High DEX base kit with a trap scan that reveals hazards within range.  
-   - **Wizard**: High INT base kit with a fireball that can clear enemies at range.  
-   - Abilities share a two-floor cooldown and a three-tile targeting radius.  
+   - **Knight** (L1/5/10/15/20): Shield Wall, Taunt, Fortify, Valiant Strike, Guardian's Oath.  
+   - **Thief** (L1/5/10/15/20): Trap Scan, Shadowstep, Disarm Expert, Ambush, Veil of Smoke.  
+   - **Wizard** (L1/5/10/15/20): Fireball, Frost Nova, Chain Lightning, Arcane Shield, Meteor.  
+   - Ability effects include trap reveals/clears, ambush/taunt combat hooks, and smoke veil trap avoidance.  
+   - Abilities share a two-floor cooldown and a three-tile targeting radius when applicable.  
 
 3. **Traps & Status Effects**  
    - Fire, acid, poison, freeze, and pitfall traps.  
@@ -50,12 +51,12 @@
    - Animated combatants use `AnimatedPlayer`/`AnimatedMonster` sprite sheets with class/monster audio cues.
 
 9. **Modular Architecture**
-   - **SharedPreferences** used throughout for saving grid states, gold/platinum, and achievements (plain JSON with no integrity/encryption; see Security note).
+   - **SharedPreferences** used throughout for saving grid states, gold/platinum, and achievements (schema + checksum validation with backup recovery; encrypted prefs on API 23+ with fallback; see `SECURITY.md` for details).
    - Separate activities for each feature (shop, achievements, settings, etc.).
    - Clean codebase supports expansions like IAP, ads, new classes, and more.
 
 10. **Customizable Experience**
-    - Settings screen controls audio, vibration, and dungeon difficulty.
+    - Settings screen controls audio, vibration, and dungeon difficulty; vibration uses VibrationEffect on API 26+ with a legacy fallback.
     - Tone and haptic feedback respect player preferences through a shared manager.
     - Difficulty tuning scales monster stats and trap lethality across floors.
     - Dungeon-themed backgrounds and panel styling are applied across menu screens.
@@ -66,7 +67,7 @@
 
 12. **Automated Verification**
     - Robolectric suites cover settings UI, inventory, achievements, save slots, balance, onboarding, feedback, and combat flows.
-    - Expanded unit tests now cover model classes, adapters, shop flows, and animation helpers.
+    - Expanded unit tests now cover model classes, adapters, shop flows, animation helpers, and class ability behaviors (range/cooldown/effects).
 
 ---
 
@@ -172,7 +173,7 @@ ClickDungeon/
 - **Phase 2 - Stat system foundation:** complete (STR/INT/CON/DEX; HP/MP derived; ATK/DEF derived).
 - **Phase 3 - Base class kits:** complete (base stats and base abilities per class).
 - **Phase 4 - Level progression:** complete (20 levels, stat points per level, HP/MP scaling).
-- **Phase 5 - Class abilities:** complete (wizard fireball, thief scan, knight shield with cooldown/range).
+- **Phase 5 - Class abilities:** complete (five abilities per class at levels 1/5/10/15/20 with cooldown/range rules).
 - **Phase 6 - Ability + stat tuning:** complete (current tuning constants in CharacterProfile).
 - **Phase 7 - Core economy + persistence:** complete (gold-based economy, save/load, UI; platinum stored for future premium flows).
 - **Phase 8 - Merchant access + cadence:** complete (shop access, merchant visits, buyback scaffolding).

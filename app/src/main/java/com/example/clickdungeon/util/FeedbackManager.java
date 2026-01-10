@@ -47,7 +47,12 @@ public final class FeedbackManager {
         }
 
         long duration = pattern.getDurationMs();
-        vibrator.vibrate(duration);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            vibrator.vibrate(VibrationEffect.createOneShot(duration, VibrationEffect.DEFAULT_AMPLITUDE));
+        } else {
+            //noinspection deprecation
+            vibrator.vibrate(duration);
+        }
         lastVibrationDuration = duration;
     }
 

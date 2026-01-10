@@ -5,6 +5,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 
 import androidx.test.core.app.ApplicationProvider;
 
@@ -25,7 +26,7 @@ public class InventoryManagerTest {
     @Before
     public void setUp() {
         context = ApplicationProvider.getApplicationContext();
-        context.getSharedPreferences("player_prefs", Context.MODE_PRIVATE)
+        SecurePreferences.get(context, "player_prefs")
                 .edit()
                 .clear()
                 .commit();
@@ -118,5 +119,30 @@ public class InventoryManagerTest {
         InventoryManager.syncPlatinumWithCurrentRun(context, 140);
 
         assertEquals(140, InventoryManager.getPlatinum(context));
+    }
+
+    @Test
+    public void corruptInventoryRestoresBackup() {
+        InventoryManager.adjustItemQuantity(context, "Potion", 1);
+        InventoryManager.adjustItemQuantity(context, "Potion", 1);
+
+        SharedPreferences prefs = SecurePreferences.get(context, "player_prefs");
+        prefs.edit()
+                .putString("inventory", "corrupt")
+                .apply();
+
+        assertEquals(1, InventoryManager.getItemQuantity(context, "Potion"));
+    }
+
+    @Test
+    public void inventorySchemaMismatchReturnsEmptyList() {
+        InventoryManager.adjustItemQuantity(context, "Potion", 1);
+
+        SharedPreferences prefs = SecurePreferences.get(context, "player_prefs");
+        prefs.edit()
+                .putInt("inventory" + PersistedBlobStore.SCHEMA_SUFFIX, 99)
+                .apply();
+
+        assertTrue(InventoryManager.loadInventory(context).isEmpty());
     }
 }

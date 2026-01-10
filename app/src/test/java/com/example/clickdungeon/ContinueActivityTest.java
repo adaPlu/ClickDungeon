@@ -14,6 +14,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
+import com.example.clickdungeon.util.SecurePreferences;
 
 @RunWith(RobolectricTestRunner.class)
 public class ContinueActivityTest {
@@ -24,7 +25,7 @@ public class ContinueActivityTest {
     public void setUp() {
         context = ApplicationProvider.getApplicationContext();
         for (int i = 0; i < 4; i++) {
-            context.getSharedPreferences("SaveSlot" + i, Context.MODE_PRIVATE)
+            SecurePreferences.get(context, "SaveSlot" + i)
                     .edit()
                     .clear()
                     .commit();

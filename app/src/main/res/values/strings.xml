@@ -63,11 +63,35 @@
 <string name="ability_on_cooldown">Ability ready again on Floor %1$d.</string>
 <string name="fireball_result_whiff">The fireball fizzles without a target.</string>
 <string name="fireball_result_kill">Fireball incinerates the %1$s.</string>
+<string name="frost_nova_hit">Frost Nova chills nearby threats.</string>
+<string name="frost_nova_no_targets">Frost Nova finds no targets.</string>
+<string name="chain_lightning_no_targets">Chain Lightning hits nothing.</string>
+<string name="meteor_hit">Meteor crashes down with force.</string>
+<string name="meteor_no_targets">Meteor finds no targets.</string>
 <string name="thief_scan_result">Nearby traps are revealed.</string>
 <string name="thief_scan_no_traps">No traps detected.</string>
+<string name="shadowstep_invalid_target">Shadowstep needs a revealed safe tile.</string>
+<string name="shadowstep_success">You vanish and reappear.</string>
+<string name="disarm_no_traps">No traps to disarm.</string>
+<string name="disarm_used_kit">Traps disarmed with a kit.</string>
+<string name="disarm_revealed_traps">Traps revealed.</string>
+<string name="ambush_no_target">No enemy to ambush.</string>
+<string name="ambush_kill">Ambush drops the target instantly.</string>
+<string name="ambush_engage">Ambush strike lands. Fight begins.</string>
+<string name="smoke_veil_ready">Smoke veil ready.</string>
+<string name="smoke_veil_triggered">Smoke veil avoids the trap.</string>
 <string name="knight_shield_requires_visible">Shield can only be anchored on revealed tiles.</string>
 <string name="knight_shield_invalid_tile">Cannot anchor a shield on enemies or traps.</string>
 <string name="knight_shield_moved">You left the shielded tile. The shield dissipates.</string>
+<string name="taunt_no_target">No enemy to taunt.</string>
+<string name="taunt_engage">Taunt draws an enemy into combat.</string>
+<string name="valiant_no_target">No enemy to strike.</string>
+<string name="valiant_kill">Valiant Strike defeats the target.</string>
+<string name="valiant_engage">Valiant Strike lands. Fight begins.</string>
+<string name="fortify_ready">Fortify restores your focus.</string>
+<string name="guardians_oath_ready">Guardian\'s Oath reinforces your defenses.</string>
+<string name="arcane_shield_ready">Arcane Shield restores your mana.</string>
+<string name="ability_kill_confirmed">Target defeated.</string>
 <string name="knight_shield_broken">Your shield shatters!</string>
 <string name="player_position_unknown">Reveal a tile first to anchor your position.</string>
 <string name="refresh_shop">Refresh Shop</string>
@@ -248,6 +272,38 @@ Adjust these preferences anytime from Settings.</string>
 <plurals name="ability_target_prompt_shield">
     <item quantity="one">Select a revealed tile within %1$d space to raise your shield.</item>
     <item quantity="other">Select a revealed tile within %1$d spaces to raise your shield.</item>
+</plurals>
+<plurals name="ability_target_prompt_frost_nova">
+    <item quantity="one">Select a tile within %1$d space to cast Frost Nova.</item>
+    <item quantity="other">Select a tile within %1$d spaces to cast Frost Nova.</item>
+</plurals>
+<plurals name="ability_target_prompt_chain_lightning">
+    <item quantity="one">Select a tile within %1$d space to cast Chain Lightning.</item>
+    <item quantity="other">Select a tile within %1$d spaces to cast Chain Lightning.</item>
+</plurals>
+<plurals name="ability_target_prompt_meteor">
+    <item quantity="one">Select a tile within %1$d space to call Meteor.</item>
+    <item quantity="other">Select a tile within %1$d spaces to call Meteor.</item>
+</plurals>
+<plurals name="ability_target_prompt_shadowstep">
+    <item quantity="one">Select a revealed safe tile within %1$d space to Shadowstep.</item>
+    <item quantity="other">Select a revealed safe tile within %1$d spaces to Shadowstep.</item>
+</plurals>
+<plurals name="ability_target_prompt_disarm">
+    <item quantity="one">Select a tile within %1$d space to disarm traps.</item>
+    <item quantity="other">Select a tile within %1$d spaces to disarm traps.</item>
+</plurals>
+<plurals name="ability_target_prompt_ambush">
+    <item quantity="one">Select an enemy within %1$d space to ambush.</item>
+    <item quantity="other">Select an enemy within %1$d spaces to ambush.</item>
+</plurals>
+<plurals name="ability_target_prompt_taunt">
+    <item quantity="one">Select an enemy within %1$d space to taunt.</item>
+    <item quantity="other">Select an enemy within %1$d spaces to taunt.</item>
+</plurals>
+<plurals name="ability_target_prompt_valiant_strike">
+    <item quantity="one">Select an enemy within %1$d space for Valiant Strike.</item>
+    <item quantity="other">Select an enemy within %1$d spaces for Valiant Strike.</item>
 </plurals>
 <plurals name="ability_range_error">
     <item quantity="one">Target must be within %1$d space.</item>

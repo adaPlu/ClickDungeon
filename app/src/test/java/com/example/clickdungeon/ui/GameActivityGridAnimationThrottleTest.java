@@ -23,7 +23,6 @@ import java.util.Map;
 @RunWith(RobolectricTestRunner.class)
 public class GameActivityGridAnimationThrottleTest {
 
-    @SuppressWarnings("unchecked")
     @Test
     public void detachClearsAnimationEntry() {
         android.content.Context context = androidx.test.core.app.ApplicationProvider.getApplicationContext();
@@ -52,9 +51,19 @@ public class GameActivityGridAnimationThrottleTest {
 
         // Detach and ensure caches are cleared
         gridLayout.removeView(tileView);
-        Map<String, ?> anims = ReflectionHelpers.getField(activity, "gridMonsterAnimations");
-        Map<String, ?> timestamps = ReflectionHelpers.getField(activity, "gridAnimationLastFrameMs");
+        Map<String, ?> anims = getMapField(activity, "gridMonsterAnimations");
+        Map<String, ?> timestamps = getMapField(activity, "gridAnimationLastFrameMs");
         assertEquals(false, anims.containsKey("0_0"));
         assertEquals(false, timestamps.containsKey("0_0"));
+    }
+
+    private Map<String, ?> getMapField(GameActivity activity, String fieldName) {
+        Object value = ReflectionHelpers.getField(activity, fieldName);
+        if (value instanceof Map) {
+            @SuppressWarnings("unchecked")
+            Map<String, ?> map = (Map<String, ?>) value;
+            return map;
+        }
+        throw new AssertionError("Expected map for " + fieldName);
     }
 }

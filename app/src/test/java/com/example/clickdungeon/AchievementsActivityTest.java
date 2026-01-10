@@ -15,6 +15,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
+import com.example.clickdungeon.util.SecurePreferences;
 
 @RunWith(RobolectricTestRunner.class)
 public class AchievementsActivityTest {
@@ -24,7 +25,7 @@ public class AchievementsActivityTest {
     @Before
     public void setUp() {
         context = ApplicationProvider.getApplicationContext();
-        context.getSharedPreferences("player_prefs", Context.MODE_PRIVATE)
+        SecurePreferences.get(context, "player_prefs")
                 .edit()
                 .clear()
                 .commit();

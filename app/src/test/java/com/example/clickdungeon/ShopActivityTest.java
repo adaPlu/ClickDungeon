@@ -21,7 +21,9 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.android.controller.ActivityController;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.List;
+import com.example.clickdungeon.util.SecurePreferences;
 
 @RunWith(RobolectricTestRunner.class)
 public class ShopActivityTest {
@@ -31,7 +33,7 @@ public class ShopActivityTest {
     @Before
     public void setUp() {
         context = ApplicationProvider.getApplicationContext();
-        context.getSharedPreferences("player_prefs", Context.MODE_PRIVATE).edit().clear().commit();
+        SecurePreferences.get(context, "player_prefs").edit().clear().commit();
         context.getSharedPreferences("shop_prefs", Context.MODE_PRIVATE).edit().clear().commit();
         InventoryManager.setGold(context, 500);
         // reset cached shop
@@ -70,7 +72,15 @@ public class ShopActivityTest {
         try {
             Field field = ShopItemAdapter.class.getDeclaredField("shopItems");
             field.setAccessible(true);
-            List<ShopItem> items = (List<ShopItem>) field.get(adapter);
+            Object raw = field.get(adapter);
+            List<ShopItem> items = new ArrayList<>();
+            if (raw instanceof List) {
+                for (Object entry : (List<?>) raw) {
+                    if (entry instanceof ShopItem) {
+                        items.add((ShopItem) entry);
+                    }
+                }
+            }
             return items.get(index);
         } catch (Exception e) {
             throw new AssertionError(e);

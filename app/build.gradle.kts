@@ -42,6 +42,7 @@ dependencies {
     implementation(libs.gson)
     implementation(libs.appcompat)
     implementation(libs.material)
+    implementation(libs.security.crypto)
     testImplementation(libs.junit)
     testImplementation(libs.test.core)
     testImplementation(libs.robolectric)

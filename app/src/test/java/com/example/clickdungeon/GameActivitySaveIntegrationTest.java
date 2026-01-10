@@ -27,6 +27,7 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 import org.robolectric.Shadows;
+import com.example.clickdungeon.util.SecurePreferences;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(sdk = 33)
@@ -37,8 +38,8 @@ public class GameActivitySaveIntegrationTest {
     @Before
     public void setUp() {
         context = ApplicationProvider.getApplicationContext();
-        context.getSharedPreferences("SaveSlot0", Context.MODE_PRIVATE).edit().clear().commit();
-        context.getSharedPreferences("player_prefs", Context.MODE_PRIVATE).edit().clear().commit();
+        SecurePreferences.get(context, "SaveSlot0").edit().clear().commit();
+        SecurePreferences.get(context, "player_prefs").edit().clear().commit();
     }
 
     @Test
