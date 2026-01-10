@@ -11,6 +11,7 @@ import androidx.annotation.VisibleForTesting;
 import com.example.clickdungeon.R;
 
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 public final class SoundManager {
@@ -25,6 +26,8 @@ public final class SoundManager {
     public static final String KEY_EFFECT_LEVEL_UP = "effect_level_up";
     public static final String KEY_EFFECT_INVENTORY = "effect_inventory";
     public static final String KEY_EFFECT_SHOP_PURCHASE = "effect_shop_purchase";
+    public static final String KEY_EFFECT_CHEST = "effect_chest";
+    public static final String KEY_EFFECT_EQUIP = "effect_equip";
 
     private static SoundPool soundPool;
     private static boolean isInitialized = false;
@@ -113,6 +116,8 @@ public final class SoundManager {
         register(context, KEY_EFFECT_LEVEL_UP, R.raw.wizard_spell_casting);
         register(context, KEY_EFFECT_INVENTORY, R.raw.player_defend);
         register(context, KEY_EFFECT_SHOP_PURCHASE, R.raw.knight_attack);
+        register(context, KEY_EFFECT_CHEST, R.raw.tile_reveal);
+        register(context, KEY_EFFECT_EQUIP, R.raw.player_defend);
 
         isInitialized = true;
         syncMuteFromSettings(context);
@@ -161,7 +166,7 @@ public final class SoundManager {
         if (monsterType == null || action == null) {
             return;
         }
-        String key = monsterType.toLowerCase() + "_" + action.toLowerCase();
+        String key = monsterType.toLowerCase(Locale.ROOT) + "_" + action.toLowerCase(Locale.ROOT);
         play(key);
     }
 
@@ -169,7 +174,7 @@ public final class SoundManager {
         if (playerClassName == null || action == null) {
             return;
         }
-        String key = playerClassName.toLowerCase() + "_" + action.toLowerCase();
+        String key = playerClassName.toLowerCase(Locale.ROOT) + "_" + action.toLowerCase(Locale.ROOT);
         play(key);
     }
 

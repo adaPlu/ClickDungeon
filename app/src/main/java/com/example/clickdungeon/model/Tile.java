@@ -59,6 +59,10 @@ public class Tile {
     public String getCustomName() {
         return customName;
     }
+
+    public void setCustomName(String customName) {
+        this.customName = customName;
+    }
     public boolean hasMonster() {
         return monster != null;
     }

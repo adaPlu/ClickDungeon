@@ -49,7 +49,7 @@ public class MainMenuActivityTest {
         SaveManager saveManager = new SaveManager(context);
         CharacterProfile profile = new CharacterProfile("Hero", PlayerClass.KNIGHT);
         Tile[][] grid = new Tile[][] { { new Tile(TileType.EMPTY) } };
-        saveManager.saveGame(0, profile, 1, 0, grid, null);
+        saveManager.saveGame(0, profile, 1, 0, 0, grid, null);
 
         MainMenuActivity activity = Robolectric.buildActivity(MainMenuActivity.class).setup().get();
 

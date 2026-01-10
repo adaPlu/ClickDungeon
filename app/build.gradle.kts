@@ -4,12 +4,12 @@ plugins {
 
 android {
     namespace = "com.example.clickdungeon"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.example.clickdungeon"
         minSdk = 21
-        targetSdk = 35
+        targetSdk = 36
         versionCode = 1
         versionName = "0.06"
 
@@ -39,12 +39,12 @@ android {
 
 dependencies {
 
-    implementation("com.google.code.gson:gson:2.10.1")
+    implementation(libs.gson)
     implementation(libs.appcompat)
     implementation(libs.material)
     testImplementation(libs.junit)
-    testImplementation("androidx.test:core:1.5.0")
-    testImplementation("org.robolectric:robolectric:4.11.1")
+    testImplementation(libs.test.core)
+    testImplementation(libs.robolectric)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
 }

@@ -26,8 +26,17 @@ import java.lang.reflect.Type;
  */
 public final class GameBalance {
 
+    public static final int STARTING_GOLD = 50;
+    public static final int STARTING_PLATINUM = 100;
+    private static final int BASE_FLOOR_CLEAR_XP = 6;
+    private static final int BASE_ITEM_FOUND_XP = 2;
+    private static final int BASE_TRAP_DISABLED_XP = 3;
     private static final int GOLD_VARIANCE_BOUND = 3;
     private static final int XP_VARIANCE_BOUND = 2;
+    private static final int MONSTER_LOOT_GOLD_CHANCE = 35;
+    private static final int MONSTER_LOOT_SMALL_KEY_CHANCE = 12;
+    private static final int MONSTER_LOOT_ITEM_CHANCE = 20;
+    private static final int MONSTER_LOOT_MAGIC_ITEM_CHANCE = 6;
     private static final String SHOP_PREFS = "shop_prefs";
     private static final String SHOP_STOCK_PREFIX = "stock_";
     private static List<ShopItem> cachedShopItems;
@@ -59,6 +68,61 @@ public final class GameBalance {
             base = difficulty.scaleXpReward(base);
         }
         return Math.max(1, base);
+    }
+
+    public static int calculateFloorClearXp(int floor, SettingsManager.Difficulty difficulty) {
+        int base = Math.max(1, BASE_FLOOR_CLEAR_XP);
+        base = Math.round(base * getFloorDifficultyScale(floor));
+        if (difficulty != null) {
+            base = difficulty.scaleXpReward(base);
+        }
+        return Math.max(1, base);
+    }
+
+    public static int calculateItemFoundXp(int floor, SettingsManager.Difficulty difficulty) {
+        int base = Math.max(1, BASE_ITEM_FOUND_XP);
+        base = Math.round(base * getFloorDifficultyScale(floor));
+        if (difficulty != null) {
+            base = difficulty.scaleXpReward(base);
+        }
+        return Math.max(1, base);
+    }
+
+    public static int calculateTrapDisabledXp(int floor, SettingsManager.Difficulty difficulty) {
+        int base = Math.max(1, BASE_TRAP_DISABLED_XP);
+        base = Math.round(base * getFloorDifficultyScale(floor));
+        if (difficulty != null) {
+            base = difficulty.scaleXpReward(base);
+        }
+        return Math.max(1, base);
+    }
+
+    public static MonsterLootRoll rollMonsterLoot(int floor,
+                                                  SettingsManager.Difficulty difficulty,
+                                                  Random random) {
+        int bonusGold = 0;
+        int smallKeys = 0;
+        java.util.List<String> items = new java.util.ArrayList<>();
+        java.util.List<String> magicItems = new java.util.ArrayList<>();
+
+        int roll = random.nextInt(100);
+        if (roll < MONSTER_LOOT_GOLD_CHANCE) {
+            bonusGold = Math.max(1, Math.round(calculateGoldPile(floor, difficulty, random) * 0.5f));
+        }
+
+        roll = random.nextInt(100);
+        if (roll < MONSTER_LOOT_SMALL_KEY_CHANCE) {
+            smallKeys = 1;
+        }
+
+        roll = random.nextInt(100);
+        if (roll < MONSTER_LOOT_MAGIC_ITEM_CHANCE) {
+            magicItems.add(ItemCatalog.randomMagicItem(random).getName());
+        } else if (roll < MONSTER_LOOT_MAGIC_ITEM_CHANCE + MONSTER_LOOT_ITEM_CHANCE) {
+            items.add(ItemCatalog.randomBaseItem(random).getName());
+        }
+
+        return new MonsterLootRoll(bonusGold, smallKeys, items, magicItems);
     }
 
     public static int calculateGoldPile(int floor,

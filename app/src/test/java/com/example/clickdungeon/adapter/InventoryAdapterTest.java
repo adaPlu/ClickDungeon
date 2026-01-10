@@ -31,7 +31,7 @@ public class InventoryAdapterTest {
                 .inflate(R.layout.item_inventory, null, false);
         InventoryAdapter.ViewHolder holder = new InventoryAdapter.ViewHolder(view);
 
-        holder.bind(item);
+        holder.bind(item, null);
 
         TextView name = view.findViewById(R.id.textItemName);
         TextView quantity = view.findViewById(R.id.textItemQuantity);

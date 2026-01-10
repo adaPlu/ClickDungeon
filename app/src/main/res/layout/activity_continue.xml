@@ -24,7 +24,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Slot 1 Info"
+                android:text="@string/continue_slot_info_placeholder"
                 android:textSize="16sp"
                 android:textColor="#F6E6C6" />
 
@@ -32,7 +32,7 @@
                 android:id="@+id/slot1Button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Slot 1 Action"
+                android:text="@string/continue_slot_action_placeholder"
                 android:background="@drawable/menu_button_bg"
                 android:textColor="#FFF3D5" />
         </LinearLayout>
@@ -51,7 +51,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Slot 2 Info"
+                android:text="@string/continue_slot_info_placeholder"
                 android:textSize="16sp"
                 android:textColor="#F6E6C6" />
 
@@ -59,7 +59,7 @@
                 android:id="@+id/slot2Button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Slot 2 Action"
+                android:text="@string/continue_slot_action_placeholder"
                 android:background="@drawable/menu_button_bg"
                 android:textColor="#FFF3D5" />
         </LinearLayout>
@@ -78,7 +78,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Slot 3 Info"
+                android:text="@string/continue_slot_info_placeholder"
                 android:textSize="16sp"
                 android:textColor="#F6E6C6" />
 
@@ -86,7 +86,7 @@
                 android:id="@+id/slot3Button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Slot 3 Action"
+                android:text="@string/continue_slot_action_placeholder"
                 android:background="@drawable/menu_button_bg"
                 android:textColor="#FFF3D5" />
         </LinearLayout>
@@ -105,7 +105,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Slot 4 Info"
+                android:text="@string/continue_slot_info_placeholder"
                 android:textSize="16sp"
                 android:textColor="#F6E6C6" />
 
@@ -113,7 +113,7 @@
                 android:id="@+id/slot4Button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Slot 4 Action"
+                android:text="@string/continue_slot_action_placeholder"
                 android:background="@drawable/menu_button_bg"
                 android:textColor="#FFF3D5" />
         </LinearLayout>

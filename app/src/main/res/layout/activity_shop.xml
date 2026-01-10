@@ -6,21 +6,71 @@
     android:padding="16dp"
     android:background="@drawable/bg_screen_dungeon">
 
-    <TextView
-        android:id="@+id/textGold"
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/gold_display"
-        android:textSize="18sp"
-        android:textColor="#F6E6C6"
+        android:orientation="horizontal"
         android:layout_gravity="center_horizontal"
-        android:layout_marginBottom="12dp" />
+        android:layout_marginBottom="12dp">
+
+        <TextView
+            android:id="@+id/textGold"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/gold_display"
+            android:textSize="18sp"
+            android:textColor="#F6E6C6"
+            android:layout_marginEnd="12dp" />
+
+        <TextView
+            android:id="@+id/textPlatinum"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/platinum_display"
+            android:textSize="18sp"
+            android:textColor="#F6E6C6" />
+    </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerShopItems"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
+        android:layout_height="200dp"
+        android:background="@drawable/panel_bg"
+        android:clipToPadding="false"
+        android:padding="6dp"
+        android:scrollbars="vertical" />
+
+    <TextView
+        android:id="@+id/textSellHeader"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/shop_section_inventory_sell"
+        android:textSize="16sp"
+        android:textColor="#F6E6C6"
+        android:layout_marginTop="12dp" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerSellItems"
+        android:layout_width="match_parent"
+        android:layout_height="140dp"
+        android:background="@drawable/panel_bg"
+        android:clipToPadding="false"
+        android:padding="6dp"
+        android:scrollbars="vertical" />
+
+    <TextView
+        android:id="@+id/textBuybackHeader"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/shop_section_buyback"
+        android:textSize="16sp"
+        android:textColor="#F6E6C6"
+        android:layout_marginTop="12dp" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerBuybackItems"
+        android:layout_width="match_parent"
+        android:layout_height="140dp"
         android:background="@drawable/panel_bg"
         android:clipToPadding="false"
         android:padding="6dp"

@@ -9,13 +9,14 @@
 
     <EditText
         android:id="@+id/editName"
-        android:hint="Enter character name"
+        android:hint="@string/enter_name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@drawable/panel_bg"
         android:textColor="#F6E6C6"
         android:textColorHint="#C9B28A"
         android:inputType="textPersonName"
+        android:autofillHints="name"
         android:maxLines="1"
         android:layout_marginBottom="16dp" />
 
@@ -25,13 +26,13 @@
         android:layout_height="96dp"
         android:src="@drawable/icon_knight"
         android:layout_marginBottom="16dp"
-        android:contentDescription="Class Preview" />
+        android:contentDescription="@string/class_preview_content_desc" />
 
 	<TextView
         android:id="@+id/textSlotDisplay"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Slot: 1"
+        android:text="@string/slot_display_placeholder"
         android:textSize="16sp"
         android:textColor="#D6C2A5"
         android:layout_marginBottom="8dp" />
@@ -39,7 +40,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Choose your class:"
+        android:text="@string/choose_class_label"
         android:textSize="18sp"
         android:textColor="#F6E6C6"
         android:layout_marginBottom="12dp" />
@@ -48,11 +49,13 @@
         android:orientation="horizontal"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:gravity="center">
+        android:gravity="center"
+        style="?android:attr/buttonBarStyle">
 
         <Button
             android:id="@+id/btnKnight"
-            android:text="Knight"
+            style="?android:attr/buttonBarButtonStyle"
+            android:text="@string/knight_option"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="@drawable/menu_button_bg"
@@ -63,7 +66,8 @@
 
         <Button
             android:id="@+id/btnThief"
-            android:text="Thief"
+            style="?android:attr/buttonBarButtonStyle"
+            android:text="@string/thief_option"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="@drawable/menu_button_bg"
@@ -74,7 +78,8 @@
 
         <Button
             android:id="@+id/btnWizard"
-            android:text="Wizard"
+            style="?android:attr/buttonBarButtonStyle"
+            android:text="@string/wizard_option"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="@drawable/menu_button_bg"
@@ -84,8 +89,17 @@
     </LinearLayout>
 
     <Button
+        android:id="@+id/btnShop"
+        android:text="@string/shop"
+        android:layout_marginTop="16dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/menu_button_bg"
+        android:textColor="#FFF3D5" />
+
+    <Button
         android:id="@+id/btnStart"
-        android:text="Start Adventure"
+        android:text="@string/start_game"
         android:layout_marginTop="24dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

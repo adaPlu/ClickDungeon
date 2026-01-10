@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="0dp"
     android:layout_height="0dp"
     android:layout_columnWeight="1"
@@ -13,6 +14,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:scaleType="centerCrop"
+        android:contentDescription="@string/tile_desc_hidden"
         android:visibility="gone" />
 
     <!-- Damage overlay (e.g. red flash) -->
@@ -42,7 +44,7 @@
         android:id="@+id/textFloatingDamage"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="-3"
+        android:text="@string/tile_damage_placeholder"
         android:textColor="#FF4444"
         android:textSize="16sp"
         android:textStyle="bold"
@@ -57,13 +59,13 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:gravity="center"
-        android:autoSizeTextType="uniform"
-        android:autoSizeMinTextSize="12sp"
-        android:autoSizeMaxTextSize="48sp"
-        android:autoSizeStepGranularity="2sp"
+        app:autoSizeTextType="uniform"
+        app:autoSizeMinTextSize="12sp"
+        app:autoSizeMaxTextSize="48sp"
+        app:autoSizeStepGranularity="2sp"
         android:includeFontPadding="false"
         android:lineSpacingExtra="0dp"
         android:textSize="32sp"
-        android:text="[]"
+        android:text="@string/tile_unknown_placeholder"
         android:textStyle="bold" />
 </FrameLayout>

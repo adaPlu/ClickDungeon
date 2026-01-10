@@ -4,14 +4,13 @@
 
 <!-- Main Menu -->
 <string name="play">Play</string>
-<string name="btn_new_game">btnNewGame</string>
 <string name="btn_continue">Continue</string>
 <string name="settings">Settings</string>
 <string name="shop">Shop</string>
+<string name="merchant_title">Merchant</string>
 <string name="achievements">Achievements</string>
 <string name="achievements_title">Your Achievements</string>
 <string name="back_to_menu">Back to Menu</string>
-<string name="no_game_in_progress">No game in progress</string>
 
 <!-- Settings -->
 <string name="settings_title">Game Settings</string>
@@ -46,57 +45,56 @@
 
 <!-- Shop -->
 <string name="purchase_successful">Purchased: %1$s</string>
-<string name="not_enough_gold">Not enough gold!</string>
+<string name="sale_successful">Sold: %1$s</string>
 <string name="item_out_of_stock">Item is out of stock.</string>
 <string name="gold_display">Gold:</string>
 <string name="gold_display_dynamic">Gold: %1$d</string>
-<string name="gold_found_message">You found %1$d gold!</string>
+<string name="platinum_display">Platinum:</string>
+<string name="platinum_display_dynamic">Platinum: %1$d</string>
+<string name="not_enough_gold">Not enough gold!</string>
 <string name="key_found_message">You picked up the %1$s!</string>
 <string name="locked_stair_unlocked">Unlocked stair with %1$s!</string>
 <string name="locked_stair_missing">You need the %1$s!</string>
 <string name="ability_button_wizard">Cast Fireball</string>
 <string name="ability_button_thief">Trap Scan</string>
 <string name="ability_button_knight">Raise Shield</string>
-<string name="ability_button_targeting">Select target...</string>
+<string name="ability_button_targeting">Select target&#8230;</string>
 <string name="ability_target_cancelled">Ability targeting cancelled.</string>
 <string name="ability_on_cooldown">Ability ready again on Floor %1$d.</string>
-<string name="ability_target_prompt_fireball">Select a tile within %1$d spaces to cast Fireball.</string>
-<string name="ability_target_prompt_scan">Select a tile within %1$d spaces to scan for traps.</string>
-<string name="ability_target_prompt_shield">Select a revealed tile within %1$d spaces to raise your shield.</string>
-<string name="ability_range_error">Target must be within %1$d spaces.</string>
 <string name="fireball_result_whiff">The fireball fizzles without a target.</string>
-<string name="fireball_result_hit">Fireball scorches for %1$d damage!</string>
 <string name="fireball_result_kill">Fireball incinerates the %1$s.</string>
 <string name="thief_scan_result">Nearby traps are revealed.</string>
 <string name="thief_scan_no_traps">No traps detected.</string>
 <string name="knight_shield_requires_visible">Shield can only be anchored on revealed tiles.</string>
 <string name="knight_shield_invalid_tile">Cannot anchor a shield on enemies or traps.</string>
-<string name="knight_shield_activated">Shield deployed! Absorbs %1$d damage while you stay put.</string>
 <string name="knight_shield_moved">You left the shielded tile. The shield dissipates.</string>
 <string name="knight_shield_broken">Your shield shatters!</string>
-<string name="knight_shield_absorb">Shield absorbs %1$d damage.</string>
 <string name="player_position_unknown">Reveal a tile first to anchor your position.</string>
 <string name="refresh_shop">Refresh Shop</string>
+<string name="shop_price_gold">Gold: %1$d  %2$s</string>
+<string name="shop_section_inventory_sell">Sell Inventory</string>
+<string name="shop_section_buyback">Buyback</string>
 
 <!-- Game -->
 <string name="hp_display_dynamic">HP: %1$d/%2$d</string>
+<string name="mp_display_dynamic">MP: %1$d/%2$d</string>
 <string name="victory_title">Victory!</string>
 <string name="victory_message">You revealed all safe tiles. Well done!</string>
-<string name="defeat_title">Game Over</string>
-<string name="defeat_message">You clicked on an enemy! What would you like to do?</string>
 <string name="restart">Restart</string>
 <string name="main_menu">Main Menu</string>
 <string name="play_again">Play Again</string>
 <string name="use_ability">Use Ability</string>
-<string name="inventory_dialog_title">Inventory</string>
+<string name="level_up">Level Up</string>
+<string name="not_enough_mp">Not enough MP!</string>
 <string name="inventory_empty">No items collected yet.</string>
-<string name="inventory_change_log_title">Recent changes:</string>
 <string name="inventory_gain_message">+1 %1$s</string>
 <string name="inventory_use_message">Used 1 %1$s</string>
-<string name="shop_out_of_stock">Item out of stock.</string>
-<string name="shop_purchase_failed">Purchase failed.</string>
-<string name="shop_purchase_success">Purchased: %1$s</string>
-<string name="shop_refresh_failed">Failed to load shop data; using defaults.</string>
+<string name="chest_requires_key">You need a small key.</string>
+<string name="chest_found_item">Chest opened: %1$s found.</string>
+<string name="chest_found_magic">Chest opened: %1$s discovered.</string>
+<string name="monster_loot_small_key">Bonus loot: small key.</string>
+<string name="monster_loot_item">Bonus loot: %1$s.</string>
+<string name="monster_loot_magic">Bonus loot: %1$s.</string>
 <string name="open_inventory">Open Inventory</string>
 <string name="slot_display_label">Slot: %1$d</string>
 <string name="game_over_title">Game Over</string>
@@ -104,16 +102,14 @@
 
 <!-- Character Selection -->
 <string name="enter_name">Enter character name</string>
-<string name="knight_option">Knight (HP: 10)</string>
-<string name="thief_option">Thief (HP: 6)</string>
-<string name="wizard_option">Wizard (HP: 4)</string>
-<string name="start_game">Start Game</string>
+<string name="knight_option">Knight</string>
+<string name="thief_option">Thief</string>
+<string name="wizard_option">Wizard</string>
+<string name="start_game">Start Adventure</string>
 <string name="choose_name_and_class">Enter name and select a class.</string>
 
 <!-- Status -->
-<string name="frozen_status">Frozen: %1$d turns</string>
-<string name="poison_status">Poisoned: %1$d turns</string>
-<string name="profile_missing_message">No profile found! Returning to menu...</string>
+<string name="profile_missing_message">No profile found! Returning to menu&#8230;</string>
 
 <!-- Continue Activity -->
 <string name="continue_slot_empty">Slot %1$d is empty</string>
@@ -135,17 +131,14 @@
 <string name="combat_player_stats">%1$s\nHP: %2$d/%3$d  ATK: %4$d  DEF: %5$d</string>
 <string name="combat_monster_stats">%1$s\nHP: %2$d/%3$d  ATK: %4$d  DEF: %5$d</string>
 <string name="combat_log_intro">A wild %1$s appears!</string>
-<string name="combat_log_player_attack">You strike for %1$d damage against %2$s.</string>
-<string name="combat_log_monster_attack">%1$s hits you for %2$d damage!</string>
 <string name="combat_log_monster_glancing">%1$s can\'t break through your defenses.</string>
 <string name="combat_log_monster_defeated">%1$s is defeated!</string>
-<string name="combat_log_player_defeated">You collapse from your wounds...</string>
+<string name="combat_log_player_defeated">You collapse from your wounds&#8230;</string>
 <string name="combat_log_use_potion">You drink a potion and recover %1$d HP.</string>
 <string name="combat_log_no_potions">No healing potions remain!</string>
 <string name="combat_log_potion_full_hp">You\'re already at full health.</string>
 <string name="combat_tile_cleared">✅</string>
-<string name="combat_result_victory">You defeated %1$s! +%2$d XP, +%3$d gold.</string>
-<string name="combat_result_flee">You fled the battle, taking %1$d damage.</string>
+<string name="combat_result_victory">You defeated %1$s! +%2$d XP, %3$s.</string>
     <string name="combat_intent_quick">Quick strike</string>
     <string name="combat_intent_heavy">Heavy swing</string>
     <string name="combat_intent_guard_break">Guard break</string>
@@ -154,11 +147,11 @@
 <string name="combat_summary_button_continue">Continue</string>
 <string name="combat_player_animation_desc">Animated portrait showing the player action.</string>
 <string name="combat_monster_animation_desc">Animated portrait showing the monster intent.</string>
-    <string name="combat_summary_victory">Victory! %1$d XP, %2$d gold after %3$d turns. You dealt %4$d damage, took %5$d, and used %6$d potions.</string>
-    <string name="combat_summary_flee">Retreat! Escaped in %1$d turns after dealing %2$d damage, suffering %3$d on the way out.</string>
+    <string name="combat_summary_victory">Victory! %1$s, %2$s after %3$s. You dealt %4$s, took %5$s, and used %6$s.</string>
+    <string name="combat_summary_flee">Retreat! Escaped in %1$s after dealing %2$s, suffering %3$s on the way out.</string>
     <string name="combat_summary_ready">Choose your next move.</string>
     <string name="combat_summary_potion_used">Potion consumed! %1$d HP restored.</string>
-    <string name="combat_summary_defeat">Defeat… You fell after %1$d turns, dealing %2$d damage, taking %3$d, and using %4$d potions.</string>
+    <string name="combat_summary_defeat">Defeat&#8230; You fell after %1$s, dealing %2$s, taking %3$s, and using %4$s.</string>
 
 <!-- Achievements -->
 <string name="achievement_first_blood_title">First Blood</string>
@@ -185,28 +178,150 @@
 <string name="tile_desc_locked_stair_red">Locked red stair</string>
 <string name="tile_desc_locked_stair_blue">Locked blue stair</string>
 <string name="tile_desc_locked_stair_green">Locked green stair</string>
+<string name="tile_desc_locked_stair_big">Locked stair (big key required)</string>
 <string name="tile_desc_key_red">Red key</string>
 <string name="tile_desc_key_blue">Blue key</string>
 <string name="tile_desc_key_green">Green key</string>
+<string name="tile_desc_key_small">Small key</string>
+<string name="tile_desc_key_big">Big key</string>
 <string name="tile_desc_trap_fire">Fire trap</string>
 <string name="tile_desc_trap_poison">Poison trap</string>
 <string name="tile_desc_trap_acid">Acid trap</string>
 <string name="tile_desc_trap_freeze">Freeze trap</string>
 <string name="tile_desc_trap_pitfall">Pitfall trap</string>
+<string name="tile_desc_chest">Treasure chest</string>
 <string name="tile_desc_enemy_with_hp">%1$s (%2$d/%3$d HP)</string>
 <string name="tile_desc_player_here">%1$s (hero present)</string>
 <string name="inventory_title">Inventory</string>
+<string name="equipped_weapon_label">Equipped weapon: %1$s</string>
+<string name="equipped_armor_label">Equipped armor: %1$s</string>
+<string name="equipped_stat_delta">ATK: %1$d (+%2$d)  DEF: %3$d (+%4$d)</string>
+<string name="equip_success">Equipped: %1$s</string>
+<string name="unequip_success">Unequipped: %1$s</string>
+<string name="equip_not_allowed">This item cannot be equipped.</string>
 <string name="onboarding_dungeon_title">Welcome to ClickDungeon</string>
-<string name="onboarding_dungeon_message">You are delving in on %1$s difficulty.
+<string name="onboarding_dungeon_message">You are delving on %1$s difficulty.
 
 Tips:
-• Tap hidden tiles to explore.
-• Watch the combat bar for enemy telegraphs.
-• %2$s
+- Tap hidden tiles to explore.
+- Chests need small keys; big keys open the next-floor stair.
+- Merchants can appear every three floors with gear upgrades.
+- Equip weapons and armor in your inventory to boost ATK/DEF.
+- %2$s
 
 Adjust these preferences anytime from Settings.</string>
 <string name="onboarding_colorblind_enabled">Color-blind mode is on; emoji include letter codes.</string>
 <string name="onboarding_colorblind_disabled">Enable color-blind mode from Settings for letter-coded tiles.</string>
 <string name="onboarding_tutorial_continue">Let\'s go</string>
 <string name="onboarding_tutorial_disable">Don\'t show again</string>
+<string name="class_preview_content_desc">Class preview</string>
+<string name="slot_display_placeholder">Slot: &#8212;</string>
+<string name="choose_class_label">Choose your class:</string>
+<string name="continue_slot_info_placeholder">Slot info</string>
+<string name="continue_slot_action_placeholder">Slot action</string>
+<string name="hp_display_placeholder">HP: &#8212;/&#8212;</string>
+<string name="floor_display_placeholder">Floor &#8212;</string>
+<string name="floor_display_dynamic">Floor %1$d</string>
+<string name="tile_damage_placeholder">-3</string>
+<string name="tile_unknown_placeholder">[]</string>
+<string name="inventory_quantity_format">x%1$d</string>
+<string name="floor_display_hard_suffix"> (Hard)</string>
+<string name="stat_allocate_title">Allocate Stat Points</string>
+<string name="stat_points_available">Stat points: %1$d</string>
+<string name="stat_label_strength">STR: %1$d</string>
+<string name="stat_label_dexterity">DEX: %1$d</string>
+<string name="stat_label_constitution">CON: %1$d</string>
+<string name="stat_label_intelligence">INT: %1$d</string>
+<string name="stat_add_button">+</string>
+<plurals name="gold_found_message">
+    <item quantity="one">You found %1$d gold!</item>
+    <item quantity="other">You found %1$d gold!</item>
+</plurals>
+<plurals name="ability_target_prompt_fireball">
+    <item quantity="one">Select a tile within %1$d space to cast Fireball.</item>
+    <item quantity="other">Select a tile within %1$d spaces to cast Fireball.</item>
+</plurals>
+<plurals name="ability_target_prompt_scan">
+    <item quantity="one">Select a tile within %1$d space to scan for traps.</item>
+    <item quantity="other">Select a tile within %1$d spaces to scan for traps.</item>
+</plurals>
+<plurals name="ability_target_prompt_shield">
+    <item quantity="one">Select a revealed tile within %1$d space to raise your shield.</item>
+    <item quantity="other">Select a revealed tile within %1$d spaces to raise your shield.</item>
+</plurals>
+<plurals name="ability_range_error">
+    <item quantity="one">Target must be within %1$d space.</item>
+    <item quantity="other">Target must be within %1$d spaces.</item>
+</plurals>
+<plurals name="fireball_result_hit">
+    <item quantity="one">Fireball scorches for %1$d damage!</item>
+    <item quantity="other">Fireball scorches for %1$d damage!</item>
+</plurals>
+<plurals name="knight_shield_activated">
+    <item quantity="one">Shield deployed! Absorbs %1$d damage while you stay put.</item>
+    <item quantity="other">Shield deployed! Absorbs %1$d damage while you stay put.</item>
+</plurals>
+<plurals name="knight_shield_absorb">
+    <item quantity="one">Shield absorbs %1$d damage.</item>
+    <item quantity="other">Shield absorbs %1$d damage.</item>
+</plurals>
+<plurals name="chest_found_gold">
+    <item quantity="one">Chest opened: %1$d gold.</item>
+    <item quantity="other">Chest opened: %1$d gold.</item>
+</plurals>
+<plurals name="monster_loot_gold">
+    <item quantity="one">Bonus loot: %1$d gold.</item>
+    <item quantity="other">Bonus loot: %1$d gold.</item>
+</plurals>
+<plurals name="frozen_status">
+    <item quantity="one">Frozen: %1$d turn</item>
+    <item quantity="other">Frozen: %1$d turns</item>
+</plurals>
+<plurals name="poison_status">
+    <item quantity="one">Poisoned: %1$d turn</item>
+    <item quantity="other">Poisoned: %1$d turns</item>
+</plurals>
+<plurals name="combat_log_player_attack">
+    <item quantity="one">You strike for %1$d damage against %2$s.</item>
+    <item quantity="other">You strike for %1$d damage against %2$s.</item>
+</plurals>
+<plurals name="combat_log_monster_attack">
+    <item quantity="one">%1$s hits you for %2$d damage!</item>
+    <item quantity="other">%1$s hits you for %2$d damage!</item>
+</plurals>
+<plurals name="combat_result_flee">
+    <item quantity="one">You fled the battle, taking %1$d damage.</item>
+    <item quantity="other">You fled the battle, taking %1$d damage.</item>
+</plurals>
+<plurals name="combat_gold_reward">
+    <item quantity="one">+%1$d gold</item>
+    <item quantity="other">+%1$d gold</item>
+</plurals>
+<plurals name="combat_summary_xp">
+    <item quantity="one">%1$d XP</item>
+    <item quantity="other">%1$d XP</item>
+</plurals>
+<plurals name="combat_summary_gold">
+    <item quantity="one">%1$d gold</item>
+    <item quantity="other">%1$d gold</item>
+</plurals>
+<plurals name="combat_summary_turns">
+    <item quantity="one">%1$d turn</item>
+    <item quantity="other">%1$d turns</item>
+</plurals>
+<plurals name="combat_summary_damage">
+    <item quantity="one">%1$d damage</item>
+    <item quantity="other">%1$d damage</item>
+</plurals>
+<plurals name="combat_summary_potions">
+    <item quantity="one">%1$d potion</item>
+    <item quantity="other">%1$d potions</item>
+</plurals>
 </resources>
+
+
+
+
+
+
+

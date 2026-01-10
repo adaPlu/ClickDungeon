@@ -17,8 +17,8 @@ public class DungeonGeneratorTest {
         DungeonGenerator.Result result = DungeonGenerator.generateFloor(5, 2, () -> new Monster("Goblin", 8, 3, 1, "👺"));
 
         assertNotNull(result.grid);
-        assertEquals(TileType.STAIR_DOWN_LOCKED_BLUE, result.lockedStair);
-        assertEquals("BLUE Key (F2)", result.keyName);
+        assertEquals(TileType.STAIR_DOWN_LOCKED, result.lockedStair);
+        assertEquals(DungeonGenerator.getBigKeyNameForFloor(2), result.keyName);
 
         int enemies = 0;
         int gold = 0;

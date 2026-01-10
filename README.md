@@ -1,6 +1,6 @@
 # 🧱 ClickDungeon - Android Dungelot-Inspired Roguelite
 
-**ClickDungeon** is a premium Android dungeon-crawler inspired by the Dungelot series, developed in Java using Android Studio. Players explore layered floors of a hidden-tile dungeon, collect gold, unlock achievements, and use special class abilities to survive and progress. Designed for commercial use with built-in expansion points for monetization and further gameplay depth.
+**ClickDungeon** is a premium Android dungeon-crawler inspired by the Dungelot series, developed in Java using Android Studio. Players explore layered floors of a hidden-tile dungeon, collect gold, unlock achievements, and use special class abilities to survive and progress. Platinum is currently stored as a premium currency placeholder (not found in-game). Designed for commercial use with built-in expansion points for monetization and further gameplay depth.
 
 ---
 
@@ -11,29 +11,32 @@
    - Traps, enemies, and treasure are shuffled each time, creating replay value.
 
 2. **Class Selection & Abilities**  
-   - **Knight**: Heavy armor plus a deployable shield that soaks incoming damage while you hold position.  
-   - **Thief**: Remote trap scan within three tiles that reveals hazards before you step on them.  
-   - **Wizard**: Floor-scaling fireball that targets any tile within three steps and obliterates exposed enemies.  
-   _All class abilities share a two-floor cooldown so you can’t spam them._
+   - **Knight**: High STR/CON base kit with a shield ability that absorbs damage while you hold position.  
+   - **Thief**: High DEX base kit with a trap scan that reveals hazards within range.  
+   - **Wizard**: High INT base kit with a fireball that can clear enemies at range.  
+   - Abilities share a two-floor cooldown and a three-tile targeting radius.  
 
 3. **Traps & Status Effects**  
    - Fire, acid, poison, freeze, and pitfall traps.  
    - Freeze stops you for multiple turns; poison deals damage over time.  
    - Pitfall traps drop you deeper into the dungeon (multi-floor exploration).
 
-4. **Inventory & Gold**  
-   - Persistent gold and inventory stored via SharedPreferences.  
+4. **Inventory & Currency**  
+   - Persistent gold, platinum, and inventory stored via SharedPreferences.  
+   - New runs start with 100 platinum and 50 gold; gold is earned in the dungeon.  
+   - Platinum is a premium placeholder (stored but not spent yet).  
+   - Stat point allocation is available from the inventory screen; MP is shown in the HUD for MP-using classes.  
    - Items like **Trap Disarm Kits** prevent trap damage.  
-   - Player can acquire items through the **Shop**.
+   - Player can acquire items through the **Shop**. A merchant can appear every three floors (50% chance) with sell and buyback lists; all prices use gold.  
 
 5. **Multiple Floors**  
    - Pitfall traps and stairs cause you to advance downward.  
    - Survive deeper floors with increased challenge and better rewards.
 
 6. **Achievements & Progress**  
-   - Collect multiple achievements (e.g., “First Blood,” “Low HP Survivor”).  
+   - Collect multiple achievements (e.g., ??oFirst Blood,??? ??oLow HP Survivor???).  
    - Earn them by uncovering tiles, winning with minimal HP, or reaching boss floors.  
-   - Achievements stored and displayed in **AchievementsActivity**.
+   - Achievements stored and displayed in **AchievementsActivity**, with Locked/Completed status shown in the list.  
 
 7. **Game Over & Victory**
    - You lose if your HP drops to 0.
@@ -47,7 +50,7 @@
    - Animated combatants use `AnimatedPlayer`/`AnimatedMonster` sprite sheets with class/monster audio cues.
 
 9. **Modular Architecture**
-   - **SharedPreferences** used throughout for saving grid states, gold, and achievements (plain JSON with no integrity/encryption; see Security note).
+   - **SharedPreferences** used throughout for saving grid states, gold/platinum, and achievements (plain JSON with no integrity/encryption; see Security note).
    - Separate activities for each feature (shop, achievements, settings, etc.).
    - Clean codebase supports expansions like IAP, ads, new classes, and more.
 
@@ -55,6 +58,7 @@
     - Settings screen controls audio, vibration, and dungeon difficulty.
     - Tone and haptic feedback respect player preferences through a shared manager.
     - Difficulty tuning scales monster stats and trap lethality across floors.
+    - Dungeon-themed backgrounds and panel styling are applied across menu screens.
 
 11. **Accessibility & Onboarding**
     - Color-blind mode adds letter codes to emoji tiles and enriches screen reader descriptions.
@@ -85,14 +89,17 @@ ClickDungeon/
 ¦   ¦   +-- MainMenuActivity.java       # Main menu & navigation
 ¦   ¦   +-- ClassSelectionActivity.java # Choose class (Knight, Thief, Wizard)
 ¦   ¦   +-- GameActivity.java           # Core dungeon gameplay with multi-floor logic
-¦   ¦   +-- ShopActivity.java           # Purchasing items & managing gold
+¦   ¦   +-- ShopActivity.java           # Purchasing items & managing currencies
 ¦   ¦   +-- AchievementsActivity.java   # Viewing unlocked achievements
 ¦   ¦   +-- SettingsActivity.java       # Basic settings screen
+¦   ¦   +-- InventoryActivity.java      # Inventory, equipment, and stat allocation
 ¦   ¦   +-- model/
 ¦   ¦   ¦   +-- CharacterProfile.java
 ¦   ¦   ¦   +-- InventoryItem.java
 ¦   ¦   ¦   +-- ShopItem.java
 ¦   ¦   ¦   +-- Achievement.java
+¦   ¦   ¦   +-- ItemDefinition.java
+¦   ¦   ¦   +-- PricedItem.java
 ¦   ¦   ¦   +-- Tile.java
 ¦   ¦   ¦   +-- TileType.java
 ¦   ¦   ¦   +-- PlayerClass.java
@@ -100,9 +107,14 @@ ClickDungeon/
 ¦   ¦   ¦   +-- SaveManager.java
 ¦   ¦   ¦   +-- InventoryManager.java
 ¦   ¦   ¦   +-- AchievementManager.java
+¦   ¦   ¦   +-- ItemCatalog.java
+¦   ¦   ¦   +-- MerchantManager.java
+¦   ¦   ¦   +-- MonsterLootRoll.java
 ¦   ¦   +-- adapter/
 ¦   ¦   ¦   +-- ShopItemAdapter.java
 ¦   ¦   ¦   +-- AchievementAdapter.java
+¦   ¦   ¦   +-- InventoryAdapter.java
+¦   ¦   ¦   +-- PricedItemAdapter.java
 ¦   +-- res/
 ¦       +-- layout/
 ¦       ¦   +-- activity_main_menu.xml
@@ -136,15 +148,15 @@ ClickDungeon/
 
 ---
 
-## ✅ Progress Checklist
+## �
+ Progress Checklist
 
 - [x] Multi-floor dungeon with pitfall traps and stairs  
-- [x] Class selection (Knight, Thief, Wizard) with level-scaling abilities + cooldowns  
+- [x] Class selection (Knight, Thief, Wizard) with base kits and stat progression  
 - [x] Traps & status effects (freeze, poison)  
 - [x] “Trap Disarm Kit” item integration  
 - [x] Achievements UI & unlocking logic  
-- [x] Inventory & gold system with shop  
-- [x] Resume game from main menu with save slots  
+- [x] Inventory & currency system with shop and merchant buyback  
 - [x] Key/stair integration and colored stair mechanics
 - [x] Combat with various monsters
 - [x] Animated combatants and grid sprite updates
@@ -154,7 +166,27 @@ ClickDungeon/
 
 ---
 
-## 🗺️ Roadmap
+## Implementation Phases
+
+- **Phase 1 - Class reset + level cap:** complete (20-level cap and base class ability kits).
+- **Phase 2 - Stat system foundation:** complete (STR/INT/CON/DEX; HP/MP derived; ATK/DEF derived).
+- **Phase 3 - Base class kits:** complete (base stats and base abilities per class).
+- **Phase 4 - Level progression:** complete (20 levels, stat points per level, HP/MP scaling).
+- **Phase 5 - Class abilities:** complete (wizard fireball, thief scan, knight shield with cooldown/range).
+- **Phase 6 - Ability + stat tuning:** complete (current tuning constants in CharacterProfile).
+- **Phase 7 - Core economy + persistence:** complete (gold-based economy, save/load, UI; platinum stored for future premium flows).
+- **Phase 8 - Merchant access + cadence:** complete (shop access, merchant visits, buyback scaffolding).
+- **Phase 9 - XP system + rewards:** complete (floor clear, items found, trap disabled, monster defeats).
+- **Phase 10 - Keys, chests, and exit flow:** complete (small keys, chests, big key exits, chest loot).
+- **Phase 11 - Loot tables + itemization:** complete (monster loot, weapon/armor tiers, magic affixes).
+- **Phase 12 - Equipment tracking + bonuses:** complete (equip/unequip, bonuses tracked; combat currently uses base stats).
+- **Phase 13 - UI/UX polish + audio:** in progress (theming, tutorial flow, SFX hooks).
+
+---
+## �-�️ Roadmap
+
+See `docs/ROADMAP.md` for the current, detailed roadmap and milestone tracking.
+
 
 ### Near-Term Priorities
 1. **Improve inventory & economy UX** -> Surface a lightweight inventory panel, emit feedback when items drop/are consumed, and broaden shop offerings tied to `GameBalance`.
@@ -181,6 +213,19 @@ This project is licensed for commercial use. Redistribution, sublicensing, or mo
 > Contact: `ClickDungeon@gmail.com`
 
 ## 🧪 Local development & testing
-- Install Android SDK with platform 35 and ensure `sdk.dir` in `local.properties` points to it (see `local.properties.example`).
+- Install Android SDK with platform 36 and ensure `sdk.dir` in `local.properties` points to it (see `local.properties.example`).
 - Robolectric tests can be run with `./gradlew test`; Android Studio or the Gradle daemon will reuse the configured SDK and cached dependencies.
 - If running in a restricted network environment, pre-seed the Gradle wrapper and Android SDK offline to avoid proxy download failures during CI.
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -16,7 +16,9 @@ public class InventoryManager {
     private static final String PREFS_NAME = "player_prefs";
     private static final String INVENTORY_KEY = "inventory";
     private static final String GOLD_KEY = "gold";
-    private static final int DEFAULT_GOLD = 500;
+    private static final String PLATINUM_KEY = "platinum";
+    private static final int DEFAULT_GOLD = GameBalance.STARTING_GOLD;
+    private static final int DEFAULT_PLATINUM = GameBalance.STARTING_PLATINUM;
 
     private InventoryManager() {
     }
@@ -98,6 +100,21 @@ public class InventoryManager {
         return setGold(context, updated);
     }
 
+    public static synchronized int getPlatinum(Context context) {
+        return Math.max(0, getPrefs(context).getInt(PLATINUM_KEY, DEFAULT_PLATINUM));
+    }
+
+    public static synchronized int setPlatinum(Context context, int amount) {
+        int sanitized = Math.max(0, amount);
+        getPrefs(context).edit().putInt(PLATINUM_KEY, sanitized).apply();
+        return sanitized;
+    }
+
+    public static synchronized int adjustPlatinum(Context context, int delta) {
+        int updated = getPlatinum(context) + delta;
+        return setPlatinum(context, updated);
+    }
+
     /**
      * Test/support hook to wipe inventory state for a fresh scenario.
      */
@@ -123,6 +140,10 @@ public class InventoryManager {
 
     public static synchronized void syncGoldWithCurrentRun(Context context, int runGold) {
         setGold(context, runGold);
+    }
+
+    public static synchronized void syncPlatinumWithCurrentRun(Context context, int runPlatinum) {
+        setPlatinum(context, runPlatinum);
     }
 
     private static int findItemIndex(List<InventoryItem> inventory, String itemName) {

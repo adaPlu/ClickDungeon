@@ -157,7 +157,7 @@ public class CombatDialogFragment extends DialogFragment {
     @NonNull
     @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
-        View root = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_combat, null, false);
+        View root = getLayoutInflater().inflate(R.layout.dialog_combat, null, false);
 
         playerStatsView = root.findViewById(R.id.textPlayerStats);
         monsterStatsView = root.findViewById(R.id.textMonsterStats);
@@ -251,10 +251,11 @@ public class CombatDialogFragment extends DialogFragment {
         resetSummary();
 
         turnsTaken++;
-        int damageToMonster = Math.max(1, profile.getAttack() - monster.getDefense());
+        int damageToMonster = Math.max(1, profile.getTotalAttack() - monster.getDefense());
         monster.takeDamage(damageToMonster);
         totalDamageDealt += damageToMonster;
-        appendLog(getString(R.string.combat_log_player_attack, damageToMonster, monster.getMonsterType()));
+        appendLog(getResources().getQuantityString(
+                R.plurals.combat_log_player_attack, damageToMonster, damageToMonster, monster.getMonsterType()));
         animatePulse(monsterStatsView);
         triggerMonsterAction("defend", false);
         triggerPlayerAction("attack");
@@ -265,13 +266,25 @@ public class CombatDialogFragment extends DialogFragment {
         if (monster.isDead()) {
             appendLog(getString(R.string.combat_log_monster_defeated, monster.getMonsterType()));
             disableActions();
+            int xp = Math.max(1, previewXpReward);
+            int gold = Math.max(0, previewGoldReward);
+            int turns = Math.max(1, turnsTaken);
+            String xpText = getResources().getQuantityString(R.plurals.combat_summary_xp, xp, xp);
+            String goldText = getResources().getQuantityString(R.plurals.combat_summary_gold, gold, gold);
+            String turnsText = getResources().getQuantityString(R.plurals.combat_summary_turns, turns, turns);
+            String dealtText = getResources().getQuantityString(
+                    R.plurals.combat_summary_damage, totalDamageDealt, totalDamageDealt);
+            String takenText = getResources().getQuantityString(
+                    R.plurals.combat_summary_damage, totalDamageTaken, totalDamageTaken);
+            String potionsText = getResources().getQuantityString(
+                    R.plurals.combat_summary_potions, potionsUsed, potionsUsed);
             showFinalSummary(getString(R.string.combat_summary_victory,
-                    Math.max(1, previewXpReward),
-                    Math.max(0, previewGoldReward),
-                    Math.max(1, turnsTaken),
-                    totalDamageDealt,
-                    totalDamageTaken,
-                    potionsUsed));
+                    xpText,
+                    goldText,
+                    turnsText,
+                    dealtText,
+                    takenText,
+                    potionsText));
             if (callbacks != null) {
                 callbacks.onCombatVictory(monster);
             }
@@ -317,10 +330,12 @@ public class CombatDialogFragment extends DialogFragment {
             totalDamageTaken += penalty;
         }
         disableActions();
-        showFinalSummary(getString(R.string.combat_summary_flee,
-                Math.max(1, turnsTaken),
-                Math.max(0, totalDamageDealt),
-                penalty));
+        int turns = Math.max(1, turnsTaken);
+        int dealt = Math.max(0, totalDamageDealt);
+        String turnsText = getResources().getQuantityString(R.plurals.combat_summary_turns, turns, turns);
+        String dealtText = getResources().getQuantityString(R.plurals.combat_summary_damage, dealt, dealt);
+        String takenText = getResources().getQuantityString(R.plurals.combat_summary_damage, penalty, penalty);
+        showFinalSummary(getString(R.string.combat_summary_flee, turnsText, dealtText, takenText));
         triggerPlayerAction("move");
         refreshStatBlocks();
     }
@@ -336,12 +351,13 @@ public class CombatDialogFragment extends DialogFragment {
 
         int damageToPlayer = currentIntent != null
                 ? currentIntent.estimatedDamage
-                : Math.max(0, monster.getAttack() - profile.getDefense());
+                : Math.max(0, monster.getAttack() - profile.getTotalDefense());
 
         if (damageToPlayer > 0) {
             profile.takeDamage(damageToPlayer);
             totalDamageTaken += damageToPlayer;
-            appendLog(getString(R.string.combat_log_monster_attack, monster.getMonsterType(), damageToPlayer));
+            appendLog(getResources().getQuantityString(
+                    R.plurals.combat_log_monster_attack, damageToPlayer, monster.getMonsterType(), damageToPlayer));
             animatePulse(playerStatsView);
         } else {
             appendLog(getString(R.string.combat_log_monster_glancing, monster.getMonsterType()));
@@ -354,11 +370,19 @@ public class CombatDialogFragment extends DialogFragment {
         if (profile.isDead()) {
             disableActions();
             appendLog(getString(R.string.combat_log_player_defeated));
+            int turns = Math.max(1, turnsTaken);
+            int dealt = Math.max(0, totalDamageDealt);
+            String turnsText = getResources().getQuantityString(R.plurals.combat_summary_turns, turns, turns);
+            String dealtText = getResources().getQuantityString(R.plurals.combat_summary_damage, dealt, dealt);
+            String takenText = getResources().getQuantityString(
+                    R.plurals.combat_summary_damage, totalDamageTaken, totalDamageTaken);
+            String potionsText = getResources().getQuantityString(
+                    R.plurals.combat_summary_potions, potionsUsed, potionsUsed);
             showFinalSummary(getString(R.string.combat_summary_defeat,
-                    Math.max(1, turnsTaken),
-                    Math.max(0, totalDamageDealt),
-                    totalDamageTaken,
-                    potionsUsed));
+                    turnsText,
+                    dealtText,
+                    takenText,
+                    potionsText));
             if (callbacks != null) {
                 callbacks.onCombatDefeat();
             }
@@ -469,7 +493,7 @@ public class CombatDialogFragment extends DialogFragment {
 
         int estimateDamage(@NonNull Monster monster, @NonNull CharacterProfile profile) {
             int baseAttack = Math.max(1, Math.round(monster.getAttack() * attackMultiplier));
-            int defense = profile.getDefense();
+            int defense = profile.getTotalDefense();
             int mitigatedDefense = defense - Math.round(defense * defenseBypass);
             int damage = baseAttack - Math.max(0, mitigatedDefense);
             return Math.max(0, damage);
@@ -496,8 +520,8 @@ public class CombatDialogFragment extends DialogFragment {
                 profile.getName(),
                 profile.getCurrentHP(),
                 profile.getMaxHP(),
-                profile.getAttack(),
-                profile.getDefense());
+                profile.getTotalAttack(),
+                profile.getTotalDefense());
 
         String monsterLabel;
         Bundle args = getArguments();

@@ -51,7 +51,7 @@ public class GameActivitySaveIntegrationTest {
         };
         SaveManager.RunMetadata metadata =
                 new SaveManager.RunMetadata(-1, -1, false, 0, -1, -1, 4);
-        saveManager.saveGame(0, profile, 4, 77, grid, metadata);
+        saveManager.saveGame(0, profile, 4, 77, 15, grid, metadata);
 
         Intent intent = new Intent(context, GameActivity.class);
         intent.putExtra(GameActivity.EXTRA_SLOT_INDEX, 0);
@@ -60,20 +60,24 @@ public class GameActivitySaveIntegrationTest {
 
         int currentFloor = (int) getFieldValue(activity, "currentFloor");
         int currentGold = (int) getFieldValue(activity, "currentGold");
+        int currentPlatinum = (int) getFieldValue(activity, "currentPlatinum");
         Tile[][] activeGrid = (Tile[][]) getFieldValue(activity, "dungeonGrid");
 
         assertEquals(4, currentFloor);
         assertEquals(77, currentGold);
+        assertEquals(15, currentPlatinum);
         assertNotNull(activeGrid);
         assertEquals(TileType.ENEMY, activeGrid[0][1].getType());
 
         setFieldValue(activity, "currentGold", 125);
+        setFieldValue(activity, "currentPlatinum", 35);
 
         controller.pause();
 
         SaveManager.GameState updated = saveManager.loadGame(0);
         assertNotNull(updated);
         assertEquals(125, updated.currentGold);
+        assertEquals(35, updated.currentPlatinum);
         assertEquals(4, updated.currentFloor);
     }
 
@@ -81,10 +85,10 @@ public class GameActivitySaveIntegrationTest {
     public void clickingKeyTileAddsKeyToInventory() {
         SaveManager saveManager = new SaveManager(context);
         CharacterProfile profile = new CharacterProfile("KeyHunter", PlayerClass.THIEF);
-        Tile[][] grid = buildGridWithKey(TileType.RED_KEY, "Red Key (F1)");
+        Tile[][] grid = buildGridWithKey(TileType.SMALL_KEY, "Small Key");
         SaveManager.RunMetadata metadata =
                 new SaveManager.RunMetadata(-1, -1, false, 0, -1, -1, 1);
-        saveManager.saveGame(0, profile, 1, 0, grid, metadata);
+        saveManager.saveGame(0, profile, 1, 0, 0, grid, metadata);
 
         Intent intent = new Intent(context, GameActivity.class);
         intent.putExtra(GameActivity.EXTRA_SLOT_INDEX, 0);
@@ -96,7 +100,7 @@ public class GameActivitySaveIntegrationTest {
         activity.runOnUiThread(firstTile::performClick);
         Shadows.shadowOf(Looper.getMainLooper()).idle();
 
-        assertEquals(1, InventoryManager.getItemQuantity(activity, "RED KEY"));
+        assertEquals(1, InventoryManager.getItemQuantity(activity, "SMALL KEY"));
     }
 
     private Tile[][] buildGridWithKey(TileType keyType, String customName) {

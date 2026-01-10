@@ -5,6 +5,8 @@ import android.content.SharedPreferences;
 
 import com.example.clickdungeon.model.CharacterProfile;
 import com.example.clickdungeon.model.Tile;
+import com.example.clickdungeon.model.TileType;
+import com.example.clickdungeon.util.DungeonGenerator;
 import com.google.gson.Gson;
 
 /**
@@ -18,6 +20,7 @@ public class SaveManager {
     private static final String KEY_FLOOR = "CurrentFloor";
     private static final String KEY_GRID = "DungeonGrid";
     private static final String KEY_GOLD = "CurrentGold";
+    private static final String KEY_PLATINUM = "CurrentPlatinum";
     private static final String KEY_PLAYER_ROW = "PlayerRow";
     private static final String KEY_PLAYER_COL = "PlayerCol";
     private static final String KEY_SHIELD_ACTIVE = "KnightShieldActive";
@@ -37,6 +40,7 @@ public class SaveManager {
                          CharacterProfile profile,
                          int currentFloor,
                          int currentGold,
+                         int currentPlatinum,
                          Tile[][] dungeonGrid,
                          RunMetadata metadata) {
         validateSlot(slotIndex);
@@ -46,7 +50,8 @@ public class SaveManager {
                 .putString(KEY_PROFILE, gson.toJson(profile))
                 .putInt(KEY_FLOOR, currentFloor)
                 .putString(KEY_GRID, gson.toJson(dungeonGrid))
-                .putInt(KEY_GOLD, currentGold);
+                .putInt(KEY_GOLD, currentGold)
+                .putInt(KEY_PLATINUM, currentPlatinum);
 
         if (metadata != null) {
             editor.putInt(KEY_PLAYER_ROW, metadata.playerRow)
@@ -84,7 +89,9 @@ public class SaveManager {
             }
 
             int floor = prefs.getInt(KEY_FLOOR, 1);
+            migrateGrid(dungeonGrid, floor);
             int gold = prefs.getInt(KEY_GOLD, 0);
+            int platinum = prefs.getInt(KEY_PLATINUM, 0);
             RunMetadata metadata = new RunMetadata(
                     prefs.getInt(KEY_PLAYER_ROW, -1),
                     prefs.getInt(KEY_PLAYER_COL, -1),
@@ -94,9 +101,42 @@ public class SaveManager {
                     prefs.getInt(KEY_SHIELD_COL, -1),
                     prefs.getInt(KEY_ABILITY_READY_FLOOR, 1)
             );
-            return new GameState(profile, floor, gold, dungeonGrid, metadata);
+            return new GameState(profile, floor, gold, platinum, dungeonGrid, metadata);
         } catch (Exception ignored) {
             return null;
+        }
+    }
+
+    private void migrateGrid(Tile[][] grid, int floor) {
+        if (grid == null) {
+            return;
+        }
+        String bigKeyName = DungeonGenerator.getBigKeyNameForFloor(floor);
+        for (Tile[] row : grid) {
+            if (row == null) {
+                continue;
+            }
+            for (Tile tile : row) {
+                if (tile == null) {
+                    continue;
+                }
+                TileType type = tile.getType();
+                if (type == TileType.STAIR_DOWN_LOCKED_RED
+                        || type == TileType.STAIR_DOWN_LOCKED_BLUE
+                        || type == TileType.STAIR_DOWN_LOCKED_GREEN) {
+                    tile.setType(TileType.STAIR_DOWN_LOCKED);
+                } else if (type == TileType.RED_KEY
+                        || type == TileType.BLUE_KEY
+                        || type == TileType.GREEN_KEY) {
+                    tile.setType(TileType.BIG_KEY);
+                    tile.setCustomName(bigKeyName);
+                } else if (type == TileType.BIG_KEY) {
+                    String customName = tile.getCustomName();
+                    if (customName == null || customName.isEmpty()) {
+                        tile.setCustomName(bigKeyName);
+                    }
+                }
+            }
         }
     }
 
@@ -124,17 +164,20 @@ public class SaveManager {
         public final CharacterProfile profile;
         public final int currentFloor;
         public final int currentGold;
+        public final int currentPlatinum;
         public final Tile[][] dungeonGrid;
         public final RunMetadata metadata;
 
         public GameState(CharacterProfile profile,
                          int currentFloor,
                          int currentGold,
+                         int currentPlatinum,
                          Tile[][] dungeonGrid,
                          RunMetadata metadata) {
             this.profile = profile;
             this.currentFloor = currentFloor;
             this.currentGold = currentGold;
+            this.currentPlatinum = currentPlatinum;
             this.dungeonGrid = dungeonGrid;
             this.metadata = metadata;
         }

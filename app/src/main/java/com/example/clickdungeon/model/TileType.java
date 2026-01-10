@@ -15,12 +15,18 @@ public enum TileType {
     // Stairs
     STAIR_UP,
     STAIR_DOWN,
+    STAIR_DOWN_LOCKED,
     STAIR_DOWN_LOCKED_BLUE,
     STAIR_DOWN_LOCKED_GREEN,
     STAIR_DOWN_LOCKED_RED,
 
     // Keys
+    SMALL_KEY,
+    BIG_KEY,
     RED_KEY,
     BLUE_KEY,
-    GREEN_KEY
+    GREEN_KEY,
+
+    // Chests
+    CHEST
 }

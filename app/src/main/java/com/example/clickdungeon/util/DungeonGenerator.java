@@ -29,6 +29,12 @@ public final class DungeonGenerator {
         for (int i = 0; i < 5; i++) {
             pool.add(new Tile(TileType.ENEMY, monsterFactory.create()));
         }
+        for (int i = 0; i < 2; i++) {
+            pool.add(new Tile(TileType.CHEST));
+        }
+        for (int i = 0; i < 2; i++) {
+            pool.add(new Tile(TileType.SMALL_KEY));
+        }
         pool.add(new Tile(TileType.TRAP_FIRE));
         pool.add(new Tile(TileType.TRAP_FIRE));
         pool.add(new Tile(TileType.TRAP_POISON));
@@ -37,16 +43,9 @@ public final class DungeonGenerator {
         pool.add(new Tile(TileType.TRAP_FREEZE));
         pool.add(new Tile(TileType.TRAP_PITFALL));
 
-        TileType[] keyTypes = {TileType.RED_KEY, TileType.BLUE_KEY, TileType.GREEN_KEY};
-        TileType[] lockTypes = {TileType.STAIR_DOWN_LOCKED_RED, TileType.STAIR_DOWN_LOCKED_BLUE, TileType.STAIR_DOWN_LOCKED_GREEN};
-        int keyIndex = (floor - 1) % keyTypes.length;
-        TileType selectedKeyType = keyTypes[keyIndex];
-        TileType lockedStair = lockTypes[keyIndex];
-
-        // Rotate key/lock pairs by floor so each level introduces a different lock.
-        String keyName = selectedKeyType.name().replace("_KEY", " Key (F" + floor + ")");
-
-        pool.add(new Tile(selectedKeyType, keyName));
+        String keyName = getBigKeyNameForFloor(floor);
+        TileType lockedStair = TileType.STAIR_DOWN_LOCKED;
+        pool.add(new Tile(TileType.BIG_KEY, keyName));
         pool.add(new Tile(lockedStair));
         pool.add(new Tile(TileType.STAIR_DOWN));
         if (floor > 1) {
@@ -79,6 +78,10 @@ public final class DungeonGenerator {
     public interface MonsterFactory {
         @NonNull
         Monster create();
+    }
+
+    public static String getBigKeyNameForFloor(int floor) {
+        return "BIG KEY (F" + Math.max(1, floor) + ")";
     }
 
     public static final class Result {

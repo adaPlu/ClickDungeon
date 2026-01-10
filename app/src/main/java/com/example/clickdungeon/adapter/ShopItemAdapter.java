@@ -38,7 +38,9 @@ public class ShopItemAdapter extends RecyclerView.Adapter<ShopItemAdapter.ViewHo
         public void bind(final ShopItem item, final OnItemClickListener listener) {
             nameView.setText(item.getName());
             String stockLabel = item.getStock() <= 0 ? "(Out of stock)" : "Stock: " + item.getStock();
-            priceView.setText(String.format("Price: %d  %s", item.getPrice(), stockLabel));
+            priceView.setText(itemView.getContext().getString(R.string.shop_price_gold,
+                    item.getPrice(),
+                    stockLabel));
 
             itemView.setAlpha(item.getStock() <= 0 ? 0.5f : 1f);
             itemView.setEnabled(item.getStock() > 0);

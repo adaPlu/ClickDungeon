@@ -40,6 +40,8 @@ public class SaveManagerTest {
     public void saveLoadAndDeleteRoundTrip() {
         SaveManager saveManager = new SaveManager(context);
         CharacterProfile profile = new CharacterProfile("Aeris", PlayerClass.WIZARD);
+        profile.addExperience(120);
+        profile.increaseIntelligence(1);
         Tile[][] grid = new Tile[5][5];
         for (int r = 0; r < 5; r++) {
             for (int c = 0; c < 5; c++) {
@@ -50,7 +52,7 @@ public class SaveManagerTest {
 
         SaveManager.RunMetadata metadata =
                 new SaveManager.RunMetadata(-1, -1, false, 0, -1, -1, 1);
-        saveManager.saveGame(1, profile, 3, 42, grid, metadata);
+        saveManager.saveGame(1, profile, 3, 42, 7, grid, metadata);
 
         assertTrue(saveManager.isSlotOccupied(1));
 
@@ -58,7 +60,10 @@ public class SaveManagerTest {
         assertNotNull(state);
         assertEquals(3, state.currentFloor);
         assertEquals(42, state.currentGold);
+        assertEquals(7, state.currentPlatinum);
         assertEquals("Aeris", state.profile.getName());
+        assertEquals(1, state.profile.getAvailableStatPoints());
+        assertEquals(4, state.profile.getIntelligence());
         assertTrue(state.dungeonGrid[0][0].hasMonster());
         assertNotNull(state.metadata);
         assertEquals(-1, state.metadata.playerRow);

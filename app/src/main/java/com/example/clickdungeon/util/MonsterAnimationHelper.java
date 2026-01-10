@@ -9,6 +9,8 @@ import com.example.clickdungeon.R;
 import com.example.clickdungeon.model.AnimatedMonster;
 import com.example.clickdungeon.model.Monster;
 
+import java.util.Locale;
+
 /**
  * Builds {@link AnimatedMonster} instances that mirror the stats of an existing {@link Monster}
  * while wiring up the correct sprite sheets and sound effects for rendering outside combat.
@@ -73,7 +75,7 @@ public final class MonsterAnimationHelper {
             if (type == null) {
                 return defaultConfig();
             }
-            switch (type.toLowerCase()) {
+            switch (type.toLowerCase(Locale.ROOT)) {
                 case "goblin":
                     return new Config(4, 120,
                             R.drawable.goblin_sprite_sheet,

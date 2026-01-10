@@ -5,13 +5,13 @@
     android:layout_height="match_parent"
     android:padding="8dp">
 
-    <!-- Top bar for gold, HP, and floor -->
+    <!-- Top bar for gold, MP, HP, and floor -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center_horizontal"
-        android:weightSum="3">
+        android:weightSum="5">
 
         <TextView
             android:id="@+id/textGoldCounter"
@@ -24,11 +24,33 @@
             android:padding="4dp" />
 
         <TextView
+            android:id="@+id/textPlatinumCounter"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/platinum_display"
+            android:textStyle="bold"
+            android:textSize="18sp"
+            android:gravity="center"
+            android:padding="4dp" />
+
+        <TextView
+            android:id="@+id/textMpCounter"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/mp_display_dynamic"
+            android:textStyle="bold"
+            android:textSize="18sp"
+            android:gravity="center"
+            android:padding="4dp" />
+
+        <TextView
             android:id="@+id/textHpCounter"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="HP: 10/10"
+            android:text="@string/hp_display_placeholder"
             android:textStyle="bold"
             android:textSize="18sp"
             android:gravity="center"
@@ -39,7 +61,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Floor 1"
+            android:text="@string/floor_display_placeholder"
             android:textSize="18sp"
             android:gravity="end"
             android:padding="4dp" />
@@ -73,7 +95,14 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/use_ability"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="8dp" />
+
+    <Button
+        android:id="@+id/btnLevelUp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/level_up"
+        android:layout_marginTop="6dp"
         android:visibility="gone" />
 
     <Button

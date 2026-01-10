@@ -27,12 +27,12 @@ public class CharacterProfileTest {
         CharacterProfile thief = new CharacterProfile("T", PlayerClass.THIEF);
         assertEquals(6, thief.getMaxHP());
         assertEquals(4, thief.getAttack());
-        assertEquals(2, thief.getDefense());
+        assertEquals(5, thief.getDefense());
 
         CharacterProfile wizard = new CharacterProfile("W", PlayerClass.WIZARD);
         assertEquals(4, wizard.getMaxHP());
         assertEquals(3, wizard.getAttack());
-        assertEquals(1, wizard.getDefense());
+        assertEquals(2, wizard.getDefense());
     }
 
     @Test
@@ -42,10 +42,21 @@ public class CharacterProfileTest {
 
         assertEquals(2, profile.getLevel());
         assertEquals(150, profile.getXp());
-        assertEquals(20, profile.getMaxHP());
-        assertEquals(20, profile.getCurrentHP());
-        assertEquals(4, profile.getAttack());
+        assertEquals(12, profile.getMaxHP());
+        assertEquals(12, profile.getCurrentHP());
+        assertEquals(2, profile.getAttack());
         assertEquals(4, profile.getDefense());
+        assertEquals(2, profile.getAvailableStatPoints());
+    }
+
+    @Test
+    public void wizardUsesMpAndGainsManaWithIntelligence() {
+        CharacterProfile profile = new CharacterProfile("Mage", PlayerClass.WIZARD);
+        assertTrue(profile.usesMp());
+        int initialMp = profile.getMaxMP();
+        profile.addExperience(120);
+        profile.increaseIntelligence(1);
+        assertTrue(profile.getMaxMP() > initialMp);
     }
 
     @Test

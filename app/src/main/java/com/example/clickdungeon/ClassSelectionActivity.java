@@ -38,6 +38,7 @@ public class ClassSelectionActivity extends AppCompatActivity {
         btnThief = findViewById(R.id.btnThief);
         btnWizard = findViewById(R.id.btnWizard);
         Button btnStartGame = findViewById(R.id.btnStart);
+        Button btnShop = findViewById(R.id.btnShop);
         classPreview = findViewById(R.id.imageClassPreview);
         TextView slotDisplay = findViewById(R.id.textSlotDisplay);
         targetSlotIndex = getIntent().getIntExtra(EXTRA_SAVE_SLOT_INDEX, -1);
@@ -54,7 +55,7 @@ public class ClassSelectionActivity extends AppCompatActivity {
             String name = editName.getText().toString().trim();
 
             if (name.isEmpty() || selectedClass == null) {
-                Toast.makeText(this, "Enter name and select a class.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, R.string.choose_name_and_class, Toast.LENGTH_SHORT).show();
                 return;
             }
 
@@ -70,6 +71,8 @@ public class ClassSelectionActivity extends AppCompatActivity {
             startActivity(intent);
             finish();
         });
+
+        btnShop.setOnClickListener(v -> startActivity(new Intent(this, ShopActivity.class)));
     }
 
     private void saveProfile(CharacterProfile profile, int slot) {

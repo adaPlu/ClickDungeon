@@ -143,8 +143,20 @@ public class CombatDialogFragmentTest {
 
         assertTrue(callbacks.victoryAchieved);
         CharSequence summary = ((android.widget.TextView) dialog.findViewById(R.id.textCombatSummary)).getText();
+        String xpText = activity.getResources().getQuantityString(R.plurals.combat_summary_xp, 9, 9);
+        String goldText = activity.getResources().getQuantityString(R.plurals.combat_summary_gold, 5, 5);
+        String turnsText = activity.getResources().getQuantityString(R.plurals.combat_summary_turns, 1, 1);
+        String dealtText = activity.getResources().getQuantityString(R.plurals.combat_summary_damage, 2, 2);
+        String takenText = activity.getResources().getQuantityString(R.plurals.combat_summary_damage, 0, 0);
+        String potionsText = activity.getResources().getQuantityString(R.plurals.combat_summary_potions, 0, 0);
         assertTrue(summary.toString().contains(
-                activity.getString(R.string.combat_summary_victory, 9, 5, 1, 2, 0, 0)));
+                activity.getString(R.string.combat_summary_victory,
+                        xpText,
+                        goldText,
+                        turnsText,
+                        dealtText,
+                        takenText,
+                        potionsText)));
         assertFalse(dialog.findViewById(R.id.buttonAttack).isEnabled());
         assertFalse(dialog.findViewById(R.id.buttonUsePotion).isEnabled());
         assertFalse(dialog.findViewById(R.id.buttonFlee).isEnabled());
@@ -173,8 +185,16 @@ public class CombatDialogFragmentTest {
         ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
 
         CharSequence summary = ((android.widget.TextView) dialog.findViewById(R.id.textCombatSummary)).getText();
+        String turnsText = activity.getResources().getQuantityString(R.plurals.combat_summary_turns, 1, 1);
+        String dealtText = activity.getResources().getQuantityString(R.plurals.combat_summary_damage, 3, 3);
+        String takenText = activity.getResources().getQuantityString(R.plurals.combat_summary_damage, 4, 4);
+        String potionsText = activity.getResources().getQuantityString(R.plurals.combat_summary_potions, 0, 0);
         assertTrue(summary.toString().contains(
-                activity.getString(R.string.combat_summary_defeat, 1, 3, 5, 0)));
+                activity.getString(R.string.combat_summary_defeat,
+                        turnsText,
+                        dealtText,
+                        takenText,
+                        potionsText)));
         assertFalse(dialog.findViewById(R.id.buttonAttack).isEnabled());
         assertFalse(dialog.findViewById(R.id.buttonUsePotion).isEnabled());
         assertFalse(dialog.findViewById(R.id.buttonFlee).isEnabled());

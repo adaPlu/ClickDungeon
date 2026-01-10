@@ -16,7 +16,7 @@ public final class OnboardingManager {
 
     private static final String PREFS_NAME = "onboarding_prompts";
     private static final String KEY_DUNGEON_TUTORIAL_VERSION = "dungeon_tutorial_version";
-    private static final int CURRENT_TUTORIAL_VERSION = 1;
+    private static final int CURRENT_TUTORIAL_VERSION = 2;
 
     private OnboardingManager() {
     }

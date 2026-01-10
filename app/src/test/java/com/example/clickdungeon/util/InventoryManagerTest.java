@@ -57,7 +57,7 @@ public class InventoryManagerTest {
 
     @Test
     public void goldOperationsClampToValidRange() {
-        assertEquals(500, InventoryManager.getGold(context));
+        assertEquals(GameBalance.STARTING_GOLD, InventoryManager.getGold(context));
 
         InventoryManager.setGold(context, 1200);
         assertEquals(1200, InventoryManager.getGold(context));
@@ -67,6 +67,20 @@ public class InventoryManagerTest {
 
         InventoryManager.adjustGold(context, -1000);
         assertEquals(0, InventoryManager.getGold(context));
+    }
+
+    @Test
+    public void platinumOperationsClampToValidRange() {
+        assertEquals(GameBalance.STARTING_PLATINUM, InventoryManager.getPlatinum(context));
+
+        InventoryManager.setPlatinum(context, 240);
+        assertEquals(240, InventoryManager.getPlatinum(context));
+
+        InventoryManager.adjustPlatinum(context, -40);
+        assertEquals(200, InventoryManager.getPlatinum(context));
+
+        InventoryManager.adjustPlatinum(context, -1000);
+        assertEquals(0, InventoryManager.getPlatinum(context));
     }
 
     @Test
@@ -96,5 +110,13 @@ public class InventoryManagerTest {
         InventoryManager.syncGoldWithCurrentRun(context, 250);
 
         assertEquals(250, InventoryManager.getGold(context));
+    }
+
+    @Test
+    public void syncPlatinumWithCurrentRunUpdatesStoredPlatinum() {
+        InventoryManager.setPlatinum(context, 80);
+        InventoryManager.syncPlatinumWithCurrentRun(context, 140);
+
+        assertEquals(140, InventoryManager.getPlatinum(context));
     }
 }
