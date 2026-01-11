@@ -98,7 +98,7 @@ public class GameActivityAudioAnimationTest {
     }
 
     @Test
-    public void gridAnimationThrottlesWhenInvisibleAndClearsOnDetach() throws Exception {
+    public void gridAnimationTracksActiveTilesAndClearsOnDetach() throws Exception {
         GameActivity activity = launchWithProfile(PlayerClass.KNIGHT);
         Tile[][] grid = buildEmptyGrid();
         grid[0][0] = new Tile(TileType.ENEMY, new Monster("Goblin", 4, 2, 0, "G"));
@@ -108,26 +108,17 @@ public class GameActivityAudioAnimationTest {
 
         View tileView = getTileView(activity, 0, 0);
         assertNotNull(tileView);
-        tileView.setVisibility(View.INVISIBLE);
-
-        // First frame should record a timestamp even though it is skipped visually.
-        invoke(activity, "animateGridFrame");
-        Map<String, Long> frameTimes = getLongMapField(activity, "gridAnimationLastFrameMs");
         String key = "0_0";
-        long first = frameTimes.get(key);
-
-        // Second immediate frame should be throttled (timestamp unchanged).
-        invoke(activity, "animateGridFrame");
-        long second = frameTimes.get(key);
-        assertEquals(first, second);
+        Map<?, ?> activeTiles = getMapField(activity, "activeAnimatedTiles");
+        assertTrue(activeTiles.containsKey(key));
 
         // Detach should clear animation bookkeeping.
         GridLayout layout = activity.findViewById(R.id.gridDungeon);
         layout.removeView(tileView);
         Map<?, ?> animators = getMapField(activity, "gridMonsterAnimations");
-        Map<String, Long> refreshedTimes = getLongMapField(activity, "gridAnimationLastFrameMs");
+        Map<?, ?> refreshedTiles = getMapField(activity, "activeAnimatedTiles");
         assertFalse(animators.containsKey(key));
-        assertFalse(refreshedTimes.containsKey(key));
+        assertFalse(refreshedTiles.containsKey(key));
     }
 
     private GameActivity launchWithProfile(PlayerClass playerClass) {
@@ -185,17 +176,6 @@ public class GameActivityAudioAnimationTest {
             return (Map<?, ?>) value;
         }
         throw new AssertionError("Expected map for " + name);
-    }
-
-    private Map<String, Long> getLongMapField(GameActivity activity, String name) {
-        Map<?, ?> raw = getMapField(activity, name);
-        Map<String, Long> casted = new java.util.HashMap<>();
-        for (Map.Entry<?, ?> entry : raw.entrySet()) {
-            if (entry.getKey() instanceof String && entry.getValue() instanceof Long) {
-                casted.put((String) entry.getKey(), (Long) entry.getValue());
-            }
-        }
-        return casted;
     }
 
     private void invoke(GameActivity activity, String methodName, Object... args) throws Exception {

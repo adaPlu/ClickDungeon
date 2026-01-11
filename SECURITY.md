@@ -1,7 +1,8 @@
 # ClickDungeon Persistence & Security Notes
 
 ## Current State
-- Saves, inventory, and achievements use schema + checksum validation with backup recovery; encrypted prefs are used on API 23+ with fallback.
+- Saves, inventory, achievements, and terrain metadata use schema + checksum validation with backup recovery; encrypted prefs are used on API 23+ with fallback.
+- Game state persistence happens during pause; instance-state bundles only track the active save slot to avoid redundant full-save serialization.
 
 ## Phase 1: Validation + Recovery (implemented)
 - Added `schemaVersion` and checksum/HMAC per saved blob; loads verify integrity and schema before use.

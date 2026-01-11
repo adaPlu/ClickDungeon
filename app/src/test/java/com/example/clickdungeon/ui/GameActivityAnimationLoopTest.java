@@ -1,6 +1,5 @@
 package com.example.clickdungeon.ui;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import android.view.View;
@@ -9,13 +8,14 @@ import android.widget.GridLayout;
 import com.example.clickdungeon.GameActivity;
 import com.example.clickdungeon.model.CharacterProfile;
 import com.example.clickdungeon.model.PlayerClass;
+import com.example.clickdungeon.model.Tile;
+import com.example.clickdungeon.model.TileType;
 import com.google.gson.Gson;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
-import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.util.ReflectionHelpers;
 
 import java.util.Map;
@@ -24,7 +24,7 @@ import java.util.Map;
 public class GameActivityAnimationLoopTest {
 
     @Test
-    public void animateGridFrame_skipsInvisibleTiles_and_updatesVisibleOnes() {
+    public void animateGridFrame_updatesOnlyActiveAnimatedTiles() {
         android.content.Context context = androidx.test.core.app.ApplicationProvider.getApplicationContext();
         context.getSharedPreferences("player_profile", android.content.Context.MODE_PRIVATE)
                 .edit()
@@ -34,34 +34,34 @@ public class GameActivityAnimationLoopTest {
         GridLayout gridLayout = activity.findViewById(com.example.clickdungeon.R.id.gridDungeon);
         assertTrue(gridLayout.getChildCount() > 0);
 
-        // Hide all tiles to simulate off-screen state.
-        for (int i = 0; i < gridLayout.getChildCount(); i++) {
-            gridLayout.getChildAt(i).setVisibility(View.INVISIBLE);
+        Tile[][] grid = new Tile[5][5];
+        for (int r = 0; r < 5; r++) {
+            for (int c = 0; c < 5; c++) {
+                grid[r][c] = new Tile(TileType.EMPTY);
+            }
         }
+        Tile enemyTile = new Tile(TileType.ENEMY, new com.example.clickdungeon.model.Monster("Slime", 3, 1, 0, "S"));
+        enemyTile.reveal();
+        grid[0][0] = enemyTile;
+        ReflectionHelpers.setField(activity, "dungeonGrid", grid);
 
+        View tileView = gridLayout.getChildAt(0);
+        ReflectionHelpers.callInstanceMethod(activity, "bindTileView",
+                ReflectionHelpers.ClassParameter.from(View.class, tileView),
+                ReflectionHelpers.ClassParameter.from(Tile.class, grid[0][0]),
+                ReflectionHelpers.ClassParameter.from(int.class, 0),
+                ReflectionHelpers.ClassParameter.from(int.class, 0));
+
+        Map<String, ?> active = getMapField(activity, "activeAnimatedTiles");
+        assertTrue("Active animated tiles should include revealed enemies", active.containsKey("0_0"));
         ReflectionHelpers.callInstanceMethod(activity, "animateGridFrame");
-        ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
-
-        Map<String, Long> timestamps = getMapField(activity, "gridAnimationLastFrameMs");
-        assertTrue("Off-screen tiles should throttle with timestamps", timestamps.size() > 0);
-
-        // Make the first tile visible and laid out so getGlobalVisibleRect returns true.
-        View first = gridLayout.getChildAt(0);
-        first.setVisibility(View.VISIBLE);
-        first.layout(0, 0, 50, 50);
-
-        ReflectionHelpers.callInstanceMethod(activity, "animateGridFrame");
-        ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
-
-        timestamps = getMapField(activity, "gridAnimationLastFrameMs");
-        assertTrue("Visible tile should have a frame timestamp", timestamps.size() >= 1);
     }
 
-    private Map<String, Long> getMapField(GameActivity activity, String fieldName) {
+    private Map<String, ?> getMapField(GameActivity activity, String fieldName) {
         Object value = ReflectionHelpers.getField(activity, fieldName);
         if (value instanceof Map) {
             @SuppressWarnings("unchecked")
-            Map<String, Long> map = (Map<String, Long>) value;
+            Map<String, ?> map = (Map<String, ?>) value;
             return map;
         }
         throw new AssertionError("Expected map for " + fieldName);

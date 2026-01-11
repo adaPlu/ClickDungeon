@@ -15,6 +15,8 @@ import androidx.fragment.app.FragmentActivity;
 import com.example.clickdungeon.R;
 import com.example.clickdungeon.model.AnimatedPlayer;
 import com.example.clickdungeon.model.CharacterProfile;
+import com.example.clickdungeon.model.MonsterAffinity;
+import com.example.clickdungeon.model.MonsterFamily;
 import com.example.clickdungeon.model.Monster;
 import com.example.clickdungeon.model.PlayerClass;
 import com.example.clickdungeon.ui.CombatDialogFragment.CombatCallbacks;
@@ -48,7 +50,7 @@ public class CombatDialogFragmentTest {
         Monster monster = new Monster("Bat", 5, 3, 0, "🦇");
 
         TestCallbacks callbacks = new TestCallbacks(profile);
-        CombatDialogFragment fragment = CombatDialogFragment.newInstance(monster);
+        CombatDialogFragment fragment = CombatDialogFragment.newInstance(monster.getMonsterType());
         fragment.setCombatants(profile, monster);
         fragment.setCombatCallbacks(callbacks);
         fragment.setRewardPreview(7, 3);
@@ -76,7 +78,7 @@ public class CombatDialogFragmentTest {
         Monster monster = new Monster("Slime", 3, 2, 0, "🫧");
 
         TestCallbacks callbacks = new TestCallbacks(profile);
-        CombatDialogFragment fragment = CombatDialogFragment.newInstance(monster);
+        CombatDialogFragment fragment = CombatDialogFragment.newInstance(monster.getMonsterType());
         fragment.setCombatants(profile, monster);
         fragment.setCombatCallbacks(callbacks);
         fragment.show(activity.getSupportFragmentManager(), "combat_full_hp_potion");
@@ -102,7 +104,7 @@ public class CombatDialogFragmentTest {
         Monster monster = new Monster("Orc", 8, 9, 1, "👹");
 
         TestCallbacks callbacks = new TestCallbacks(profile);
-        CombatDialogFragment fragment = CombatDialogFragment.newInstance(monster);
+        CombatDialogFragment fragment = CombatDialogFragment.newInstance(monster.getMonsterType());
         fragment.setCombatants(profile, monster);
         fragment.setCombatCallbacks(callbacks);
         fragment.show(activity.getSupportFragmentManager(), "combat_flee");
@@ -128,7 +130,7 @@ public class CombatDialogFragmentTest {
         Monster monster = new Monster("Imp", 1, 1, 0, "😈");
 
         TestCallbacks callbacks = new TestCallbacks(profile);
-        CombatDialogFragment fragment = CombatDialogFragment.newInstance(monster);
+        CombatDialogFragment fragment = CombatDialogFragment.newInstance(monster.getMonsterType());
         fragment.setCombatants(profile, monster);
         fragment.setCombatCallbacks(callbacks);
         fragment.setRewardPreview(9, 5);
@@ -171,7 +173,7 @@ public class CombatDialogFragmentTest {
         Monster monster = new Monster("Ogre", 8, 6, 1, "👺");
 
         TestCallbacks callbacks = new TestCallbacks(profile);
-        CombatDialogFragment fragment = CombatDialogFragment.newInstance(monster);
+        CombatDialogFragment fragment = CombatDialogFragment.newInstance(monster.getMonsterType());
         fragment.setCombatants(profile, monster);
         fragment.setCombatCallbacks(callbacks);
         ReflectionHelpers.setField(fragment, "random", new Random(0));
@@ -208,7 +210,7 @@ public class CombatDialogFragmentTest {
         CharacterProfile profile = new CharacterProfile("Ida", PlayerClass.KNIGHT);
         Monster monster = new Monster("Slime", 3, 1, 0, "🟢");
 
-        CombatDialogFragment fragment = CombatDialogFragment.newInstance(monster);
+        CombatDialogFragment fragment = CombatDialogFragment.newInstance(monster.getMonsterType());
         fragment.setCombatants(profile, monster);
         fragment.show(activity.getSupportFragmentManager(), "combat_animation");
 
@@ -239,7 +241,7 @@ public class CombatDialogFragmentTest {
         CharacterProfile profile = new CharacterProfile("Ezra", PlayerClass.THIEF);
         Monster monster = new Monster("Goblin", 5, 3, 1, "👺");
 
-        CombatDialogFragment fragment = CombatDialogFragment.newInstance(monster);
+        CombatDialogFragment fragment = CombatDialogFragment.newInstance(monster.getMonsterType());
         fragment.setCombatants(profile, monster);
         fragment.show(activity.getSupportFragmentManager(), "combat_animation_init");
 
@@ -266,7 +268,7 @@ public class CombatDialogFragmentTest {
         CharacterProfile profile = new CharacterProfile("Bran", PlayerClass.KNIGHT);
         Monster monster = new Monster("Imp", 2, 1, 0, "😈");
 
-        CombatDialogFragment fragment = CombatDialogFragment.newInstance(monster);
+        CombatDialogFragment fragment = CombatDialogFragment.newInstance(monster.getMonsterType());
         fragment.setCombatants(profile, monster);
         fragment.show(activity.getSupportFragmentManager(), "combat_sound");
 
@@ -278,6 +280,26 @@ public class CombatDialogFragmentTest {
         ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
 
         assertEquals("knight_attack", listener.lastKey);
+    }
+
+    @Test
+    public void restoreFromSavedState_preservesMonsterFamilyAndAffinity() {
+        CharacterProfile profile = new CharacterProfile("Nora", PlayerClass.KNIGHT);
+        Monster monster = new Monster("Goblin", 5, 3, 1, "dY`A");
+        monster.setFamily(MonsterFamily.HUMANOID);
+        monster.setAffinity(MonsterAffinity.ARCANE);
+
+        CombatDialogFragment original = CombatDialogFragment.newInstance(monster.getMonsterType());
+        original.setCombatants(profile, monster);
+        android.os.Bundle savedState = new android.os.Bundle();
+        original.onSaveInstanceState(savedState);
+
+        CombatDialogFragment restoredFragment = CombatDialogFragment.newInstance(monster.getMonsterType());
+        Monster restored = ReflectionHelpers.callInstanceMethod(restoredFragment, "restoreMonsterFromState",
+                ReflectionHelpers.ClassParameter.from(android.os.Bundle.class, savedState));
+        assertNotNull(restored);
+        assertEquals(MonsterFamily.HUMANOID, restored.getFamily());
+        assertEquals(MonsterAffinity.ARCANE, restored.getAffinity());
     }
 
     private FragmentActivity buildThemedActivity() {
@@ -316,6 +338,10 @@ public class CombatDialogFragmentTest {
 
         @Override
         public void onCombatStateUpdated() {
+        }
+
+        @Override
+        public void onMonsterAttack(@NonNull Monster monster) {
         }
 
         @Override

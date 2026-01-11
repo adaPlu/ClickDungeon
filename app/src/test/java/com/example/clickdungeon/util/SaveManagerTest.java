@@ -52,7 +52,7 @@ public class SaveManagerTest {
         grid[0][0] = new Tile(TileType.ENEMY, new Monster("Slime", 6, 2, 0, "🟢"));
 
         SaveManager.RunMetadata metadata =
-                new SaveManager.RunMetadata(-1, -1, false, 0, -1, -1, 1);
+                new SaveManager.RunMetadata(-1, -1, false, 0, -1, -1, 1, "CAVERN");
         saveManager.saveGame(1, profile, 3, 42, 7, grid, metadata);
 
         assertTrue(saveManager.isSlotOccupied(1));
@@ -68,6 +68,7 @@ public class SaveManagerTest {
         assertTrue(state.dungeonGrid[0][0].hasMonster());
         assertNotNull(state.metadata);
         assertEquals(-1, state.metadata.playerRow);
+        assertEquals("CAVERN", state.metadata.currentTerrain);
 
         saveManager.deleteSave(1);
         assertNull(saveManager.loadGame(1));
@@ -90,7 +91,7 @@ public class SaveManagerTest {
             }
         }
         SaveManager.RunMetadata metadata =
-                new SaveManager.RunMetadata(-1, -1, false, 0, -1, -1, 1);
+                new SaveManager.RunMetadata(-1, -1, false, 0, -1, -1, 1, null);
 
         saveManager.saveGame(0, profile, 2, 10, 1, grid, metadata);
         saveManager.saveGame(0, profile, 3, 15, 2, grid, metadata);
@@ -118,7 +119,7 @@ public class SaveManagerTest {
             }
         }
         SaveManager.RunMetadata metadata =
-                new SaveManager.RunMetadata(-1, -1, false, 0, -1, -1, 1);
+                new SaveManager.RunMetadata(-1, -1, false, 0, -1, -1, 1, null);
         saveManager.saveGame(0, profile, 2, 10, 1, grid, metadata);
 
         SharedPreferences prefs = SecurePreferences.get(context, "SaveSlot0");

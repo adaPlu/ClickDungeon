@@ -52,9 +52,9 @@ public class GameActivityGridAnimationThrottleTest {
         // Detach and ensure caches are cleared
         gridLayout.removeView(tileView);
         Map<String, ?> anims = getMapField(activity, "gridMonsterAnimations");
-        Map<String, ?> timestamps = getMapField(activity, "gridAnimationLastFrameMs");
+        Map<String, ?> active = getMapField(activity, "activeAnimatedTiles");
         assertEquals(false, anims.containsKey("0_0"));
-        assertEquals(false, timestamps.containsKey("0_0"));
+        assertEquals(false, active.containsKey("0_0"));
     }
 
     private Map<String, ?> getMapField(GameActivity activity, String fieldName) {

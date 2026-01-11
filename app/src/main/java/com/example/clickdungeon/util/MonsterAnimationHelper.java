@@ -40,6 +40,8 @@ public final class MonsterAnimationHelper {
                 config.attackSoundRes,
                 config.defendSoundRes);
         clone.setHasRangedAttack(source.hasRangedAttack());
+        clone.setFamily(source.getFamily());
+        clone.setAffinity(source.getAffinity());
         int hpDelta = clone.getCurrentHP() - source.getCurrentHP();
         if (hpDelta > 0) {
             // Sync the clone's current HP to the source by applying damage delta.

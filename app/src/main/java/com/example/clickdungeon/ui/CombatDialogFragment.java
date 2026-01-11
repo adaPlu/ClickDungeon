@@ -27,6 +27,8 @@ import com.example.clickdungeon.R;
 import com.example.clickdungeon.model.AnimatedMonster;
 import com.example.clickdungeon.model.AnimatedPlayer;
 import com.example.clickdungeon.model.CharacterProfile;
+import com.example.clickdungeon.model.MonsterAffinity;
+import com.example.clickdungeon.model.MonsterFamily;
 import com.example.clickdungeon.model.Monster;
 import com.example.clickdungeon.model.PlayerClass;
 import com.example.clickdungeon.util.MonsterAnimationHelper;
@@ -47,16 +49,21 @@ public class CombatDialogFragment extends DialogFragment {
 
         void onCombatStateUpdated();
 
+        void onMonsterAttack(@NonNull Monster monster);
+
         boolean onUseHealingPotionRequested(int healAmount);
     }
 
     private static final String ARG_MONSTER_NAME = "arg_monster_name";
-    private static final String ARG_MONSTER_ATTACK = "arg_monster_attack";
-    private static final String ARG_MONSTER_DEFENSE = "arg_monster_defense";
-    private static final String ARG_MONSTER_MAX_HP = "arg_monster_max_hp";
-    private static final String ARG_MONSTER_CURRENT_HP = "arg_monster_current_hp";
-    private static final String ARG_MONSTER_IMAGE = "arg_monster_image";
-    private static final String ARG_MONSTER_RANGED = "arg_monster_ranged";
+    private static final String STATE_MONSTER_NAME = "state_monster_name";
+    private static final String STATE_MONSTER_ATTACK = "state_monster_attack";
+    private static final String STATE_MONSTER_DEFENSE = "state_monster_defense";
+    private static final String STATE_MONSTER_MAX_HP = "state_monster_max_hp";
+    private static final String STATE_MONSTER_CURRENT_HP = "state_monster_current_hp";
+    private static final String STATE_MONSTER_IMAGE = "state_monster_image";
+    private static final String STATE_MONSTER_RANGED = "state_monster_ranged";
+    private static final String STATE_MONSTER_FAMILY = "state_monster_family";
+    private static final String STATE_MONSTER_AFFINITY = "state_monster_affinity";
     private static final String ARG_XP_REWARD = "arg_xp_reward";
     private static final String ARG_GOLD_REWARD = "arg_gold_reward";
 
@@ -115,16 +122,10 @@ public class CombatDialogFragment extends DialogFragment {
         }
     };
 
-    public static CombatDialogFragment newInstance(@NonNull Monster monster) {
+    public static CombatDialogFragment newInstance(@NonNull String monsterType) {
         CombatDialogFragment fragment = new CombatDialogFragment();
         Bundle args = new Bundle();
-        args.putString(ARG_MONSTER_NAME, monster.getMonsterType());
-        args.putInt(ARG_MONSTER_ATTACK, monster.getAttack());
-        args.putInt(ARG_MONSTER_DEFENSE, monster.getDefense());
-        args.putInt(ARG_MONSTER_MAX_HP, monster.getMaxHP());
-        args.putInt(ARG_MONSTER_CURRENT_HP, monster.getCurrentHP());
-        args.putString(ARG_MONSTER_IMAGE, monster.getImage());
-        args.putBoolean(ARG_MONSTER_RANGED, monster.hasRangedAttack());
+        args.putString(ARG_MONSTER_NAME, monsterType);
         fragment.setArguments(args);
         return fragment;
     }
@@ -178,18 +179,12 @@ public class CombatDialogFragment extends DialogFragment {
         CharacterProfile profileData = profile;
 
         Bundle args = getArguments();
-        if (monsterData == null && args != null) {
-            String name = args.getString(ARG_MONSTER_NAME, "");
-            int maxHp = args.getInt(ARG_MONSTER_MAX_HP, 1);
-            int attack = args.getInt(ARG_MONSTER_ATTACK, 1);
-            int defense = args.getInt(ARG_MONSTER_DEFENSE, 0);
-            String image = args.getString(ARG_MONSTER_IMAGE, "");
-            boolean ranged = args.getBoolean(ARG_MONSTER_RANGED, false);
-            monsterData = new Monster(name, maxHp, attack, defense, image);
-            monsterData.setHasRangedAttack(ranged);
-            int currentHp = args.getInt(ARG_MONSTER_CURRENT_HP, maxHp);
-            while (monsterData.getCurrentHP() > currentHp) {
-                monsterData.takeDamage(1);
+        if (monsterData == null) {
+            if (savedInstanceState != null && savedInstanceState.containsKey(STATE_MONSTER_NAME)) {
+                monsterData = restoreMonsterFromState(savedInstanceState);
+            } else if (args != null) {
+                String name = args.getString(ARG_MONSTER_NAME, "");
+                monsterData = buildFallbackMonster(name);
             }
             this.monster = monsterData;
         }
@@ -363,6 +358,9 @@ public class CombatDialogFragment extends DialogFragment {
             appendLog(getString(R.string.combat_log_monster_glancing, monster.getMonsterType()));
         }
         triggerMonsterAction("attack");
+        if (callbacks != null) {
+            callbacks.onMonsterAttack(monster);
+        }
 
         notifyStateChanged();
         refreshStatBlocks();
@@ -524,18 +522,10 @@ public class CombatDialogFragment extends DialogFragment {
                 profile.getTotalDefense());
 
         String monsterLabel;
-        Bundle args = getArguments();
-        if (args != null) {
-            String image = args.getString(ARG_MONSTER_IMAGE, "");
-            if (!TextUtils.isEmpty(image)) {
-                assert monster != null;
-                monsterLabel = image + " " + monster.getMonsterType();
-            } else {
-                assert monster != null;
-                monsterLabel = monster.getMonsterType();
-            }
+        String image = monster.getImage();
+        if (!TextUtils.isEmpty(image)) {
+            monsterLabel = image + " " + monster.getMonsterType();
         } else {
-            assert monster != null;
             monsterLabel = monster.getMonsterType();
         }
 
@@ -599,6 +589,58 @@ public class CombatDialogFragment extends DialogFragment {
         playerHpBar = null;
         monsterHpBar = null;
         super.onDestroyView();
+    }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        if (monster == null) {
+            return;
+        }
+        outState.putString(STATE_MONSTER_NAME, monster.getMonsterType());
+        outState.putInt(STATE_MONSTER_ATTACK, monster.getAttack());
+        outState.putInt(STATE_MONSTER_DEFENSE, monster.getDefense());
+        outState.putInt(STATE_MONSTER_MAX_HP, monster.getMaxHP());
+        outState.putInt(STATE_MONSTER_CURRENT_HP, monster.getCurrentHP());
+        outState.putString(STATE_MONSTER_IMAGE, monster.getImage());
+        outState.putBoolean(STATE_MONSTER_RANGED, monster.hasRangedAttack());
+        outState.putString(STATE_MONSTER_FAMILY, monster.getFamily().name());
+        outState.putString(STATE_MONSTER_AFFINITY, monster.getAffinity().name());
+    }
+
+    @Nullable
+    private Monster restoreMonsterFromState(@NonNull Bundle state) {
+        String name = state.getString(STATE_MONSTER_NAME, "");
+        int maxHp = state.getInt(STATE_MONSTER_MAX_HP, 1);
+        int attack = state.getInt(STATE_MONSTER_ATTACK, 1);
+        int defense = state.getInt(STATE_MONSTER_DEFENSE, 0);
+        String image = state.getString(STATE_MONSTER_IMAGE, "");
+        boolean ranged = state.getBoolean(STATE_MONSTER_RANGED, false);
+        Monster restored = new Monster(name, maxHp, attack, defense, image);
+        restored.setHasRangedAttack(ranged);
+        MonsterFamily family = MonsterFamily.fromName(
+                state.getString(STATE_MONSTER_FAMILY, MonsterFamily.UNKNOWN.name()));
+        MonsterAffinity affinity = MonsterAffinity.fromName(
+                state.getString(STATE_MONSTER_AFFINITY, MonsterAffinity.NONE.name()));
+        restored.setFamily(family);
+        restored.setAffinity(affinity);
+        int currentHp = state.getInt(STATE_MONSTER_CURRENT_HP, maxHp);
+        while (restored.getCurrentHP() > currentHp) {
+            restored.takeDamage(1);
+        }
+        return restored;
+    }
+
+    @Nullable
+    private Monster buildFallbackMonster(@Nullable String name) {
+        if (TextUtils.isEmpty(name)) {
+            return null;
+        }
+        try {
+            return com.example.clickdungeon.model.MonsterFactory.create(requireContext(), name);
+        } catch (Exception ignored) {
+            return new Monster(name, 1, 1, 0, "");
+        }
     }
 
     private void prepareAnimatedCombatants(@NonNull CharacterProfile profileData,

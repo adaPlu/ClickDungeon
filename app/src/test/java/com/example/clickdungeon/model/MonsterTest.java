@@ -25,4 +25,34 @@ public class MonsterTest {
         monster.takeDamage(4);
         assertTrue(monster.isDead());
     }
+
+    @Test
+    public void familyAndAffinityDefaultSafely() {
+        Monster monster = new Monster("Slime", 3, 1, 0, "S");
+
+        assertEquals(MonsterFamily.UNKNOWN, monster.getFamily());
+        assertEquals(MonsterAffinity.NONE, monster.getAffinity());
+    }
+
+    @Test
+    public void setAttackAndDefenseClampToValidRanges() {
+        Monster monster = new Monster("Orc", 6, 2, 1, "O");
+
+        monster.setAttack(0);
+        monster.setDefense(-5);
+
+        assertEquals(1, monster.getAttack());
+        assertEquals(0, monster.getDefense());
+    }
+
+    @Test
+    public void setFamilyAndAffinityHandleNull() {
+        Monster monster = new Monster("Bat", 3, 1, 0, "b");
+
+        monster.setFamily(null);
+        monster.setAffinity(null);
+
+        assertEquals(MonsterFamily.UNKNOWN, monster.getFamily());
+        assertEquals(MonsterAffinity.NONE, monster.getAffinity());
+    }
 }

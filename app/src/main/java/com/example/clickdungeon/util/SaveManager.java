@@ -96,16 +96,7 @@ public class SaveManager {
                     continue;
                 }
                 TileType type = tile.getType();
-                if (type == TileType.STAIR_DOWN_LOCKED_RED
-                        || type == TileType.STAIR_DOWN_LOCKED_BLUE
-                        || type == TileType.STAIR_DOWN_LOCKED_GREEN) {
-                    tile.setType(TileType.STAIR_DOWN_LOCKED);
-                } else if (type == TileType.RED_KEY
-                        || type == TileType.BLUE_KEY
-                        || type == TileType.GREEN_KEY) {
-                    tile.setType(TileType.BIG_KEY);
-                    tile.setCustomName(bigKeyName);
-                } else if (type == TileType.BIG_KEY) {
+                if (type == TileType.BIG_KEY) {
                     String customName = tile.getCustomName();
                     if (customName == null || customName.isEmpty()) {
                         tile.setCustomName(bigKeyName);
@@ -190,7 +181,8 @@ public class SaveManager {
                     prefs.getInt(KEY_SHIELD_STRENGTH, 0),
                     prefs.getInt(KEY_SHIELD_ROW, -1),
                     prefs.getInt(KEY_SHIELD_COL, -1),
-                    prefs.getInt(KEY_ABILITY_READY_FLOOR, 1)
+                    prefs.getInt(KEY_ABILITY_READY_FLOOR, 1),
+                    null
             );
             return new GameState(profile, floor, gold, platinum, dungeonGrid, metadata);
         } catch (Exception ignored) {
@@ -246,6 +238,7 @@ public class SaveManager {
         public final int knightShieldRow;
         public final int knightShieldCol;
         public final int nextAbilityAvailableFloor;
+        public final String currentTerrain;
 
         public RunMetadata(int playerRow,
                            int playerCol,
@@ -253,7 +246,8 @@ public class SaveManager {
                            int knightShieldStrength,
                            int knightShieldRow,
                            int knightShieldCol,
-                           int nextAbilityAvailableFloor) {
+                           int nextAbilityAvailableFloor,
+                           String currentTerrain) {
             this.playerRow = playerRow;
             this.playerCol = playerCol;
             this.knightShieldActive = knightShieldActive;
@@ -261,6 +255,7 @@ public class SaveManager {
             this.knightShieldRow = knightShieldRow;
             this.knightShieldCol = knightShieldCol;
             this.nextAbilityAvailableFloor = nextAbilityAvailableFloor;
+            this.currentTerrain = currentTerrain;
         }
     }
 

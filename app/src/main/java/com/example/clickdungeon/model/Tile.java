@@ -9,27 +9,41 @@ public class Tile {
     private String monsterSpriteKey;
     private int cachedMonsterHp;
     private int cachedMonsterMaxHp;
+    
+    // Phase 1: Dirty flag for optimized rendering
+    private boolean dirty = true;
 
     public Tile(TileType type) {
         this.type = type;
         this.monster = null; //null = no monster present on tile
         this.revealed = false;
+        this.dirty = true;
     }
 
     public Tile(TileType type, Monster monster) {
         this.type = type;
         this.monster = monster;
         this.revealed = false;
+        this.dirty = true;
     }
 
     public Tile(TileType type, String customName) {
         this.type = type;
         this.customName = customName;
         this.revealed = false;
+        this.dirty = true;
     }
 
     public Tile() {
+        this.dirty = true;
+    }
 
+    public boolean isDirty() {
+        return dirty;
+    }
+
+    public void setDirty(boolean dirty) {
+        this.dirty = dirty;
     }
 
     public TileType getType() {
@@ -37,7 +51,10 @@ public class Tile {
     }
 
     public void setType(TileType type) {
-        this.type = type;
+        if (this.type != type) {
+            this.type = type;
+            this.dirty = true;
+        }
     }
 
     public boolean isRevealed() {
@@ -45,7 +62,10 @@ public class Tile {
     }
 
     public void reveal() {
-        this.revealed = true;
+        if (!this.revealed) {
+            this.revealed = true;
+            this.dirty = true;
+        }
     }
 
     public Monster getMonster() {
@@ -54,6 +74,7 @@ public class Tile {
 
     public void setMonster(Monster monster) {
         this.monster = monster;
+        this.dirty = true;
     }
 
     public String getCustomName() {
@@ -61,7 +82,10 @@ public class Tile {
     }
 
     public void setCustomName(String customName) {
-        this.customName = customName;
+        if (this.customName == null || !this.customName.equals(customName)) {
+            this.customName = customName;
+            this.dirty = true;
+        }
     }
     public boolean hasMonster() {
         return monster != null;
@@ -72,7 +96,10 @@ public class Tile {
     }
 
     public void setHasPlayer(boolean hasPlayer) {
-        this.hasPlayer = hasPlayer;
+        if (this.hasPlayer != hasPlayer) {
+            this.hasPlayer = hasPlayer;
+            this.dirty = true;
+        }
     }
 
     public String getMonsterSpriteKey() {

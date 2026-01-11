@@ -199,13 +199,7 @@
 <string name="tile_desc_enemy">Enemy encounter</string>
 <string name="tile_desc_stairs_down">Stairs descending to the next floor</string>
 <string name="tile_desc_stairs_up">Stairs leading upward</string>
-<string name="tile_desc_locked_stair_red">Locked red stair</string>
-<string name="tile_desc_locked_stair_blue">Locked blue stair</string>
-<string name="tile_desc_locked_stair_green">Locked green stair</string>
 <string name="tile_desc_locked_stair_big">Locked stair (big key required)</string>
-<string name="tile_desc_key_red">Red key</string>
-<string name="tile_desc_key_blue">Blue key</string>
-<string name="tile_desc_key_green">Green key</string>
 <string name="tile_desc_key_small">Small key</string>
 <string name="tile_desc_key_big">Big key</string>
 <string name="tile_desc_trap_fire">Fire trap</string>
@@ -245,7 +239,8 @@ Adjust these preferences anytime from Settings.</string>
 <string name="continue_slot_action_placeholder">Slot action</string>
 <string name="hp_display_placeholder">HP: &#8212;/&#8212;</string>
 <string name="floor_display_placeholder">Floor &#8212;</string>
-<string name="floor_display_dynamic">Floor %1$d</string>
+    <string name="floor_display_dynamic">Floor %1$d</string>
+    <string name="floor_display_dynamic_terrain">Floor %1$d - %2$s</string>
 <string name="tile_damage_placeholder">-3</string>
 <string name="tile_unknown_placeholder">[]</string>
 <string name="inventory_quantity_format">x%1$d</string>

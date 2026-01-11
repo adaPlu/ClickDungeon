@@ -51,7 +51,7 @@ public class GameActivitySaveIntegrationTest {
                 {new Tile(TileType.GOLD), new Tile(TileType.TRAP_FIRE)}
         };
         SaveManager.RunMetadata metadata =
-                new SaveManager.RunMetadata(-1, -1, false, 0, -1, -1, 4);
+                new SaveManager.RunMetadata(-1, -1, false, 0, -1, -1, 4, null);
         saveManager.saveGame(0, profile, 4, 77, 15, grid, metadata);
 
         Intent intent = new Intent(context, GameActivity.class);
@@ -88,7 +88,7 @@ public class GameActivitySaveIntegrationTest {
         CharacterProfile profile = new CharacterProfile("KeyHunter", PlayerClass.THIEF);
         Tile[][] grid = buildGridWithKey(TileType.SMALL_KEY, "Small Key");
         SaveManager.RunMetadata metadata =
-                new SaveManager.RunMetadata(-1, -1, false, 0, -1, -1, 1);
+                new SaveManager.RunMetadata(-1, -1, false, 0, -1, -1, 1, null);
         saveManager.saveGame(0, profile, 1, 0, 0, grid, metadata);
 
         Intent intent = new Intent(context, GameActivity.class);

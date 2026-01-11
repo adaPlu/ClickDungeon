@@ -9,6 +9,7 @@
 1. **Grid-Based Dungeon Exploration**  
    - 5x5 dungeon grid with hidden tiles and multiple floor levels.  
    - Traps, enemies, and treasure are shuffled each time, creating replay value.
+   - Grid rendering updates only dirty tiles, and animation ticks focus on active tiles (player/revealed enemies) to reduce UI overhead.
 
 2. **Class Selection & Abilities**  
    - **Knight** (L1/5/10/15/20): Shield Wall, Taunt, Fortify, Valiant Strike, Guardian's Oath.  
@@ -22,7 +23,19 @@
    - Freeze stops you for multiple turns; poison deals damage over time.  
    - Pitfall traps drop you deeper into the dungeon (multi-floor exploration).
 
-4. **Inventory & Currency**  
+4. **Terrain Types & Creature Effects**  
+   - **Cavern**: Beasts/humanoids are favored; monsters gain +1 DEF and ranged attacks deal -1 ATK.  
+   - **Crypt**: Undead are favored; undead gain +10% ATK.  
+   - **Lava Field**: Fire-affinity monsters are favored; fire gains +15% DEF and non-fire attacks can inflict poison.  
+   - **Mire**: Beasts/elementals are favored; beasts gain +1 ATK and attacks have a 15% poison chance.  
+   - **Frozen Ruins**: Undead/constructs are favored; ice gains +10% DEF and non-ice attacks have a 15% freeze chance.  
+   - **Thorn Wilds**: Beasts are favored; beasts gain +1 DEF and attacks have a 10% poison chance.  
+   - **Storm Plateau**: Arcane/constructs are favored; lightning gains +1 ATK and attacks have a 10% freeze chance.  
+   - **Arcane Nexus**: Arcane is favored; arcane gains +1 ATK and non-arcane lose 1 DEF.  
+   - **Sunken Temple**: Beasts/elementals are favored; fire-affinity attacks deal 10% less ATK.  
+   - **Ash Wastes**: Demonic/elemental are favored; elementals gain +5% ATK and attacks have a 10% poison chance.  
+
+5. **Inventory & Currency**  
    - Persistent gold, platinum, and inventory stored via SharedPreferences.  
    - New runs start with 100 platinum and 50 gold; gold is earned in the dungeon.  
    - Platinum is a premium placeholder (stored but not spent yet).  
@@ -30,44 +43,44 @@
    - Items like **Trap Disarm Kits** prevent trap damage.  
    - Player can acquire items through the **Shop**. A merchant can appear every three floors (50% chance) with sell and buyback lists; all prices use gold.  
 
-5. **Multiple Floors**  
+6. **Multiple Floors**  
    - Pitfall traps and stairs cause you to advance downward.  
    - Survive deeper floors with increased challenge and better rewards.
 
-6. **Achievements & Progress**  
+7. **Achievements & Progress**  
    - Collect multiple achievements (e.g., ??oFirst Blood,??? ??oLow HP Survivor???).  
    - Earn them by uncovering tiles, winning with minimal HP, or reaching boss floors.  
    - Achievements stored and displayed in **AchievementsActivity**, with Locked/Completed status shown in the list.  
 
-7. **Game Over & Victory**
+8. **Game Over & Victory**
    - You lose if your HP drops to 0.
    - Reveal all safe tiles on a floor to claim victory and proceed to the next.
    - Automatic saving across four slots lets you resume each run from the Continue or New Game slot selector, with overwrite prompts and corrupted-slot handling.
 
-8. **Interactive Combat Encounters**
+9. **Interactive Combat Encounters**
    - Turn-based combat dialog with attack, potion, and flee options.
    - Enemies telegraph upcoming attacks with animated intent bars and contextual combat summaries that call out turns, damage dealt/taken, and potion usage on victory, retreat, or defeat.
    - Monsters scale per floor, drawing from a template pool with unique emoji and damage variance.
    - Animated combatants use `AnimatedPlayer`/`AnimatedMonster` sprite sheets with class/monster audio cues.
 
-9. **Modular Architecture**
+10. **Modular Architecture**
    - **SharedPreferences** used throughout for saving grid states, gold/platinum, and achievements (schema + checksum validation with backup recovery; encrypted prefs on API 23+ with fallback; see `SECURITY.md` for details).
    - Separate activities for each feature (shop, achievements, settings, etc.).
    - Clean codebase supports expansions like IAP, ads, new classes, and more.
 
-10. **Customizable Experience**
+11. **Customizable Experience**
     - Settings screen controls audio, vibration, and dungeon difficulty; vibration uses VibrationEffect on API 26+ with a legacy fallback.
     - Tone and haptic feedback respect player preferences through a shared manager.
     - Difficulty tuning scales monster stats and trap lethality across floors.
     - Dungeon-themed backgrounds and panel styling are applied across menu screens.
 
-11. **Accessibility & Onboarding**
+12. **Accessibility & Onboarding**
     - Color-blind mode adds letter codes to emoji tiles and enriches screen reader descriptions.
     - First-run tutorial surfaces difficulty-aware tips that respect player preferences.
 
-12. **Automated Verification**
+13. **Automated Verification**
     - Robolectric suites cover settings UI, inventory, achievements, save slots, balance, onboarding, feedback, and combat flows.
-    - Expanded unit tests now cover model classes, adapters, shop flows, animation helpers, and class ability behaviors (range/cooldown/effects).
+    - Expanded unit tests now cover model classes, adapters, shop flows, animation helpers, terrain/affinity helpers, and class ability behaviors (range/cooldown/effects).
 
 ---
 
@@ -155,10 +168,11 @@ ClickDungeon/
 - [x] Multi-floor dungeon with pitfall traps and stairs  
 - [x] Class selection (Knight, Thief, Wizard) with base kits and stat progression  
 - [x] Traps & status effects (freeze, poison)  
+- [x] Terrain-based encounter weighting and status hooks  
 - [x] “Trap Disarm Kit” item integration  
 - [x] Achievements UI & unlocking logic  
 - [x] Inventory & currency system with shop and merchant buyback  
-- [x] Key/stair integration and colored stair mechanics
+- [x] Key/stair integration for big-key exits and small-key chests
 - [x] Combat with various monsters
 - [x] Animated combatants and grid sprite updates
 - [x] Expanded Robolectric/unit test coverage for models, adapters, and flows

@@ -13,8 +13,10 @@ public class TileTest {
     public void revealMarksTileVisible() {
         Tile tile = new Tile(TileType.EMPTY);
         assertFalse(tile.isRevealed());
+        assertTrue(tile.isDirty());
         tile.reveal();
         assertTrue(tile.isRevealed());
+        assertTrue(tile.isDirty());
     }
 
     @Test
@@ -24,10 +26,13 @@ public class TileTest {
 
         Monster monster = new Monster("Slime", 3, 1, 0, "S");
         tile.setMonster(monster);
+        assertTrue(tile.isDirty());
         assertTrue(tile.hasMonster());
         assertEquals(monster, tile.getMonster());
 
+        tile.setDirty(false);
         tile.setMonster(null);
+        assertTrue(tile.isDirty());
         assertFalse(tile.hasMonster());
     }
 
@@ -35,6 +40,26 @@ public class TileTest {
     public void customNameDefaultsToNull() {
         Tile tile = new Tile(TileType.GOLD);
         assertNull(tile.getCustomName());
+    }
+
+    @Test
+    public void setTypeMarksDirtyOnChange() {
+        Tile tile = new Tile(TileType.EMPTY);
+        tile.setDirty(false);
+        tile.setType(TileType.EMPTY);
+        assertFalse(tile.isDirty());
+        tile.setType(TileType.GOLD);
+        assertTrue(tile.isDirty());
+    }
+
+    @Test
+    public void setHasPlayerMarksDirtyOnChange() {
+        Tile tile = new Tile(TileType.EMPTY);
+        tile.setDirty(false);
+        tile.setHasPlayer(false);
+        assertFalse(tile.isDirty());
+        tile.setHasPlayer(true);
+        assertTrue(tile.isDirty());
     }
 
     @Test
