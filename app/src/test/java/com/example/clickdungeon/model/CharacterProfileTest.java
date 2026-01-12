@@ -69,6 +69,15 @@ public class CharacterProfileTest {
     }
 
     @Test
+    public void setAvailableStatPoints_clampsToNonNegative() {
+        CharacterProfile profile = new CharacterProfile("Test", PlayerClass.KNIGHT);
+        profile.setAvailableStatPoints(3);
+        assertEquals(3, profile.getAvailableStatPoints());
+        profile.setAvailableStatPoints(-2);
+        assertEquals(0, profile.getAvailableStatPoints());
+    }
+
+    @Test
     public void animatedPlayerCanBeStored() {
         CharacterProfile profile = new CharacterProfile("Test", PlayerClass.KNIGHT);
         assertNull(profile.getAnimatedPlayer());

@@ -18,6 +18,14 @@ public final class DungeonGenerator {
     private DungeonGenerator() {
     }
 
+    /**
+     * Generates a randomized grid for a floor using fixed counts per tile type.
+     *
+     * @param gridSize width/height of the square grid
+     * @param floor current floor index used to label the big key
+     * @param monsterFactory factory for creating enemy instances
+     * @return result bundle with grid, locked stair, key name, and safe tile count
+     */
     public static Result generateFloor(int gridSize,
                                        int floor,
                                        @NonNull MonsterFactory monsterFactory) {
@@ -75,15 +83,24 @@ public final class DungeonGenerator {
         return new Result(grid, lockedStair, keyName, safeTiles);
     }
 
+    /**
+     * Functional interface used to provide a monster instance for enemy tiles.
+     */
     public interface MonsterFactory {
         @NonNull
         Monster create();
     }
 
+    /**
+     * Builds the display name for the big key on the given floor.
+     */
     public static String getBigKeyNameForFloor(int floor) {
         return "BIG KEY (F" + Math.max(1, floor) + ")";
     }
 
+    /**
+     * Container for generator outputs.
+     */
     public static final class Result {
         public final Tile[][] grid;
         public final TileType lockedStair;

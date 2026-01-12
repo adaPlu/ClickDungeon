@@ -34,26 +34,23 @@ import com.example.clickdungeon.model.PlayerClass;
 import com.example.clickdungeon.util.MonsterAnimationHelper;
 
 /**
- * Dialog fragment that renders an interactive combat encounter between the player's character
- * and a monster. The fragment delegates persistence and inventory changes back to the hosting
- * activity via the {@link CombatCallbacks} interface.
+ * CombatDialogFragment renders the interactive battle screen.
+ * It manages turn-based logic, enemy intent telegraphs, combat animations, and logging.
+ * Communication with the game state is handled via the {@link CombatCallbacks} interface.
  */
 public class CombatDialogFragment extends DialogFragment {
 
+    /** Callbacks to notify the host Activity of combat results and player actions. */
     public interface CombatCallbacks {
         void onCombatVictory(@NonNull Monster monster);
-
         void onCombatDefeat();
-
         void onCombatFled(int penaltyDamage);
-
         void onCombatStateUpdated();
-
         void onMonsterAttack(@NonNull Monster monster);
-
         boolean onUseHealingPotionRequested(int healAmount);
     }
 
+    // Argument and state keys.
     private static final String ARG_MONSTER_NAME = "arg_monster_name";
     private static final String STATE_MONSTER_NAME = "state_monster_name";
     private static final String STATE_MONSTER_ATTACK = "state_monster_attack";
@@ -74,44 +71,28 @@ public class CombatDialogFragment extends DialogFragment {
     private static final int PLAYER_FRAME_COUNT = 4;
     private static final long PLAYER_FRAME_DURATION_MS = 120L;
 
-    @Nullable
-    private CombatCallbacks callbacks;
-    @Nullable
-    private CharacterProfile profile;
-    @Nullable
-    private Monster monster;
+    @Nullable private CombatCallbacks callbacks;
+    @Nullable private CharacterProfile profile;
+    @Nullable private Monster monster;
 
-    private TextView playerStatsView;
-    private TextView monsterStatsView;
-    private TextView monsterIntentView;
-    private TextView combatLogView;
-    private TextView combatSummaryView;
-    private Button attackButton;
-    private Button potionButton;
-    private Button fleeButton;
-    private Button closeButton;
-    private ProgressBar monsterIntentBar;
-    private ProgressBar playerHpBar;
-    private ProgressBar monsterHpBar;
-    private ImageView playerAnimationView;
-    private ImageView monsterAnimationView;
+    // View references.
+    private TextView playerStatsView, monsterStatsView, monsterIntentView, combatLogView, combatSummaryView;
+    private Button attackButton, potionButton, fleeButton, closeButton;
+    private ProgressBar monsterIntentBar, playerHpBar, monsterHpBar;
+    private ImageView playerAnimationView, monsterAnimationView;
 
     private final StringBuilder logBuilder = new StringBuilder();
     private final java.util.Random random = new java.util.Random();
     private MonsterIntent currentIntent;
-    private int previewXpReward;
-    private int previewGoldReward;
-    private int totalDamageTaken;
-    private int totalDamageDealt;
-    private int turnsTaken;
-    private int potionsUsed;
+    private int previewXpReward, previewGoldReward;
+    private int totalDamageTaken, totalDamageDealt, turnsTaken, potionsUsed;
     private boolean summaryVisible;
-    @Nullable
-    private AnimatedPlayer animatedPlayer;
-    @Nullable
-    private AnimatedMonster animatedMonster;
-    @Nullable
-    private Handler animationHandler;
+
+    @Nullable private AnimatedPlayer animatedPlayer;
+    @Nullable private AnimatedMonster animatedMonster;
+    @Nullable private Handler animationHandler;
+
+    /** Animation tick runnable to update sprite frames. */
     private final Runnable animationTick = new Runnable() {
         @Override
         public void run() {
@@ -122,6 +103,7 @@ public class CombatDialogFragment extends DialogFragment {
         }
     };
 
+    /** Factory method to create a new instance using the monster type string. */
     public static CombatDialogFragment newInstance(@NonNull String monsterType) {
         CombatDialogFragment fragment = new CombatDialogFragment();
         Bundle args = new Bundle();
@@ -130,15 +112,18 @@ public class CombatDialogFragment extends DialogFragment {
         return fragment;
     }
 
+    /** Sets the combatants for the session. */
     public void setCombatants(@NonNull CharacterProfile profile, @NonNull Monster monster) {
         this.profile = profile;
         this.monster = monster;
     }
 
+    /** Sets the callbacks for reporting combat events. */
     public void setCombatCallbacks(@Nullable CombatCallbacks callbacks) {
         this.callbacks = callbacks;
     }
 
+    /** Previews rewards displayed in the victory summary. */
     public void setRewardPreview(int xpReward, int goldReward) {
         this.previewXpReward = xpReward;
         this.previewGoldReward = goldReward;
@@ -152,7 +137,7 @@ public class CombatDialogFragment extends DialogFragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setCancelable(false);
+        setCancelable(false); // Force player to resolve the encounter.
     }
 
     @NonNull
@@ -160,6 +145,7 @@ public class CombatDialogFragment extends DialogFragment {
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
         View root = getLayoutInflater().inflate(R.layout.dialog_combat, null, false);
 
+        // Bind all UI components.
         playerStatsView = root.findViewById(R.id.textPlayerStats);
         monsterStatsView = root.findViewById(R.id.textMonsterStats);
         monsterIntentView = root.findViewById(R.id.textMonsterIntent);
@@ -178,6 +164,7 @@ public class CombatDialogFragment extends DialogFragment {
         Monster monsterData = monster;
         CharacterProfile profileData = profile;
 
+        // Restore monster data if the fragment was recreated (e.g., rotation).
         Bundle args = getArguments();
         if (monsterData == null) {
             if (savedInstanceState != null && savedInstanceState.containsKey(STATE_MONSTER_NAME)) {
@@ -194,8 +181,10 @@ public class CombatDialogFragment extends DialogFragment {
             return new AlertDialog.Builder(requireContext()).create();
         }
 
+        // Initialize animation sprite controllers.
         prepareAnimatedCombatants(profileData, monsterData);
 
+        // Restore reward metadata.
         Bundle argsBundle = getArguments();
         if (argsBundle != null) {
             if (previewXpReward == 0) {
@@ -206,11 +195,13 @@ public class CombatDialogFragment extends DialogFragment {
             }
         }
 
+        // Initialize session counters.
         totalDamageTaken = 0;
         totalDamageDealt = 0;
         turnsTaken = 0;
         potionsUsed = 0;
         summaryVisible = false;
+        
         if (combatSummaryView != null) {
             combatSummaryView.setText(getString(R.string.combat_summary_ready));
         }
@@ -223,11 +214,13 @@ public class CombatDialogFragment extends DialogFragment {
             monsterIntentBar.setMax(Math.max(1, profileData.getMaxHP()));
         }
 
+        // Initial setup of stats and first monster move.
         appendLog(getString(R.string.combat_log_intro, monsterData.getMonsterType()));
         refreshStatBlocks();
         rollNextMonsterIntent(true);
         startAnimationLoop();
 
+        // Wire button listeners.
         attackButton.setOnClickListener(v -> handleAttack());
         potionButton.setOnClickListener(v -> handleUsePotion());
         fleeButton.setOnClickListener(v -> handleFlee());
@@ -238,19 +231,23 @@ public class CombatDialogFragment extends DialogFragment {
                 .create();
     }
 
+    /** Executes a player attack turn. */
     private void handleAttack() {
         if (profile == null || monster == null) {
             return;
         }
 
         resetSummary();
-
         turnsTaken++;
+        
+        // Calculate and apply damage to monster.
         int damageToMonster = Math.max(1, profile.getTotalAttack() - monster.getDefense());
         monster.takeDamage(damageToMonster);
         totalDamageDealt += damageToMonster;
+        
         appendLog(getResources().getQuantityString(
                 R.plurals.combat_log_player_attack, damageToMonster, damageToMonster, monster.getMonsterType()));
+        
         animatePulse(monsterStatsView);
         triggerMonsterAction("defend", false);
         triggerPlayerAction("attack");
@@ -258,28 +255,11 @@ public class CombatDialogFragment extends DialogFragment {
         notifyStateChanged();
         refreshStatBlocks();
 
+        // Check for victory.
         if (monster.isDead()) {
             appendLog(getString(R.string.combat_log_monster_defeated, monster.getMonsterType()));
             disableActions();
-            int xp = Math.max(1, previewXpReward);
-            int gold = Math.max(0, previewGoldReward);
-            int turns = Math.max(1, turnsTaken);
-            String xpText = getResources().getQuantityString(R.plurals.combat_summary_xp, xp, xp);
-            String goldText = getResources().getQuantityString(R.plurals.combat_summary_gold, gold, gold);
-            String turnsText = getResources().getQuantityString(R.plurals.combat_summary_turns, turns, turns);
-            String dealtText = getResources().getQuantityString(
-                    R.plurals.combat_summary_damage, totalDamageDealt, totalDamageDealt);
-            String takenText = getResources().getQuantityString(
-                    R.plurals.combat_summary_damage, totalDamageTaken, totalDamageTaken);
-            String potionsText = getResources().getQuantityString(
-                    R.plurals.combat_summary_potions, potionsUsed, potionsUsed);
-            showFinalSummary(getString(R.string.combat_summary_victory,
-                    xpText,
-                    goldText,
-                    turnsText,
-                    dealtText,
-                    takenText,
-                    potionsText));
+            showVictorySummary();
             if (callbacks != null) {
                 callbacks.onCombatVictory(monster);
             }
@@ -287,9 +267,11 @@ public class CombatDialogFragment extends DialogFragment {
             return;
         }
 
+        // Monster takes its turn if it survived.
         executeMonsterTurn();
     }
 
+    /** Uses a healing potion if available. */
     private void handleUsePotion() {
         if (profile == null) {
             return;
@@ -315,6 +297,7 @@ public class CombatDialogFragment extends DialogFragment {
         }
     }
 
+    /** Attempts to escape the battle with a damage penalty. */
     private void handleFlee() {
         turnsTaken++;
         int penalty = monster != null ? Math.max(1, monster.getAttack() / 2) : 0;
@@ -325,16 +308,19 @@ public class CombatDialogFragment extends DialogFragment {
             totalDamageTaken += penalty;
         }
         disableActions();
+        
         int turns = Math.max(1, turnsTaken);
         int dealt = Math.max(0, totalDamageDealt);
         String turnsText = getResources().getQuantityString(R.plurals.combat_summary_turns, turns, turns);
         String dealtText = getResources().getQuantityString(R.plurals.combat_summary_damage, dealt, dealt);
         String takenText = getResources().getQuantityString(R.plurals.combat_summary_damage, penalty, penalty);
         showFinalSummary(getString(R.string.combat_summary_flee, turnsText, dealtText, takenText));
+        
         triggerPlayerAction("move");
         refreshStatBlocks();
     }
 
+    /** Executes the monster's attack based on telegraphed intent. */
     private void executeMonsterTurn() {
         if (profile == null || monster == null) {
             return;
@@ -357,6 +343,7 @@ public class CombatDialogFragment extends DialogFragment {
         } else {
             appendLog(getString(R.string.combat_log_monster_glancing, monster.getMonsterType()));
         }
+        
         triggerMonsterAction("attack");
         if (callbacks != null) {
             callbacks.onMonsterAttack(monster);
@@ -365,31 +352,22 @@ public class CombatDialogFragment extends DialogFragment {
         notifyStateChanged();
         refreshStatBlocks();
 
+        // Check for player defeat.
         if (profile.isDead()) {
             disableActions();
             appendLog(getString(R.string.combat_log_player_defeated));
-            int turns = Math.max(1, turnsTaken);
-            int dealt = Math.max(0, totalDamageDealt);
-            String turnsText = getResources().getQuantityString(R.plurals.combat_summary_turns, turns, turns);
-            String dealtText = getResources().getQuantityString(R.plurals.combat_summary_damage, dealt, dealt);
-            String takenText = getResources().getQuantityString(
-                    R.plurals.combat_summary_damage, totalDamageTaken, totalDamageTaken);
-            String potionsText = getResources().getQuantityString(
-                    R.plurals.combat_summary_potions, potionsUsed, potionsUsed);
-            showFinalSummary(getString(R.string.combat_summary_defeat,
-                    turnsText,
-                    dealtText,
-                    takenText,
-                    potionsText));
+            showDefeatSummary();
             if (callbacks != null) {
                 callbacks.onCombatDefeat();
             }
             return;
         }
 
+        // Telegraph the next monster move.
         rollNextMonsterIntent(false);
     }
 
+    /** Randomly selects and telegraphs the monster's next move. */
     private void rollNextMonsterIntent(boolean firstTurn) {
         if (monsterIntentView == null || monsterIntentBar == null || monster == null || profile == null) {
             return;
@@ -397,26 +375,32 @@ public class CombatDialogFragment extends DialogFragment {
         MonsterIntentType type = MonsterIntentType.randomType(random,
                 monster != null && monster.hasRangedAttack());
         currentIntent = new MonsterIntent(type, type.estimateDamage(monster, profile));
+        
         monsterIntentView.setText(getString(R.string.combat_intent_display,
                 getString(type.labelRes), currentIntent.estimatedDamage));
+        
         int maxHp = Math.max(1, profile.getMaxHP());
         monsterIntentBar.setMax(maxHp);
         int progress = Math.min(maxHp, Math.max(0, currentIntent.estimatedDamage));
-        monsterIntentBar.setProgress(0);
+        
         monsterIntentBar.setProgressTintList(ColorStateList.valueOf(
                 ContextCompat.getColor(requireContext(), type.colorRes)));
+        
         if (firstTurn) {
             monsterIntentBar.setProgress(progress);
         } else {
+            // Animate the bar change for better UX.
             ObjectAnimator animator = ObjectAnimator.ofInt(monsterIntentBar, "progress", 0, progress);
             animator.setDuration(400);
             animator.start();
         }
+        
         if (!summaryVisible) {
             showTransientSummary(getString(R.string.combat_summary_ready));
         }
     }
 
+    /** Clears final summary state. */
     private void resetSummary() {
         summaryVisible = false;
         if (closeButton != null) {
@@ -427,6 +411,7 @@ public class CombatDialogFragment extends DialogFragment {
         }
     }
 
+    /** Shows a non-final combat status message. */
     private void showTransientSummary(String text) {
         summaryVisible = false;
         if (closeButton != null) {
@@ -437,6 +422,7 @@ public class CombatDialogFragment extends DialogFragment {
         }
     }
 
+    /** Shows the final battle results and enables the close button. */
     private void showFinalSummary(String text) {
         summaryVisible = true;
         if (combatSummaryView != null) {
@@ -450,6 +436,36 @@ public class CombatDialogFragment extends DialogFragment {
         }
     }
 
+    /** Builds the victory data block. */
+    private void showVictorySummary() {
+        int xp = Math.max(1, previewXpReward);
+        int gold = Math.max(0, previewGoldReward);
+        int turns = Math.max(1, turnsTaken);
+        String xpText = getResources().getQuantityString(R.plurals.combat_summary_xp, xp, xp);
+        String goldText = getResources().getQuantityString(R.plurals.combat_summary_gold, gold, gold);
+        String turnsText = getResources().getQuantityString(R.plurals.combat_summary_turns, turns, turns);
+        String dealtText = getResources().getQuantityString(R.plurals.combat_summary_damage, totalDamageDealt, totalDamageDealt);
+        String takenText = getResources().getQuantityString(R.plurals.combat_summary_damage, totalDamageTaken, totalDamageTaken);
+        String potionsText = getResources().getQuantityString(R.plurals.combat_summary_potions, potionsUsed, potionsUsed);
+        
+        showFinalSummary(getString(R.string.combat_summary_victory,
+                xpText, goldText, turnsText, dealtText, takenText, potionsText));
+    }
+
+    /** Builds the defeat data block. */
+    private void showDefeatSummary() {
+        int turns = Math.max(1, turnsTaken);
+        int dealt = Math.max(0, totalDamageDealt);
+        String turnsText = getResources().getQuantityString(R.plurals.combat_summary_turns, turns, turns);
+        String dealtText = getResources().getQuantityString(R.plurals.combat_summary_damage, dealt, dealt);
+        String takenText = getResources().getQuantityString(R.plurals.combat_summary_damage, totalDamageTaken, totalDamageTaken);
+        String potionsText = getResources().getQuantityString(R.plurals.combat_summary_potions, potionsUsed, potionsUsed);
+        
+        showFinalSummary(getString(R.string.combat_summary_defeat,
+                turnsText, dealtText, takenText, potionsText));
+    }
+
+    /** Pulsing effect for taken damage or healing. */
     private void animatePulse(View target) {
         if (target == null) {
             return;
@@ -461,6 +477,7 @@ public class CombatDialogFragment extends DialogFragment {
         target.startAnimation(animation);
     }
 
+    /** Data model for telegraphed monster moves. */
     private static final class MonsterIntent {
         final MonsterIntentType type;
         final int estimatedDamage;
@@ -471,6 +488,7 @@ public class CombatDialogFragment extends DialogFragment {
         }
     }
 
+    /** Enumeration of possible monster move archetypes. */
     private enum MonsterIntentType {
         QUICK(R.string.combat_intent_quick, 0.75f, 0.0f, R.color.intent_quick),
         GUARD_BREAK(R.string.combat_intent_guard_break, 1.05f, 0.5f, R.color.intent_guard),
@@ -510,6 +528,7 @@ public class CombatDialogFragment extends DialogFragment {
         }
     }
 
+    /** Refreshes the text blocks showing combatant status. */
     private void refreshStatBlocks() {
         if (profile == null || monster == null) {
             return;
@@ -542,6 +561,7 @@ public class CombatDialogFragment extends DialogFragment {
         updateHpMeters();
     }
 
+    /** Adds a line to the scrolling battle log. */
     private void appendLog(String line) {
         if (logBuilder.length() > 0) {
             logBuilder.append('\n');
@@ -552,12 +572,14 @@ public class CombatDialogFragment extends DialogFragment {
         }
     }
 
+    /** Disables interaction buttons when combat ends. */
     private void disableActions() {
         attackButton.setEnabled(false);
         potionButton.setEnabled(false);
         fleeButton.setEnabled(false);
     }
 
+    /** Notifies the activity that vitals have changed. */
     private void notifyStateChanged() {
         if (callbacks != null) {
             callbacks.onCombatStateUpdated();
@@ -597,6 +619,7 @@ public class CombatDialogFragment extends DialogFragment {
         if (monster == null) {
             return;
         }
+        // Save monster state to survive configuration changes.
         outState.putString(STATE_MONSTER_NAME, monster.getMonsterType());
         outState.putInt(STATE_MONSTER_ATTACK, monster.getAttack());
         outState.putInt(STATE_MONSTER_DEFENSE, monster.getDefense());
@@ -608,6 +631,7 @@ public class CombatDialogFragment extends DialogFragment {
         outState.putString(STATE_MONSTER_AFFINITY, monster.getAffinity().name());
     }
 
+    /** Restores monster state from a saved bundle. */
     @Nullable
     private Monster restoreMonsterFromState(@NonNull Bundle state) {
         String name = state.getString(STATE_MONSTER_NAME, "");
@@ -616,14 +640,12 @@ public class CombatDialogFragment extends DialogFragment {
         int defense = state.getInt(STATE_MONSTER_DEFENSE, 0);
         String image = state.getString(STATE_MONSTER_IMAGE, "");
         boolean ranged = state.getBoolean(STATE_MONSTER_RANGED, false);
+        
         Monster restored = new Monster(name, maxHp, attack, defense, image);
         restored.setHasRangedAttack(ranged);
-        MonsterFamily family = MonsterFamily.fromName(
-                state.getString(STATE_MONSTER_FAMILY, MonsterFamily.UNKNOWN.name()));
-        MonsterAffinity affinity = MonsterAffinity.fromName(
-                state.getString(STATE_MONSTER_AFFINITY, MonsterAffinity.NONE.name()));
-        restored.setFamily(family);
-        restored.setAffinity(affinity);
+        restored.setFamily(MonsterFamily.fromName(state.getString(STATE_MONSTER_FAMILY, MonsterFamily.UNKNOWN.name())));
+        restored.setAffinity(MonsterAffinity.fromName(state.getString(STATE_MONSTER_AFFINITY, MonsterAffinity.NONE.name())));
+        
         int currentHp = state.getInt(STATE_MONSTER_CURRENT_HP, maxHp);
         while (restored.getCurrentHP() > currentHp) {
             restored.takeDamage(1);
@@ -631,6 +653,7 @@ public class CombatDialogFragment extends DialogFragment {
         return restored;
     }
 
+    /** Recreates a monster from the type name if full state is missing. */
     @Nullable
     private Monster buildFallbackMonster(@Nullable String name) {
         if (TextUtils.isEmpty(name)) {
@@ -643,8 +666,8 @@ public class CombatDialogFragment extends DialogFragment {
         }
     }
 
-    private void prepareAnimatedCombatants(@NonNull CharacterProfile profileData,
-                                           @NonNull Monster monsterData) {
+    /** Configures the sprite controllers for battle animations. */
+    private void prepareAnimatedCombatants(@NonNull CharacterProfile profileData, @NonNull Monster monsterData) {
         ensureAnimatedPlayer(profileData);
         animatedPlayer = profileData.getAnimatedPlayer();
         if (playerAnimationView != null && animatedPlayer == null) {
@@ -662,6 +685,7 @@ public class CombatDialogFragment extends DialogFragment {
         }
     }
 
+    /** Ensures the player sprite controller is ready. */
     private void ensureAnimatedPlayer(@NonNull CharacterProfile profileData) {
         if (profileData.getAnimatedPlayer() == null) {
             profileData.setAnimatedPlayer(new AnimatedPlayer(
@@ -691,6 +715,7 @@ public class CombatDialogFragment extends DialogFragment {
         }
     }
 
+    /** Refreshes sprite bitmaps on the animation views. */
     private void updateAnimationFrames() {
         if (playerAnimationView != null && animatedPlayer != null) {
             Bitmap frame = animatedPlayer.getCurrentFrame();
@@ -706,6 +731,7 @@ public class CombatDialogFragment extends DialogFragment {
         }
     }
 
+    /** Updates the HP progress bars. */
     private void updateHpMeters() {
         if (playerHpBar != null && profile != null) {
             playerHpBar.setMax(Math.max(1, profile.getMaxHP()));
@@ -737,19 +763,16 @@ public class CombatDialogFragment extends DialogFragment {
         }
     }
 
+    /** Returns a static icon if animations are unavailable. */
     private int getPlayerPlaceholderIcon(@Nullable PlayerClass playerClass) {
         if (playerClass == null) {
             return R.drawable.icon_knight;
         }
         switch (playerClass) {
-            case WIZARD:
-                return R.drawable.icon_wizard;
-            case THIEF:
-                return R.drawable.icon_thief;
+            case WIZARD: return R.drawable.icon_wizard;
+            case THIEF: return R.drawable.icon_thief;
             case KNIGHT:
-            default:
-                return R.drawable.icon_knight;
+            default: return R.drawable.icon_knight;
         }
     }
-
 }

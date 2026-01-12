@@ -7,7 +7,8 @@ import android.os.Bundle;
 import com.example.clickdungeon.util.SoundManager;
 
 /**
- * Initializes global services such as {@link SoundManager} and routes lifecycle callbacks so
+ * ClickDungeonApp is the main application class for the ClickDungeon game.
+ * It initializes global services such as {@link SoundManager} and routes lifecycle callbacks so
  * audio pauses/resumes alongside the host activities.
  */
 public class ClickDungeonApp extends Application {
@@ -17,13 +18,17 @@ public class ClickDungeonApp extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+        // Initialize the sound manager at app startup to ensure assets are ready.
         SoundManager.init(this);
+        // Ensure the initial mute state respects user preferences.
         SoundManager.syncMuteFromSettings(this);
+        // Register lifecycle callbacks to handle sound pausing/resuming globally.
         registerActivityLifecycleCallbacks(audioLifecycleCallbacks);
     }
 
     @Override
     public void onTerminate() {
+        // Unregister to prevent leaks and release sound resources.
         unregisterActivityLifecycleCallbacks(audioLifecycleCallbacks);
         SoundManager.release();
         super.onTerminate();
@@ -32,11 +37,16 @@ public class ClickDungeonApp extends Application {
     @Override
     public void onTrimMemory(int level) {
         super.onTrimMemory(level);
+        // Pause all sounds when the UI is no longer visible to the user.
         if (level >= TRIM_MEMORY_UI_HIDDEN) {
             SoundManager.pauseAll();
         }
     }
 
+    /**
+     * SimpleAudioLifecycleCallbacks pauses and resumes the SoundManager based on
+     * the visibility of the activities.
+     */
     private static final class SimpleAudioLifecycleCallbacks implements ActivityLifecycleCallbacks {
 
         @Override
@@ -49,12 +59,14 @@ public class ClickDungeonApp extends Application {
 
         @Override
         public void onActivityResumed(Activity activity) {
+            // Re-sync mute state and resume playback when any activity comes to the foreground.
             SoundManager.syncMuteFromSettings(activity);
             SoundManager.resumeAll();
         }
 
         @Override
         public void onActivityPaused(Activity activity) {
+            // Pause sounds when an activity is losing focus to save CPU and battery.
             SoundManager.pauseAll();
         }
 

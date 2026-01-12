@@ -10,12 +10,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+/**
+ * Catalog of item definitions and random roll helpers for loot generation.
+ */
 public final class ItemCatalog {
 
+    /** Weapon tier list used for random drops. */
     private static final List<ItemDefinition> WEAPON_TIERS = new ArrayList<>();
+    /** Armor tier list used for random drops. */
     private static final List<ItemDefinition> ARMOR_TIERS = new ArrayList<>();
+    /** Consumable list used for random drops. */
     private static final List<ItemDefinition> CONSUMABLES = new ArrayList<>();
+    /** Magic affixes used to build rolled magic items. */
     private static final List<MagicAffix> MAGIC_AFFIXES = new ArrayList<>();
+    /** Index of all base item definitions by name. */
     private static final Map<String, ItemDefinition> ITEM_INDEX = new HashMap<>();
 
     static {
@@ -72,6 +80,9 @@ public final class ItemCatalog {
     private ItemCatalog() {
     }
 
+    /**
+     * Returns a randomized base item from the tier lists.
+     */
     @NonNull
     public static ItemDefinition randomBaseItem(@NonNull Random random) {
         int roll = random.nextInt(100);
@@ -83,6 +94,9 @@ public final class ItemCatalog {
         return ARMOR_TIERS.get(random.nextInt(ARMOR_TIERS.size()));
     }
 
+    /**
+     * Returns a randomized magic item by combining a base item with an affix.
+     */
     @NonNull
     public static ItemDefinition randomMagicItem(@NonNull Random random) {
         ItemDefinition base = random.nextBoolean()
@@ -99,6 +113,9 @@ public final class ItemCatalog {
                 Math.max(20, base.getResaleValue() + 40));
     }
 
+    /**
+     * Promotes rarity by one tier for magic items.
+     */
     private static ItemDefinition.Rarity bumpRarity(ItemDefinition.Rarity rarity) {
         switch (rarity) {
             case COMMON:
@@ -114,6 +131,9 @@ public final class ItemCatalog {
         }
     }
 
+    /**
+     * Resolves an item definition by exact name or magic prefix.
+     */
     public static ItemDefinition getItemDefinition(@NonNull String name) {
         ItemDefinition exact = ITEM_INDEX.get(name);
         if (exact != null) {
@@ -122,6 +142,9 @@ public final class ItemCatalog {
         return parseMagicItem(name);
     }
 
+    /**
+     * Parses a magic item name into a generated definition if it matches a known affix.
+     */
     private static ItemDefinition parseMagicItem(String name) {
         if (name == null) {
             return null;
@@ -147,12 +170,18 @@ public final class ItemCatalog {
         return null;
     }
 
+    /**
+     * Adds a list of item definitions to the name index.
+     */
     private static void indexAll(List<ItemDefinition> items) {
         for (ItemDefinition item : items) {
             ITEM_INDEX.put(item.getName(), item);
         }
     }
 
+    /**
+     * Descriptor for a magic item affix and its stat modifications.
+     */
     private static final class MagicAffix {
         final String name;
         final ItemDefinition.DamageType damageType;

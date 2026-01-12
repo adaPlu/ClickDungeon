@@ -26,24 +26,41 @@ import java.lang.reflect.Type;
  */
 public final class GameBalance {
 
+    /** Starting gold for a new run. */
     public static final int STARTING_GOLD = 50;
+    /** Starting premium currency for a new run. */
     public static final int STARTING_PLATINUM = 100;
+    /** Base XP for clearing a floor before scaling. */
     private static final int BASE_FLOOR_CLEAR_XP = 6;
+    /** Base XP for finding items before scaling. */
     private static final int BASE_ITEM_FOUND_XP = 2;
+    /** Base XP for disabling traps before scaling. */
     private static final int BASE_TRAP_DISABLED_XP = 3;
+    /** Random variance for gold rewards. */
     private static final int GOLD_VARIANCE_BOUND = 3;
+    /** Random variance for XP rewards. */
     private static final int XP_VARIANCE_BOUND = 2;
+    /** Chance out of 100 to drop bonus gold. */
     private static final int MONSTER_LOOT_GOLD_CHANCE = 35;
+    /** Chance out of 100 to drop a small key. */
     private static final int MONSTER_LOOT_SMALL_KEY_CHANCE = 12;
+    /** Chance out of 100 to drop a base item. */
     private static final int MONSTER_LOOT_ITEM_CHANCE = 20;
+    /** Chance out of 100 to drop a magic item. */
     private static final int MONSTER_LOOT_MAGIC_ITEM_CHANCE = 6;
+    /** Shared prefs file storing shop stock overrides. */
     private static final String SHOP_PREFS = "shop_prefs";
+    /** Prefix for per-item stock keys in prefs. */
     private static final String SHOP_STOCK_PREFIX = "stock_";
+    /** Cached base shop list loaded from JSON. */
     private static List<ShopItem> cachedShopItems;
 
     private GameBalance() {
     }
 
+    /**
+     * Calculates gold reward for defeating a monster.
+     */
     public static int calculateGoldReward(@NonNull Monster monster,
                                           int floor,
                                           SettingsManager.Difficulty difficulty,
@@ -57,6 +74,9 @@ public final class GameBalance {
         return Math.max(1, base);
     }
 
+    /**
+     * Calculates XP reward for defeating a monster.
+     */
     public static int calculateXpReward(@NonNull Monster monster,
                                         int floor,
                                         SettingsManager.Difficulty difficulty,
@@ -70,6 +90,9 @@ public final class GameBalance {
         return Math.max(1, base);
     }
 
+    /**
+     * Calculates XP for clearing a floor.
+     */
     public static int calculateFloorClearXp(int floor, SettingsManager.Difficulty difficulty) {
         int base = Math.max(1, BASE_FLOOR_CLEAR_XP);
         base = Math.round(base * getFloorDifficultyScale(floor));
@@ -79,6 +102,9 @@ public final class GameBalance {
         return Math.max(1, base);
     }
 
+    /**
+     * Calculates XP for discovering loot on a floor.
+     */
     public static int calculateItemFoundXp(int floor, SettingsManager.Difficulty difficulty) {
         int base = Math.max(1, BASE_ITEM_FOUND_XP);
         base = Math.round(base * getFloorDifficultyScale(floor));
@@ -88,6 +114,9 @@ public final class GameBalance {
         return Math.max(1, base);
     }
 
+    /**
+     * Calculates XP for disabling or disarming a trap.
+     */
     public static int calculateTrapDisabledXp(int floor, SettingsManager.Difficulty difficulty) {
         int base = Math.max(1, BASE_TRAP_DISABLED_XP);
         base = Math.round(base * getFloorDifficultyScale(floor));
@@ -97,6 +126,9 @@ public final class GameBalance {
         return Math.max(1, base);
     }
 
+    /**
+     * Determines extra loot drops for a defeated monster.
+     */
     public static MonsterLootRoll rollMonsterLoot(int floor,
                                                   SettingsManager.Difficulty difficulty,
                                                   Random random) {
@@ -125,6 +157,9 @@ public final class GameBalance {
         return new MonsterLootRoll(bonusGold, smallKeys, items, magicItems);
     }
 
+    /**
+     * Calculates gold pile value for floor loot.
+     */
     public static int calculateGoldPile(int floor,
                                         SettingsManager.Difficulty difficulty,
                                         Random random) {
@@ -153,6 +188,9 @@ public final class GameBalance {
         }
     }
 
+    /**
+     * Loads shop stock with persisted overrides applied.
+     */
     public static synchronized List<ShopItem> loadShopItems(Context context) {
         if (cachedShopItems == null) {
             // Read base stock from JSON once; per-session quantities are layered on via prefs.
@@ -168,6 +206,9 @@ public final class GameBalance {
         return resolved;
     }
 
+    /**
+     * Persists stock for a specific item and invalidates the cache.
+     */
     public static synchronized void persistShopStock(Context context, String itemName, int stock) {
         context.getSharedPreferences(SHOP_PREFS, Context.MODE_PRIVATE)
                 .edit()
@@ -176,6 +217,9 @@ public final class GameBalance {
         cachedShopItems = null; // force reload next time so overrides are applied.
     }
 
+    /**
+     * Reads base shop items from a raw JSON resource.
+     */
     private static List<ShopItem> readShopItemsFromJson(Context context, @RawRes int resId) {
         List<ShopItem> result = new ArrayList<>();
         try (InputStream stream = context.getResources().openRawResource(resId);

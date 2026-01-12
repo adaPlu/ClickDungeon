@@ -6,8 +6,18 @@ import com.example.clickdungeon.R;
 
 import java.util.Locale;
 
+/**
+ * Factory for building animated monsters from type identifiers.
+ */
 public class MonsterFactory {
 
+    /**
+     * Creates an AnimatedMonster with stats and sprite resources for the given type.
+     *
+     * @param context used to resolve sprite and sound resources
+     * @param type case-insensitive monster key
+     * @return configured AnimatedMonster instance
+     */
     public static AnimatedMonster create(Context context, String type) {
         switch (type.toLowerCase(Locale.ROOT)) {
             case "slime":

@@ -37,12 +37,16 @@ android {
     }
 }
 
+tasks.withType<JavaCompile>().configureEach {
+    options.compilerArgs.add("-Xlint:deprecation")
+}
+
 dependencies {
 
     implementation(libs.gson)
     implementation(libs.appcompat)
     implementation(libs.material)
-    implementation(libs.security.crypto)
+    implementation(libs.tink.android)
     testImplementation(libs.junit)
     testImplementation(libs.test.core)
     testImplementation(libs.robolectric)

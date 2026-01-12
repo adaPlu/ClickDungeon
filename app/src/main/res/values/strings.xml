@@ -139,13 +139,20 @@
 <string name="continue_slot_empty">Slot %1$d is empty</string>
 <string name="continue_slot_corrupted">Slot %1$d: Data corrupted</string>
 <string name="continue_slot_occupied">Slot %1$d - %2$s (%3$s) - Floor %4$d</string>
-<string name="continue_slot_new_game">New Game</string>
-<string name="continue_slot_continue">Continue</string>
-<string name="continue_slot_overwrite">Overwrite</string>
-<string name="continue_slot_overwrite_title">Overwrite Slot?</string>
-<string name="continue_slot_overwrite_message">This slot already has saved data. Overwrite it?</string>
-<string name="continue_slot_overwrite_confirm">Overwrite</string>
-<string name="continue_slot_load_failed">Unable to load this save slot.</string>
+    <string name="continue_slot_new_game">New Game</string>
+    <string name="continue_slot_continue">Continue</string>
+    <string name="continue_slot_overwrite">Overwrite</string>
+    <string name="continue_slot_review">Review</string>
+    <string name="continue_slot_overwrite_title">Overwrite Slot?</string>
+    <string name="continue_slot_overwrite_message">This slot already has saved data. Overwrite it?</string>
+    <string name="continue_slot_overwrite_confirm">Overwrite</string>
+    <string name="continue_slot_load_failed">Unable to load this save slot.</string>
+    <string name="continue_slot_schema_mismatch">Slot %1$d: Save needs migration</string>
+    <string name="continue_slot_schema_mismatch_title">Save Migration Needed</string>
+    <string name="continue_slot_schema_mismatch_message">This save was created with a different schema. Choose how to proceed.</string>
+    <string name="continue_slot_schema_migrate">Attempt Migrate</string>
+    <string name="continue_slot_schema_restore">Keep Last-Known-Good</string>
+    <string name="continue_slot_schema_reset">Reset Save</string>
 
 <!-- Combat -->
 <string name="combat_dialog_title">Battle</string>

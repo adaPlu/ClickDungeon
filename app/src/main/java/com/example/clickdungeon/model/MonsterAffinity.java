@@ -1,5 +1,8 @@
 package com.example.clickdungeon.model;
 
+/**
+ * Elemental or thematic affinity for monsters, used by terrain/status logic.
+ */
 public enum MonsterAffinity {
     NONE,
     FIRE,
@@ -9,6 +12,9 @@ public enum MonsterAffinity {
     POISON,
     SHADOW;
 
+    /**
+     * Resolves an affinity from a string, defaulting to NONE for invalid input.
+     */
     public static MonsterAffinity fromName(String name) {
         if (name == null || name.isEmpty()) {
             return NONE;

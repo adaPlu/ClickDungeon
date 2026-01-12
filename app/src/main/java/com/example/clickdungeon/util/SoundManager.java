@@ -17,6 +17,7 @@ import java.util.Map;
 public final class SoundManager {
 
     private static final String TAG = "SoundManager";
+    /** Sound effect keys used across the UI. */
     public static final String KEY_EFFECT_TREASURE = "effect_treasure";
     public static final String KEY_EFFECT_POSITIVE = "effect_positive";
     public static final String KEY_EFFECT_TRAP = "effect_trap";
@@ -29,10 +30,15 @@ public final class SoundManager {
     public static final String KEY_EFFECT_CHEST = "effect_chest";
     public static final String KEY_EFFECT_EQUIP = "effect_equip";
 
+    /** Shared SoundPool instance for effect playback. */
     private static SoundPool soundPool;
+    /** Tracks initialization state to avoid reloading sounds. */
     private static boolean isInitialized = false;
+    /** Mapping of sound key to SoundPool sound ID. */
     private static final Map<String, Integer> soundMap = new HashMap<>();
+    /** True when audio output is muted. */
     private static boolean isMuted = false;
+    /** Last key requested for playback (test/debug). */
     private static String lastPlayedKey;
     @Nullable
     private static PlaybackListener testPlaybackListener;
@@ -41,6 +47,9 @@ public final class SoundManager {
         // No instances.
     }
 
+    /**
+     * Initializes the SoundPool and registers all sound assets.
+     */
     public static void init(Context context) {
         if (isInitialized) {
             return;
@@ -123,6 +132,9 @@ public final class SoundManager {
         syncMuteFromSettings(context);
     }
 
+    /**
+     * Registers a sound resource to a logical key.
+     */
     private static void register(Context context, String key, int resId) {
         try {
             int soundId = soundPool.load(context, resId, 1);
@@ -132,6 +144,7 @@ public final class SoundManager {
         }
     }
 
+    /** Plays a sound by key when available. */
     public static void play(String key) {
         playAndReport(key);
     }
@@ -158,10 +171,12 @@ public final class SoundManager {
         return false;
     }
 
+    /** Plays a general effect sound. */
     public static void playEffect(String key) {
         playAndReport(key);
     }
 
+    /** Plays a monster action sound (attack/move/defend). */
     public static void playForMonster(String monsterType, String action) {
         if (monsterType == null || action == null) {
             return;
@@ -170,6 +185,7 @@ public final class SoundManager {
         play(key);
     }
 
+    /** Plays a player class action sound (attack/move/defend). */
     public static void playForClass(String playerClassName, String action) {
         if (playerClassName == null || action == null) {
             return;
@@ -178,6 +194,7 @@ public final class SoundManager {
         play(key);
     }
 
+    /** Syncs mute state based on SettingsManager. */
     public static void syncMuteFromSettings(Context context) {
         if (context == null) {
             return;
@@ -185,6 +202,7 @@ public final class SoundManager {
         setMuted(!SettingsManager.isAudioEnabled(context.getApplicationContext()));
     }
 
+    /** Sets the muted state and pauses/resumes the pool accordingly. */
     public static void setMuted(boolean muted) {
         isMuted = muted;
         if (muted) {
@@ -194,26 +212,31 @@ public final class SoundManager {
         }
     }
 
+    /** Returns true if audio is currently muted. */
     public static boolean isMuted() {
         return isMuted;
     }
 
+    /** Toggles the muted state. */
     public static void toggleMute() {
         setMuted(!isMuted);
     }
 
+    /** Pauses all currently playing sounds. */
     public static void pauseAll() {
         if (soundPool != null) {
             soundPool.autoPause();
         }
     }
 
+    /** Resumes playback if not muted. */
     public static void resumeAll() {
         if (soundPool != null && !isMuted) {
             soundPool.autoResume();
         }
     }
 
+    /** Releases SoundPool resources and clears cached state. */
     public static void release() {
         if (soundPool != null) {
             soundPool.release();
@@ -224,32 +247,40 @@ public final class SoundManager {
         lastPlayedKey = null;
     }
 
+    /** Returns the last playback key requested (testing). */
     @VisibleForTesting
     public static String getLastPlayedKey() {
         return lastPlayedKey;
     }
 
+    /** Returns registered sound keys (testing). */
     @VisibleForTesting
     public static java.util.Set<String> getRegisteredKeys() {
         return new java.util.HashSet<>(soundMap.keySet());
     }
 
+    /** Listener used by tests to observe playback requests. */
     @VisibleForTesting
     public interface PlaybackListener {
         void onPlayRequest(String key);
     }
 
+    /** Registers a playback listener for tests. */
     @VisibleForTesting
     public static void setTestPlaybackListener(@Nullable PlaybackListener listener) {
         testPlaybackListener = listener;
     }
 
+    /** Notifies the test listener of a playback request. */
     private static void notifyTestListener(@Nullable String key) {
         if (testPlaybackListener != null && key != null && !key.isEmpty()) {
             testPlaybackListener.onPlayRequest(key);
         }
     }
 
+    /**
+     * Resolves a sound ID for the key, falling back to generic player sounds.
+     */
     @Nullable
     private static Integer resolveSoundId(@Nullable String key) {
         if (key == null) {

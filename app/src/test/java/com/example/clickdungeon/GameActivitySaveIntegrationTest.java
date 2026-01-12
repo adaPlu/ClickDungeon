@@ -27,7 +27,10 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 import org.robolectric.Shadows;
+import org.robolectric.util.ReflectionHelpers;
 import com.example.clickdungeon.util.SecurePreferences;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(sdk = 33)
@@ -40,6 +43,7 @@ public class GameActivitySaveIntegrationTest {
         context = ApplicationProvider.getApplicationContext();
         SecurePreferences.get(context, "SaveSlot0").edit().clear().commit();
         SecurePreferences.get(context, "player_prefs").edit().clear().commit();
+        SaveManager.setTestSaveListener(null);
     }
 
     @Test
@@ -58,6 +62,8 @@ public class GameActivitySaveIntegrationTest {
         intent.putExtra(GameActivity.EXTRA_SLOT_INDEX, 0);
         ActivityController<GameActivity> controller = Robolectric.buildActivity(GameActivity.class, intent);
         GameActivity activity = controller.setup().get();
+        activity.setSaveExecutorForTest(Runnable::run);
+        activity.setSaveDebounceMsForTest(0);
 
         int currentFloor = (int) getFieldValue(activity, "currentFloor");
         int currentGold = (int) getFieldValue(activity, "currentGold");
@@ -74,6 +80,7 @@ public class GameActivitySaveIntegrationTest {
         setFieldValue(activity, "currentPlatinum", 35);
 
         controller.pause();
+        Shadows.shadowOf(Looper.getMainLooper()).idle();
 
         SaveManager.GameState updated = saveManager.loadGame(0);
         assertNotNull(updated);
@@ -102,6 +109,50 @@ public class GameActivitySaveIntegrationTest {
         Shadows.shadowOf(Looper.getMainLooper()).idle();
 
         assertEquals(1, InventoryManager.getItemQuantity(activity, "SMALL KEY"));
+    }
+
+    @Test
+    public void tileClicks_debounceSavesToSingleCommit() throws Exception {
+        SaveManager saveManager = new SaveManager(context);
+        CharacterProfile profile = new CharacterProfile("Saver", PlayerClass.KNIGHT);
+        Tile[][] grid = new Tile[5][5];
+        for (int r = 0; r < grid.length; r++) {
+            for (int c = 0; c < grid[r].length; c++) {
+                grid[r][c] = new Tile(TileType.EMPTY);
+            }
+        }
+        SaveManager.RunMetadata metadata =
+                new SaveManager.RunMetadata(-1, -1, false, 0, -1, -1, 1, null);
+        saveManager.saveGame(0, profile, 1, 0, 0, grid, metadata);
+
+        Intent intent = new Intent(context, GameActivity.class);
+        intent.putExtra(GameActivity.EXTRA_SLOT_INDEX, 0);
+        ActivityController<GameActivity> controller = Robolectric.buildActivity(GameActivity.class, intent);
+        GameActivity activity = controller.setup().get();
+        activity.setSaveExecutorForTest(Runnable::run);
+        activity.setSaveDebounceMsForTest(50);
+
+        AtomicInteger saveCount = new AtomicInteger(0);
+        SaveManager.setTestSaveListener(slotIndex -> saveCount.incrementAndGet());
+        saveCount.set(0);
+
+        setFieldValue(activity, "dungeonGrid", grid);
+        setFieldValue(activity, "safeTilesToReveal", 25);
+        setFieldValue(activity, "revealedSafeTiles", 0);
+        ReflectionHelpers.callInstanceMethod(activity, "renderGrid");
+        Shadows.shadowOf(Looper.getMainLooper()).idle();
+
+        GridLayout gridLayout = activity.findViewById(R.id.gridDungeon);
+        View firstTile = gridLayout.getChildAt(0);
+        View secondTile = gridLayout.getChildAt(1);
+        activity.runOnUiThread(firstTile::performClick);
+        activity.runOnUiThread(secondTile::performClick);
+
+        Shadows.shadowOf(Looper.getMainLooper()).idleFor(60, TimeUnit.MILLISECONDS);
+
+        assertEquals(1, saveCount.get());
+        SaveManager.setTestSaveListener(null);
+        controller.pause();
     }
 
     private Tile[][] buildGridWithKey(TileType keyType, String customName) {

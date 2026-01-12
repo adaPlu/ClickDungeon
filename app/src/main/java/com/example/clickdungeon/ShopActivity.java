@@ -24,11 +24,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * ShopActivity handles purchasing gear and managing secondary merchant interactions.
+ * It supports standard shop stock, as well as sell and buyback functionality 
+ * when a merchant visit is triggered during a dungeon run.
+ */
 public class ShopActivity extends AppCompatActivity {
 
+    /** Extra flag containing the floor number where the merchant visit occurred. */
     public static final String EXTRA_MERCHANT_FLOOR = "com.example.clickdungeon.extra.MERCHANT_FLOOR";
     private static final int DEFAULT_RESALE_VALUE = 10;
 
+    // View references for currency and item lists.
     private RecyclerView recyclerView;
     private TextView goldText;
     private TextView platinumText;
@@ -42,16 +49,20 @@ public class ShopActivity extends AppCompatActivity {
     private final List<ShopItem> shopItems = new ArrayList<>();
     private final List<PricedItem> sellItems = new ArrayList<>();
     private final List<PricedItem> buybackItems = new ArrayList<>();
+    
     private ShopItemAdapter adapter;
     private PricedItemAdapter sellAdapter;
     private PricedItemAdapter buybackAdapter;
+    
     private boolean isMerchantVisit;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setTitle(R.string.shop);
         setContentView(R.layout.activity_shop);
 
+        // Bind UI components.
         recyclerView = findViewById(R.id.recyclerShopItems);
         goldText = findViewById(R.id.textGold);
         platinumText = findViewById(R.id.textPlatinum);
@@ -61,12 +72,16 @@ public class ShopActivity extends AppCompatActivity {
         buybackHeader = findViewById(R.id.textBuybackHeader);
         Button refreshButton = findViewById(R.id.btnRefreshShop);
 
+        // Initialize layouts for the vertical lists.
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         sellRecycler.setLayoutManager(new LinearLayoutManager(this));
         buybackRecycler.setLayoutManager(new LinearLayoutManager(this));
+        
+        // Fetch current currency state.
         gold = InventoryManager.getGold(this);
         platinum = InventoryManager.getPlatinum(this);
 
+        // Determine if this is a specialized merchant visit or a standard menu shop.
         int merchantFloor = getIntent().getIntExtra(EXTRA_MERCHANT_FLOOR, -1);
         isMerchantVisit = merchantFloor > 0;
         if (isMerchantVisit) {
@@ -75,22 +90,28 @@ public class ShopActivity extends AppCompatActivity {
                 MerchantManager.setLastVisitFloor(this, merchantFloor);
             }
         } else {
+            // Hide merchant-specific panels if just visiting from the main menu.
             sellHeader.setVisibility(View.GONE);
             sellRecycler.setVisibility(View.GONE);
             buybackHeader.setVisibility(View.GONE);
             buybackRecycler.setVisibility(View.GONE);
         }
 
-        loadMockItems();
+        // Initialize the item data sets.
+        loadShopItems();
         refreshSellItems();
         refreshBuybackItems();
 
-        refreshButton.setOnClickListener(view -> loadMockItems());
+        // Allow force-refreshing shop contents (primarily for testing/dev).
+        refreshButton.setOnClickListener(view -> loadShopItems());
 
         updateUI();
     }
 
-    private void loadMockItems() {
+    /**
+     * Loads available purchaseable items from GameBalance and populates the main recycler.
+     */
+    private void loadShopItems() {
         shopItems.clear();
         shopItems.addAll(GameBalance.loadShopItems(this));
         Map<String, ShopItem> shopIndex = buildShopIndex(shopItems);
@@ -101,12 +122,15 @@ public class ShopActivity extends AppCompatActivity {
                 return;
             }
             if (gold >= item.getPrice()) {
+                // Deduct currency and update stock levels.
                 gold = InventoryManager.adjustGold(this, -item.getPrice());
                 int remaining = item.getStock() - 1;
                 GameBalance.persistShopStock(this, item.getName(), remaining);
                 refreshListStock(item.getName(), remaining);
                 updateUI();
                 Toast.makeText(this, getString(R.string.purchase_successful, item.getName()), Toast.LENGTH_SHORT).show();
+                
+                // Add the item to inventory and refresh sell prices.
                 InventoryManager.adjustItemQuantity(this, item.getName(), 1);
                 refreshSellItems(shopIndex);
             } else {
@@ -116,6 +140,9 @@ public class ShopActivity extends AppCompatActivity {
         recyclerView.setAdapter(adapter);
     }
 
+    /**
+     * Incremental list update when an item is purchased.
+     */
     private void refreshListStock(String itemName, int remaining) {
         for (int i = 0; i < shopItems.size(); i++) {
             ShopItem item = shopItems.get(i);
@@ -129,6 +156,9 @@ public class ShopActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Syncs currency text labels with current state.
+     */
     private void updateUI() {
         gold = InventoryManager.getGold(this);
         platinum = InventoryManager.getPlatinum(this);
@@ -140,6 +170,9 @@ public class ShopActivity extends AppCompatActivity {
         refreshSellItems(buildShopIndex(shopItems));
     }
 
+    /**
+     * Populates the sell list based on the user's current inventory.
+     */
     private void refreshSellItems(Map<String, ShopItem> shopIndex) {
         if (!isMerchantVisit) {
             return;
@@ -164,6 +197,9 @@ public class ShopActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Populates the buyback list with items recently sold to the merchant.
+     */
     private void refreshBuybackItems() {
         if (!isMerchantVisit) {
             return;
@@ -184,12 +220,16 @@ public class ShopActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Executes the sale of an inventory item.
+     */
     private void sellItem(PricedItem item, Map<String, ShopItem> shopIndex) {
         if (item.getQuantity() <= 0) {
             return;
         }
         InventoryManager.adjustItemQuantity(this, item.getName(), -1);
         gold = InventoryManager.adjustGold(this, item.getPrice());
+        // Move the item to the buyback tab.
         MerchantManager.addBuybackItem(this, new PricedItem(item.getName(), item.getPrice(), 1));
         Toast.makeText(this, getString(R.string.sale_successful, item.getName()), Toast.LENGTH_SHORT).show();
         refreshSellItems(shopIndex);
@@ -197,6 +237,9 @@ public class ShopActivity extends AppCompatActivity {
         updateUI();
     }
 
+    /**
+     * Allows the player to repurchase a previously sold item.
+     */
     private void buybackItem(PricedItem item) {
         if (item.getQuantity() <= 0) {
             return;
@@ -213,6 +256,9 @@ public class ShopActivity extends AppCompatActivity {
         updateUI();
     }
 
+    /**
+     * Updates persistent buyback quantities.
+     */
     private void updateBuybackQuantity(String name, int price, int delta) {
         List<PricedItem> items = MerchantManager.loadBuybackItems(this);
         for (int i = 0; i < items.size(); i++) {
@@ -230,6 +276,9 @@ public class ShopActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Builds a map for quick price lookups.
+     */
     private Map<String, ShopItem> buildShopIndex(List<ShopItem> items) {
         Map<String, ShopItem> map = new HashMap<>();
         for (ShopItem item : items) {
@@ -238,6 +287,9 @@ public class ShopActivity extends AppCompatActivity {
         return map;
     }
 
+    /**
+     * Returns the gold value when selling an item.
+     */
     private int getResaleValue(String name, Map<String, ShopItem> shopIndex) {
         ShopItem item = shopIndex.get(name);
         if (item != null) {
@@ -246,14 +298,15 @@ public class ShopActivity extends AppCompatActivity {
         return DEFAULT_RESALE_VALUE;
     }
 
-    // Test hooks
+    /**
+     * Injects custom items for testing scenarios.
+     */
     public void setShopItems(List<ShopItem> items) {
         int previousSize = shopItems.size();
         shopItems.clear();
         shopItems.addAll(items);
         if (adapter == null) {
             adapter = new ShopItemAdapter(shopItems, item -> {
-                // mirror purchase logic for test injection
                 if (item.getStock() <= 0) {
                     return;
                 }

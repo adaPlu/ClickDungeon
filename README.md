@@ -64,7 +64,8 @@
    - Animated combatants use `AnimatedPlayer`/`AnimatedMonster` sprite sheets with class/monster audio cues.
 
 10. **Modular Architecture**
-   - **SharedPreferences** used throughout for saving grid states, gold/platinum, and achievements (schema + checksum validation with backup recovery; encrypted prefs on API 23+ with fallback; see `SECURITY.md` for details).
+   - **SharedPreferences** used throughout for saving grid states, gold/platinum, and achievements (schema + checksum validation with backup recovery; Tink + Android Keystore encrypted prefs on API 23+ with fallback; see `SECURITY.md` for details).
+   - Save writes are queued off the UI thread and coalesced; pause and critical events trigger immediate save jobs.
    - Separate activities for each feature (shop, achievements, settings, etc.).
    - Clean codebase supports expansions like IAP, ads, new classes, and more.
 
@@ -80,7 +81,7 @@
 
 13. **Automated Verification**
     - Robolectric suites cover settings UI, inventory, achievements, save slots, balance, onboarding, feedback, and combat flows.
-    - Expanded unit tests now cover model classes, adapters, shop flows, animation helpers, terrain/affinity helpers, and class ability behaviors (range/cooldown/effects).
+    - Expanded unit tests now cover model classes, adapters, shop flows, animation helpers, terrain/affinity helpers, item catalog/merchant/loot roll helpers, persistence store/security helpers, class ability behaviors (range/cooldown/effects), and save snapshot/coalesced persistence behavior.
 
 ---
 
@@ -162,40 +163,37 @@ ClickDungeon/
 
 ---
 
-## ‚ú
- Progress Checklist
+## Progress Checklist & Implementation Phases
 
-- [x] Multi-floor dungeon with pitfall traps and stairs  
-- [x] Class selection (Knight, Thief, Wizard) with base kits and stat progression  
-- [x] Traps & status effects (freeze, poison)  
-- [x] Terrain-based encounter weighting and status hooks  
-- [x] ‚ÄúTrap Disarm Kit‚Äù item integration  
-- [x] Achievements UI & unlocking logic  
-- [x] Inventory & currency system with shop and merchant buyback  
-- [x] Key/stair integration for big-key exits and small-key chests
-- [x] Combat with various monsters
-- [x] Animated combatants and grid sprite updates
-- [x] Expanded Robolectric/unit test coverage for models, adapters, and flows
-- [ ] Boss floors & advanced enemy AI (planned)  
-- [ ] Additional classes and abilities (planned)
+Implementation Phases
+- [x] Phase 1 - Class reset + level cap (20-level cap and base class ability kits).
+- [x] Phase 2 - Stat system foundation (STR/INT/CON/DEX; HP/MP derived; ATK/DEF derived).
+- [x] Phase 3 - Base class kits (base stats and base abilities per class).
+- [x] Phase 4 - Level progression (20 levels, stat points per level, HP/MP scaling).
+- [x] Phase 5 - Class abilities (five abilities per class at levels 1/5/10/15/20 with cooldown/range rules).
+- [x] Phase 6 - Ability + stat tuning (current tuning constants in CharacterProfile).
+- [x] Phase 7 - Core economy + persistence (gold-based economy, save/load, UI; platinum stored for future premium flows).
+- [x] Phase 8 - Merchant access + cadence (shop access, merchant visits, buyback scaffolding).
+- [x] Phase 9 - XP system + rewards (floor clear, items found, trap disabled, monster defeats).
+- [x] Phase 10 - Keys, chests, and exit flow (small keys, chests, big key exits, chest loot).
+- [x] Phase 11 - Loot tables + itemization (monster loot, weapon/armor tiers, magic affixes).
+- [x] Phase 12 - Equipment tracking + bonuses (equip/unequip, bonuses tracked; combat currently uses base stats).
+- [ ] Phase 13 - UI/UX polish + audio (theming, tutorial flow, SFX hooks; in progress).
 
----
-
-## Implementation Phases
-
-- **Phase 1 - Class reset + level cap:** complete (20-level cap and base class ability kits).
-- **Phase 2 - Stat system foundation:** complete (STR/INT/CON/DEX; HP/MP derived; ATK/DEF derived).
-- **Phase 3 - Base class kits:** complete (base stats and base abilities per class).
-- **Phase 4 - Level progression:** complete (20 levels, stat points per level, HP/MP scaling).
-- **Phase 5 - Class abilities:** complete (five abilities per class at levels 1/5/10/15/20 with cooldown/range rules).
-- **Phase 6 - Ability + stat tuning:** complete (current tuning constants in CharacterProfile).
-- **Phase 7 - Core economy + persistence:** complete (gold-based economy, save/load, UI; platinum stored for future premium flows).
-- **Phase 8 - Merchant access + cadence:** complete (shop access, merchant visits, buyback scaffolding).
-- **Phase 9 - XP system + rewards:** complete (floor clear, items found, trap disabled, monster defeats).
-- **Phase 10 - Keys, chests, and exit flow:** complete (small keys, chests, big key exits, chest loot).
-- **Phase 11 - Loot tables + itemization:** complete (monster loot, weapon/armor tiers, magic affixes).
-- **Phase 12 - Equipment tracking + bonuses:** complete (equip/unequip, bonuses tracked; combat currently uses base stats).
-- **Phase 13 - UI/UX polish + audio:** in progress (theming, tutorial flow, SFX hooks).
+Feature Checklist
+- [x] Multi-floor dungeon with pitfall traps and stairs.
+- [x] Class selection (Knight, Thief, Wizard) with base kits and stat progression.
+- [x] Traps & status effects (freeze, poison).
+- [x] Terrain-based encounter weighting and status hooks.
+- [x] Trap Disarm Kit item integration.
+- [x] Achievements UI & unlocking logic.
+- [x] Inventory & currency system with shop and merchant buyback.
+- [x] Key/stair integration for big-key exits and small-key chests.
+- [x] Combat with various monsters.
+- [x] Animated combatants and grid sprite updates.
+- [x] Expanded Robolectric/unit test coverage for models, adapters, and flows.
+- [ ] Boss floors & advanced enemy AI (planned).
+- [ ] Additional classes and abilities (planned).
 
 ---
 ## ü-∫Ô∏è Roadmap

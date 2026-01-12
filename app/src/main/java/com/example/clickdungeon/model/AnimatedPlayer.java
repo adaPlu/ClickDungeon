@@ -11,19 +11,34 @@ import com.example.clickdungeon.util.SoundManager;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Manages sprite-sheet animation frames for the player character.
+ */
 public class AnimatedPlayer {
+    /** Map of action name to ordered frame strip. */
     private final Map<String, Bitmap[]> animations = new HashMap<>();
+    /** Dimensions of a single frame within the sprite sheet. */
     private final int frameWidth;
     private final int frameHeight;
+    /** Number of frames per action strip. */
     private final int frameCount;
+    /** Time per frame in milliseconds. */
     private final long frameDuration; // duration in ms per frame
+    /** Timestamp used to throttle frame advancement. */
     private long lastUpdateTime = 0;
+    /** Index of the current frame within the active strip. */
     private int currentFrameIndex = 0;
+    /** Timestamp when the current action started. */
     private long actionStartTime = 0;
 
+    /** Active action name (idle/move/attack/defend). */
     private String currentAction = "idle";
+    /** Player class used to select sprites and SFX. */
     private final PlayerClass playerClass;
 
+    /**
+     * Builds the animation frame map by slicing the class sprite sheet.
+     */
     public AnimatedPlayer(Context context, PlayerClass playerClass, int frameWidth, int frameHeight, int frameCount, long frameDuration) {
         this.playerClass = playerClass;
         this.frameDuration = frameDuration;
@@ -61,6 +76,7 @@ public class AnimatedPlayer {
         }
     }
 
+    /** Resolves the sprite sheet resource for the selected class. */
     private int getSpriteResourceForClass(PlayerClass playerClass) {
         switch (playerClass) {
             case KNIGHT: return R.drawable.knight_sprite_sheet;
@@ -70,6 +86,9 @@ public class AnimatedPlayer {
         }
     }
 
+    /**
+     * Returns the current animation frame, advancing based on time elapsed.
+     */
     public Bitmap getCurrentFrame() {
         long now = System.currentTimeMillis();
 
@@ -94,6 +113,9 @@ public class AnimatedPlayer {
         return frames[currentFrameIndex];
     }
 
+    /**
+     * Switches the active action and plays the class-specific SFX.
+     */
     public void setAction(String action) {
         if (!currentAction.equals(action)) {
             currentAction = action;
@@ -106,16 +128,19 @@ public class AnimatedPlayer {
         }
     }
 
+    /** Resets animation state back to idle with frame index cleared. */
     public void reset() {
         currentFrameIndex = 0;
         lastUpdateTime = 0;
         currentAction = "idle";
     }
 
+    /** Returns the active action string. */
     public String getCurrentAction() {
         return currentAction;
     }
 
+    /** Returns the player class used to select sprites and SFX. */
     public PlayerClass getPlayerClass() {
         return playerClass;
     }

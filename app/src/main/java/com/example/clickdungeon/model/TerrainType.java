@@ -1,5 +1,8 @@
 package com.example.clickdungeon.model;
 
+/**
+ * Enumerates supported terrain themes for encounter effects and flavor.
+ */
 public enum TerrainType {
     CAVERN("Cavern"),
     CRYPT("Crypt"),
@@ -12,16 +15,21 @@ public enum TerrainType {
     SUNKEN_TEMPLE("Sunken Temple"),
     ASH_WASTES("Ash Wastes");
 
+    /** Human-readable label for UI display. */
     private final String displayName;
 
     TerrainType(String displayName) {
         this.displayName = displayName;
     }
 
+    /** Returns the display name used in UI. */
     public String getDisplayName() {
         return displayName;
     }
 
+    /**
+     * Resolves a terrain type from enum name or display name.
+     */
     public static TerrainType fromName(String name) {
         if (name == null || name.isEmpty()) {
             return null;

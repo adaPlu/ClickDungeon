@@ -20,14 +20,21 @@ import com.google.gson.Gson;
 
 import java.util.List;
 
+/**
+ * InventoryActivity displays the player's collected items and allows equipping gear
+ * or allocating earned stat points. It provides a detailed view of the character's 
+ * current strength, health, and equipment bonuses.
+ */
 public class InventoryActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setTitle(R.string.inventory_title);
+        // Use the shared inventory dialog layout for the full activity view.
         setContentView(R.layout.dialog_inventory);
 
+        // Bind UI components.
         RecyclerView recycler = findViewById(R.id.recyclerInventory);
         TextView goldView = findViewById(R.id.textInventoryGold);
         TextView platinumView = findViewById(R.id.textInventoryPlatinum);
@@ -36,6 +43,7 @@ public class InventoryActivity extends AppCompatActivity {
         TextView armorView = findViewById(R.id.textEquippedArmor);
         TextView statView = findViewById(R.id.textStatDelta);
         TextView emptyView = findViewById(R.id.textEmptyInventory);
+        
         View statAllocation = findViewById(R.id.layoutStatAllocation);
         TextView statPointsView = findViewById(R.id.textStatPoints);
         TextView statStrengthView = findViewById(R.id.textStatStrength);
@@ -48,8 +56,12 @@ public class InventoryActivity extends AppCompatActivity {
         View statIntelligenceButton = findViewById(R.id.buttonStatIntelligence);
 
         recycler.setLayoutManager(new LinearLayoutManager(this));
+        
+        // Load the persistent inventory and profile data.
         List<InventoryItem> items = InventoryManager.loadInventory(this);
         CharacterProfile profile = loadProfile();
+        
+        // Initialize the inventory list adapter with equip logic.
         InventoryAdapter adapter = new InventoryAdapter(items, item -> {
             if (profile == null) {
                 return;
@@ -62,12 +74,19 @@ public class InventoryActivity extends AppCompatActivity {
             updateEquippedSummary(profile, weaponView, armorView, statView);
         });
         recycler.setAdapter(adapter);
+        
+        // Update currency displays.
         goldView.setText(getString(R.string.gold_display_dynamic, InventoryManager.getGold(this)));
         platinumView.setText(getString(R.string.platinum_display_dynamic, InventoryManager.getPlatinum(this)));
+        
+        // Show empty state if no items exist.
         emptyView.setVisibility(items.isEmpty() ? View.VISIBLE : View.GONE);
+        
         if (profile != null) {
             updateEquippedSummary(profile, weaponView, armorView, statView);
             mpView.setText(getString(R.string.mp_display_dynamic, profile.getCurrentMP(), profile.getMaxMP()));
+            
+            // Wire up the interactive stat point allocation buttons.
             bindStatAllocation(profile,
                     statAllocation,
                     statPointsView,
@@ -89,11 +108,17 @@ public class InventoryActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Loads the character profile from shared preferences.
+     */
     private CharacterProfile loadProfile() {
         String json = getSharedPreferences("player_profile", MODE_PRIVATE).getString("profile", null);
         return json != null ? new Gson().fromJson(json, CharacterProfile.class) : null;
     }
 
+    /**
+     * Persists character profile changes.
+     */
     private void saveProfile(CharacterProfile profile) {
         getSharedPreferences("player_profile", MODE_PRIVATE)
                 .edit()
@@ -101,6 +126,10 @@ public class InventoryActivity extends AppCompatActivity {
                 .apply();
     }
 
+    /**
+     * Toggles an item between equipped and unequipped states.
+     * @return true if the item was eligible for equipping.
+     */
     private boolean toggleEquip(CharacterProfile profile, String itemName) {
         ItemDefinition definition = ItemCatalog.getItemDefinition(itemName);
         if (definition == null || definition.getEquipSlot() == ItemDefinition.EquipSlot.NONE) {
@@ -132,6 +161,9 @@ public class InventoryActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Updates the text labels summarizing current equipment and total stats.
+     */
     private void updateEquippedSummary(CharacterProfile profile,
                                        TextView weaponView,
                                        TextView armorView,
@@ -147,6 +179,9 @@ public class InventoryActivity extends AppCompatActivity {
                 profile.getDefenseBonus()));
     }
 
+    /**
+     * Sets up click listeners for the stat increment buttons.
+     */
     private void bindStatAllocation(CharacterProfile profile,
                                     View allocationView,
                                     TextView pointsView,
@@ -201,6 +236,9 @@ public class InventoryActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Refreshes the text displays for the character's base stats.
+     */
     private void updateStatViews(CharacterProfile profile,
                                  TextView pointsView,
                                  TextView strengthView,
@@ -214,10 +252,12 @@ public class InventoryActivity extends AppCompatActivity {
         intelligenceView.setText(getString(R.string.stat_label_intelligence, profile.getIntelligence()));
     }
 
+    /** Helper to show short informational toasts. */
     private void showToast(int messageResId, String itemName) {
         android.widget.Toast.makeText(this, getString(messageResId, itemName), android.widget.Toast.LENGTH_SHORT).show();
     }
 
+    /** Triggers audio and haptic feedback when gear is changed. */
     private void playEquipFeedback() {
         SoundManager.syncMuteFromSettings(this);
         boolean played = SoundManager.playAndReport(SoundManager.KEY_EFFECT_EQUIP);

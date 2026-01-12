@@ -14,8 +14,14 @@ import com.example.clickdungeon.util.SettingsManager;
 import com.example.clickdungeon.util.SoundManager;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 
+/**
+ * SettingsActivity provides a UI for the player to customize their game experience.
+ * Options include audio and vibration toggles, difficulty selection, 
+ * color-blind accessibility aids, and tutorial hint preferences.
+ */
 public class SettingsActivity extends AppCompatActivity {
 
+    /** Flag to prevent listener triggers during initial view setup. */
     private boolean isInitializing = false;
 
     @Override
@@ -24,6 +30,7 @@ public class SettingsActivity extends AppCompatActivity {
         setTitle(R.string.settings);
         setContentView(R.layout.activity_settings);
 
+        // Bind UI components.
         SwitchMaterial audioSwitch = findViewById(R.id.switchAudio);
         SwitchMaterial vibrationSwitch = findViewById(R.id.switchVibration);
         SwitchMaterial colorBlindSwitch = findViewById(R.id.switchColorBlind);
@@ -35,11 +42,13 @@ public class SettingsActivity extends AppCompatActivity {
 
         isInitializing = true;
 
+        // Initialize switch states from persistent manager.
         audioSwitch.setChecked(SettingsManager.isAudioEnabled(this));
         vibrationSwitch.setChecked(SettingsManager.isVibrationEnabled(this));
         colorBlindSwitch.setChecked(SettingsManager.isColorBlindModeEnabled(this));
         tutorialSwitch.setChecked(SettingsManager.areTutorialHintsEnabled(this));
 
+        // Set up the difficulty spinner with localized entry names.
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(
                 this,
                 R.array.settings_difficulty_entries,
@@ -47,9 +56,12 @@ public class SettingsActivity extends AppCompatActivity {
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         difficultySpinner.setAdapter(adapter);
 
+        // Fetch difficulty configuration data.
         String[] difficultyValues = getResources().getStringArray(R.array.settings_difficulty_values);
         String[] difficultySummaries = getResources().getStringArray(R.array.settings_difficulty_descriptions);
         String savedDifficulty = SettingsManager.getDifficulty(this);
+        
+        // Match the saved difficulty string to its spinner index.
         int selectedIndex = 0;
         for (int i = 0; i < difficultyValues.length; i++) {
             if (difficultyValues[i].equalsIgnoreCase(savedDifficulty)) {
@@ -59,6 +71,8 @@ public class SettingsActivity extends AppCompatActivity {
         }
         difficultySpinner.setSelection(selectedIndex, false);
         updateDifficultySummary(difficultySummaryText, difficultySummaries, selectedIndex);
+        
+        // Add accessibility tooltips.
         TooltipCompat.setTooltipText(difficultySpinner,
                 selectedIndex < difficultySummaries.length
                         ? difficultySummaries[selectedIndex]
@@ -69,6 +83,7 @@ public class SettingsActivity extends AppCompatActivity {
 
         isInitializing = false;
 
+        // Audio preference handler.
         audioSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (!isInitializing) {
                 SettingsManager.setAudioEnabled(this, isChecked);
@@ -87,6 +102,7 @@ public class SettingsActivity extends AppCompatActivity {
             }
         });
 
+        // Accessibility preference handler.
         colorBlindSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (!isInitializing) {
                 SettingsManager.setColorBlindModeEnabled(this, isChecked);
@@ -94,6 +110,7 @@ public class SettingsActivity extends AppCompatActivity {
             updateColorBlindSummary(colorBlindSummaryText, isChecked);
         });
 
+        // Tutorial onboarding preference handler.
         tutorialSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (!isInitializing) {
                 SettingsManager.setTutorialHintsEnabled(this, isChecked);
@@ -101,6 +118,7 @@ public class SettingsActivity extends AppCompatActivity {
             updateTutorialSummary(tutorialSummaryText, isChecked);
         });
 
+        // Difficulty selection handler.
         difficultySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -121,6 +139,9 @@ public class SettingsActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Refreshes the text block describing the current difficulty level.
+     */
     private void updateDifficultySummary(TextView summaryView, String[] summaries, int index) {
         if (summaryView == null || summaries == null) {
             return;
@@ -130,6 +151,9 @@ public class SettingsActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Refreshes the text block describing color-blind mode status.
+     */
     private void updateColorBlindSummary(TextView summaryView, boolean enabled) {
         if (summaryView == null) {
             return;
@@ -139,6 +163,9 @@ public class SettingsActivity extends AppCompatActivity {
                 : getString(R.string.settings_color_blind_summary));
     }
 
+    /**
+     * Refreshes the text block describing tutorial hint status.
+     */
     private void updateTutorialSummary(TextView summaryView, boolean enabled) {
         if (summaryView == null) {
             return;

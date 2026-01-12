@@ -12,15 +12,24 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Loads, saves, and merges achievement data with localized defaults.
+ */
 public class AchievementManager {
 
+    /** Shared preferences file where achievements are stored. */
     private static final String PREFS_NAME = "player_prefs";
+    /** Storage key for the achievement JSON blob. */
     private static final String KEY = "achievements";
+    /** Schema version for persisted achievements. */
     private static final int ACHIEVEMENT_SCHEMA_VERSION = 1;
 
     private AchievementManager() {
     }
 
+    /**
+     * Loads achievements from storage and merges in any new defaults.
+     */
     public static List<Achievement> loadAchievements(Context context) {
         PersistedBlobStore.LoadResult result =
                 PersistedBlobStore.load(context, PREFS_NAME, KEY, ACHIEVEMENT_SCHEMA_VERSION);
@@ -35,11 +44,17 @@ public class AchievementManager {
         return achievements;
     }
 
+    /**
+     * Persists the achievement list to storage.
+     */
     public static void saveAchievements(Context context, List<Achievement> achievements) {
         String json = new Gson().toJson(achievements);
         PersistedBlobStore.save(context, PREFS_NAME, KEY, ACHIEVEMENT_SCHEMA_VERSION, json);
     }
 
+    /**
+     * Marks an achievement as unlocked when the title matches.
+     */
     public static void unlock(Context context, String achievementTitle) {
         List<Achievement> achievements = loadAchievements(context);
         boolean changed = false;
@@ -55,6 +70,9 @@ public class AchievementManager {
         }
     }
 
+    /**
+     * Returns true if the achievement with the given title is unlocked.
+     */
     public static boolean isUnlocked(Context context, String achievementTitle) {
         List<Achievement> achievements = loadAchievements(context);
         for (Achievement a : achievements) {
@@ -65,6 +83,9 @@ public class AchievementManager {
         return false;
     }
 
+    /**
+     * Ensures new default achievements are added and descriptions stay current.
+     */
     private static boolean mergeWithDefaults(Context context, List<Achievement> achievements) {
         List<Achievement> defaults = getDefaultAchievements(context);
         boolean changed = false;
@@ -87,6 +108,9 @@ public class AchievementManager {
         return changed;
     }
 
+    /**
+     * Finds the index of an achievement by title, or -1 if missing.
+     */
     private static int findAchievementIndex(List<Achievement> achievements, String title) {
         for (int i = 0; i < achievements.size(); i++) {
             if (achievements.get(i).getTitle().equals(title)) {
@@ -96,6 +120,9 @@ public class AchievementManager {
         return -1;
     }
 
+    /**
+     * Builds the localized default achievement list.
+     */
     private static List<Achievement> getDefaultAchievements(Context context) {
         List<Achievement> defaults = new ArrayList<>();
         defaults.add(new Achievement(

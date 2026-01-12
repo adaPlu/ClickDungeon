@@ -109,7 +109,7 @@ public class SaveManagerTest {
     }
 
     @Test
-    public void schemaMismatchReturnsNull() {
+    public void schemaMismatchReturnsOutcome() {
         SaveManager saveManager = new SaveManager(context);
         CharacterProfile profile = new CharacterProfile("Lia", PlayerClass.THIEF);
         Tile[][] grid = new Tile[5][5];
@@ -127,6 +127,47 @@ public class SaveManagerTest {
                 .putInt("SaveBlob" + PersistedBlobStore.SCHEMA_SUFFIX, 99)
                 .apply();
 
-        assertNull(saveManager.loadGame(0));
+        SaveManager.LoadOutcome outcome = saveManager.loadGameWithStatus(0);
+        assertEquals(SaveManager.LoadStatus.SCHEMA_MISMATCH, outcome.status);
+        assertNotNull(outcome.gameState);
+    }
+
+    @Test
+    public void saveSnapshot_usesImmutableCopyOfState() {
+        SaveManager saveManager = new SaveManager(context);
+        CharacterProfile profile = new CharacterProfile("Nia", PlayerClass.KNIGHT);
+        profile.setCurrentHP(5);
+        Tile[][] grid = new Tile[2][2];
+        for (int r = 0; r < grid.length; r++) {
+            for (int c = 0; c < grid[r].length; c++) {
+                grid[r][c] = new Tile(TileType.EMPTY);
+            }
+        }
+        grid[0][0] = new Tile(TileType.ENEMY, new Monster("Slime", 5, 2, 0, "S"));
+        grid[0][0].reveal();
+        SaveManager.RunMetadata metadata =
+                new SaveManager.RunMetadata(1, 1, false, 0, -1, -1, 2, "CAVERN");
+
+        SaveManager.SaveSnapshot snapshot = saveManager.buildSnapshot(
+                profile, 2, 50, 3, grid, metadata);
+
+        profile.setName("Mutated");
+        profile.setCurrentHP(1);
+        grid[0][0].setType(TileType.EMPTY);
+        grid[0][0].setMonster(null);
+        grid[1][1].setType(TileType.TRAP_FIRE);
+
+        saveManager.saveSnapshot(0, snapshot);
+
+        SaveManager.GameState state = saveManager.loadGame(0);
+        assertNotNull(state);
+        assertEquals("Nia", state.profile.getName());
+        assertEquals(5, state.profile.getCurrentHP());
+        assertEquals(2, state.currentFloor);
+        assertEquals(50, state.currentGold);
+        assertEquals(3, state.currentPlatinum);
+        assertEquals(TileType.ENEMY, state.dungeonGrid[0][0].getType());
+        assertTrue(state.dungeonGrid[0][0].hasMonster());
+        assertEquals(TileType.EMPTY, state.dungeonGrid[1][1].getType());
     }
 }

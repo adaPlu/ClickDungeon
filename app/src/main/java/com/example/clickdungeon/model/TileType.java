@@ -1,5 +1,8 @@
 package com.example.clickdungeon.model;
 
+/**
+ * Enumerates all tile types that can appear in the dungeon grid.
+ */
 public enum TileType {
     EMPTY,
     GOLD,

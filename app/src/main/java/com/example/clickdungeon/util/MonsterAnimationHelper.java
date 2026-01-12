@@ -20,6 +20,9 @@ public final class MonsterAnimationHelper {
     private MonsterAnimationHelper() {
     }
 
+    /**
+     * Builds an AnimatedMonster that mirrors a base Monster instance.
+     */
     @Nullable
     public static AnimatedMonster createAnimatedClone(@NonNull Context context,
                                                       @NonNull Monster source) {
@@ -50,6 +53,9 @@ public final class MonsterAnimationHelper {
         return clone;
     }
 
+    /**
+     * Sprite sheet and sound configuration per monster type.
+     */
     private static final class Config {
         final int frameCount;
         final long frameDurationMs;
@@ -72,6 +78,9 @@ public final class MonsterAnimationHelper {
             this.defendSoundRes = defendSoundRes;
         }
 
+        /**
+         * Resolves a config for a monster type, defaulting to slime if unknown.
+         */
         @Nullable
         static Config forType(@Nullable String type) {
             if (type == null) {
@@ -127,6 +136,9 @@ public final class MonsterAnimationHelper {
             }
         }
 
+        /**
+         * Returns the default configuration used for unknown types.
+         */
         private static Config defaultConfig() {
             return new Config(6, 100,
                     R.drawable.slime_sprite_sheet,

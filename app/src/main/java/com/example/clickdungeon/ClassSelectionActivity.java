@@ -16,8 +16,14 @@ import com.example.clickdungeon.model.CharacterProfile;
 import com.example.clickdungeon.model.PlayerClass;
 import com.google.gson.Gson;
 
+/**
+ * ClassSelectionActivity is the character creation screen.
+ * It allows the player to enter a name and select a hero class (Knight, Thief, or Wizard)
+ * before starting a new dungeon run in a specific save slot.
+ */
 public class ClassSelectionActivity extends AppCompatActivity {
 
+    /** Extra flag for the targeted save slot index. */
     public static final String EXTRA_SAVE_SLOT_INDEX = "com.example.clickdungeon.extra.SAVE_SLOT_INDEX";
 
     private EditText editName;
@@ -33,6 +39,7 @@ public class ClassSelectionActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_class_selection);
 
+        // Bind UI components.
         editName = findViewById(R.id.editName);
         btnKnight = findViewById(R.id.btnKnight);
         btnThief = findViewById(R.id.btnThief);
@@ -41,16 +48,20 @@ public class ClassSelectionActivity extends AppCompatActivity {
         Button btnShop = findViewById(R.id.btnShop);
         classPreview = findViewById(R.id.imageClassPreview);
         TextView slotDisplay = findViewById(R.id.textSlotDisplay);
+        
         targetSlotIndex = getIntent().getIntExtra(EXTRA_SAVE_SLOT_INDEX, -1);
 
+        // Display the selected slot number if applicable.
         if (slotDisplay != null && targetSlotIndex >= 0) {
             slotDisplay.setText(getString(R.string.slot_display_label, targetSlotIndex + 1));
         }
 
+        // Set up class selection handlers.
         btnKnight.setOnClickListener(v -> selectClass(PlayerClass.KNIGHT));
         btnThief.setOnClickListener(v -> selectClass(PlayerClass.THIEF));
         btnWizard.setOnClickListener(v -> selectClass(PlayerClass.WIZARD));
 
+        // Start the game run with the created profile.
         btnStartGame.setOnClickListener(v -> {
             String name = editName.getText().toString().trim();
 
@@ -64,6 +75,8 @@ public class ClassSelectionActivity extends AppCompatActivity {
 
             int slotIndex = Math.max(targetSlotIndex, 0);
             saveProfile(profile, slotIndex);
+            
+            // Launch the GameActivity with new game flags.
             Intent intent = new Intent(this, GameActivity.class);
             intent.putExtra(GameActivity.EXTRA_SLOT_INDEX, slotIndex);
             intent.putExtra(GameActivity.EXTRA_IS_NEW_GAME, true);
@@ -72,9 +85,13 @@ public class ClassSelectionActivity extends AppCompatActivity {
             finish();
         });
 
+        // Optional shop access from the creation screen.
         btnShop.setOnClickListener(v -> startActivity(new Intent(this, ShopActivity.class)));
     }
 
+    /**
+     * Persists the newly created character profile to shared preferences.
+     */
     private void saveProfile(CharacterProfile profile, int slot) {
         SharedPreferences prefs = getSharedPreferences("player_profile", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
@@ -83,12 +100,18 @@ public class ClassSelectionActivity extends AppCompatActivity {
         editor.apply();
     }
 
+    /**
+     * Updates internal state and UI when a class is clicked.
+     */
     private void selectClass(PlayerClass playerClass) {
         selectedClass = playerClass;
         updateClassPreview(playerClass);
         highlightSelection(playerClass);
     }
 
+    /**
+     * Switches the preview image based on the selected class.
+     */
     private void updateClassPreview(PlayerClass playerClass) {
         if (classPreview == null) {
             return;
@@ -109,6 +132,9 @@ public class ClassSelectionActivity extends AppCompatActivity {
         classPreview.setImageResource(resId);
     }
 
+    /**
+     * Visual feedback for the selected class button.
+     */
     private void highlightSelection(PlayerClass playerClass) {
         btnKnight.setEnabled(playerClass != PlayerClass.KNIGHT);
         btnThief.setEnabled(playerClass != PlayerClass.THIEF);

@@ -11,23 +11,37 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Centralized inventory persistence and currency helpers.
+ */
 public class InventoryManager {
 
+    /** Shared preferences file for inventory and currency values. */
     private static final String PREFS_NAME = "player_prefs";
+    /** Storage key for the inventory JSON blob. */
     private static final String INVENTORY_KEY = "inventory";
+    /** Schema version for inventory persistence. */
     private static final int INVENTORY_SCHEMA_VERSION = 1;
+    /** Key for gold balance. */
     private static final String GOLD_KEY = "gold";
+    /** Key for platinum balance. */
     private static final String PLATINUM_KEY = "platinum";
+    /** Default gold for a new run. */
     private static final int DEFAULT_GOLD = GameBalance.STARTING_GOLD;
+    /** Default platinum for a new run. */
     private static final int DEFAULT_PLATINUM = GameBalance.STARTING_PLATINUM;
 
     private InventoryManager() {
     }
 
+    /** Returns the secure preferences wrapper for inventory data. */
     private static SharedPreferences getPrefs(Context context) {
         return SecurePreferences.get(context, PREFS_NAME);
     }
 
+    /**
+     * Loads the persisted inventory list.
+     */
     public static synchronized List<InventoryItem> loadInventory(Context context) {
         PersistedBlobStore.LoadResult result =
                 PersistedBlobStore.load(context, PREFS_NAME, INVENTORY_KEY, INVENTORY_SCHEMA_VERSION);
@@ -36,15 +50,24 @@ public class InventoryManager {
         return json != null ? new Gson().fromJson(json, type) : new ArrayList<>();
     }
 
+    /**
+     * Saves the inventory list to persistence storage.
+     */
     public static synchronized void saveInventory(Context context, List<InventoryItem> inventory) {
         String json = new Gson().toJson(inventory);
         PersistedBlobStore.save(context, PREFS_NAME, INVENTORY_KEY, INVENTORY_SCHEMA_VERSION, json);
     }
 
+    /**
+     * Adjusts an item's quantity with an unbounded max stack.
+     */
     public static synchronized void adjustItemQuantity(Context context, String itemName, int delta) {
         adjustItemQuantity(context, itemName, delta, Integer.MAX_VALUE);
     }
 
+    /**
+     * Adjusts an item's quantity with a caller-provided max stack.
+     */
     public static synchronized void adjustItemQuantity(Context context, String itemName, int delta, int maxQuantity) {
         if (itemName == null || itemName.trim().isEmpty() || delta == 0) {
             return;
@@ -77,6 +100,9 @@ public class InventoryManager {
         saveInventory(context, inventory);
     }
 
+    /**
+     * Returns the quantity for a named item, or 0 if missing.
+     */
     public static synchronized int getItemQuantity(Context context, String itemName) {
         if (itemName == null) {
             return 0;
@@ -86,31 +112,37 @@ public class InventoryManager {
         return index >= 0 ? inventory.get(index).getQuantity() : 0;
     }
 
+    /** Returns the current gold balance. */
     public static synchronized int getGold(Context context) {
         return Math.max(0, getPrefs(context).getInt(GOLD_KEY, DEFAULT_GOLD));
     }
 
+    /** Sets the gold balance and returns the sanitized value. */
     public static synchronized int setGold(Context context, int amount) {
         int sanitized = Math.max(0, amount);
         getPrefs(context).edit().putInt(GOLD_KEY, sanitized).apply();
         return sanitized;
     }
 
+    /** Adjusts the gold balance and returns the updated value. */
     public static synchronized int adjustGold(Context context, int delta) {
         int updated = getGold(context) + delta;
         return setGold(context, updated);
     }
 
+    /** Returns the current platinum balance. */
     public static synchronized int getPlatinum(Context context) {
         return Math.max(0, getPrefs(context).getInt(PLATINUM_KEY, DEFAULT_PLATINUM));
     }
 
+    /** Sets the platinum balance and returns the sanitized value. */
     public static synchronized int setPlatinum(Context context, int amount) {
         int sanitized = Math.max(0, amount);
         getPrefs(context).edit().putInt(PLATINUM_KEY, sanitized).apply();
         return sanitized;
     }
 
+    /** Adjusts the platinum balance and returns the updated value. */
     public static synchronized int adjustPlatinum(Context context, int delta) {
         int updated = getPlatinum(context) + delta;
         return setPlatinum(context, updated);
@@ -139,14 +171,23 @@ public class InventoryManager {
         return null;
     }
 
+    /**
+     * Syncs gold to match the active run state.
+     */
     public static synchronized void syncGoldWithCurrentRun(Context context, int runGold) {
         setGold(context, runGold);
     }
 
+    /**
+     * Syncs platinum to match the active run state.
+     */
     public static synchronized void syncPlatinumWithCurrentRun(Context context, int runPlatinum) {
         setPlatinum(context, runPlatinum);
     }
 
+    /**
+     * Returns the index of a named item in the inventory list, or -1.
+     */
     private static int findItemIndex(List<InventoryItem> inventory, String itemName) {
         for (int i = 0; i < inventory.size(); i++) {
             if (inventory.get(i).getName().equals(itemName)) {
