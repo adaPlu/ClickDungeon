@@ -302,6 +302,28 @@ public class CombatDialogFragmentTest {
         assertEquals(MonsterAffinity.ARCANE, restored.getAffinity());
     }
 
+    @Test
+    public void bossIntentIncludesPhaseLabel() {
+        FragmentActivity activity = buildThemedActivity();
+
+        CharacterProfile profile = new CharacterProfile("BossTester", PlayerClass.KNIGHT);
+        Monster monster = new Monster("Lich", 12, 6, 3, "");
+        monster.setBoss(true);
+        monster.setBossPhaseCount(3);
+        monster.takeDamage(6); // move into later phase
+
+        CombatDialogFragment fragment = CombatDialogFragment.newInstance(monster.getMonsterType());
+        fragment.setCombatants(profile, monster);
+        fragment.show(activity.getSupportFragmentManager(), "combat_boss_phase");
+
+        ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
+        Dialog dialog = fragment.getDialog();
+        assertNotNull(dialog);
+
+        CharSequence intentText = ((android.widget.TextView) dialog.findViewById(R.id.textMonsterIntent)).getText();
+        assertTrue(intentText.toString().contains("Phase"));
+    }
+
     private FragmentActivity buildThemedActivity() {
         ActivityController<FragmentActivity> controller = Robolectric.buildActivity(FragmentActivity.class);
         FragmentActivity activity = controller.setup().get();

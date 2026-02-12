@@ -1,6 +1,6 @@
- # ClickDungeon Development Roadmap
+# ClickDungeon Development Roadmap
 
-_Audit date: 2026-01-11_
+_Audit date: 2026-02-10_
 
 This roadmap documents the verified state of the ClickDungeon Android project (Java sources under `app/src/main/java/com/example/clickdungeon`). Each assertion references concrete files so future work stays grounded in reality.
 
@@ -10,12 +10,12 @@ This roadmap documents the verified state of the ClickDungeon Android project (J
 - **Combat & feedback:** `ui/CombatDialogFragment.java` owns combat turns, XP/gold previews, summary logs, and renders dedicated player/monster animation slots driven by `AnimatedPlayer` and `AnimatedMonster` (frame loop + SoundManager hooks). The dungeon grid also animates revealed enemies and the hero via a handler loop that iterates only active tiles (player + revealed enemies). `FeedbackManager` uses VibrationEffect on API 26+ with a legacy fallback.
 - **UI theming:** Main menu, settings, shop, achievements, continue, and class selection screens now use a shared dungeon-themed background and panel styling (`bg_screen_dungeon.xml`, `panel_bg.xml`, `menu_button_bg.xml`). Achievements show Locked/Completed state in the list.
 - **Audio & settings:** `util/SoundManager.java` loads class/monster/effect cues once at app startup (`ClickDungeonApp.java`) with graceful fallbacks when a raw asset is absent and logs missing keys. `FeedbackManager` uses the same SoundPool and respects settings from `SettingsManager`. Audio/vibration/difficulty/color-blind preferences wire directly into `SettingsActivity`.
-- **Persistence/UI surface:** Inventory, achievements, onboarding tips, and shop purchases are shared across runs via SharedPreferences + Gson with schema/checksum validation and backup recovery; Tink + Android Keystore encrypted prefs are used on API 23+ with fallback. Gold is the main shop currency; platinum is stored as a premium placeholder. Inventory UI supports equipment toggles, stat allocation, and MP display, with an in-memory change log used for toast feedback. Merchant visits add sell/buyback lists on eligible floors. Multi-slot save/continue flows use ContinueActivity and GameActivity pause-triggered saves with debounced background persistence for non-critical events.
-- **Tests:** Robolectric suites in app/src/test/java cover SaveManager integration, CombatDialog interactions (including animation/sound behavior), Settings UI, inventory/achievement helpers, dungeon generator, tile binding for the grid visuals, item catalog/merchant/loot roll helpers, persisted blob store and SecurePreferences coverage, plus added model/adapter/activity coverage. Ability behaviors (range/cooldown/effects, smoke veil) are unit-tested alongside terrain/affinity helpers and animation cloning with affinity metadata. Save snapshot immutability and coalesced save job coverage live alongside the SaveManager integration suite. Tests pin SDK 33/34 via @Config annotations (local JDK 17 still required).
+- **Persistence/UI surface:** Inventory, achievements, onboarding tips, and shop purchases are shared across runs via SharedPreferences + Gson with schema/checksum validation and backup recovery; Tink + Android Keystore encrypted prefs are used on API 23+ with fallback. Gold is the main shop currency; platinum is stored as a premium placeholder. Inventory UI supports equipment toggles, stat allocation, and MP display (inventory dialog + inventory activity), with an in-memory change log used for toast feedback. Merchant visits add sell/buyback lists on eligible floors. Multi-slot save/continue flows use ContinueActivity and GameActivity pause-triggered saves with debounced background persistence for non-critical events.
+- **Tests:** Robolectric suites in app/src/test/java cover SaveManager integration, CombatDialog interactions (including animation/sound behavior), Settings UI, inventory/achievement helpers, dungeon generator, tile binding for the grid visuals, item catalog/merchant/loot roll helpers, persisted blob store and SecurePreferences coverage, plus added model/adapter/activity coverage. Core ability flows (cooldown, targeting, chooser) are unit-tested alongside terrain/affinity helpers and animation cloning with affinity metadata. Save snapshot immutability and coalesced save job coverage live alongside the SaveManager integration suite. Tests pin SDK 34 via robolectric.properties (local JDK 17 still required).
 
 ## Confirmed Feature Coverage
 1. **Dungeon exploration & status effects**
-   - `GameActivity.java:323-1180` + `DungeonGenerator.java:21-102` implement 5×5 floors with fire/poison/acid/freeze/pitfall traps, random loot/enemy layouts, stair up/down/locked variations, key placement/consumption, and poison/freeze timers that persist between turns.
+   - `GameActivity.java:323-1180` + `DungeonGenerator.java:21-102` implement 5x5 floors with fire/poison/acid/freeze/pitfall traps, random loot/enemy layouts, stair up/down/locked variations, key placement/consumption, and poison/freeze timers that persist between turns.
    - Grid tiles are reusable view holders with sprite+HP overlays (see `item_tile.xml`, `GameActivity.bindTileView`); `renderGrid` only rebinds dirty tiles, and a handler tick updates animated frames for active tiles (player + revealed enemies).
    - Terrain assignment per floor and monster family/affinity weighting now influence encounter selection and apply additional poison/freeze hazard hooks during combat turns (`app/src/main/java/com/example/clickdungeon/GameActivity.java:716`, `app/src/main/java/com/example/clickdungeon/GameActivity.java:771`, `app/src/main/java/com/example/clickdungeon/GameActivity.java:2559`, `app/src/main/java/com/example/clickdungeon/model/TerrainType.java:3`, `app/src/main/java/com/example/clickdungeon/model/MonsterFamily.java:3`, `app/src/main/java/com/example/clickdungeon/model/MonsterAffinity.java:3`).
 
@@ -24,7 +24,7 @@ This roadmap documents the verified state of the ClickDungeon Android project (J
    - `GameActivity.java:940-1150` enforces the ability system (five abilities per class at levels 1/5/10/15/20), shared cooldown, and three-tile targeting radius where applicable.
 
 3. **Persistence, inventory, and achievements**
-   - `SaveManager.java`, `InventoryManager.java`, and `AchievementManager.java` manage four save slots, gold/items, and unlocks. `ContinueActivity` routes both “New Game” and “Continue” flows, ensures overwrite confirmation, and passes slot metadata to `GameActivity`.
+   - `SaveManager.java`, `InventoryManager.java`, and `AchievementManager.java` manage four save slots, gold/items, and unlocks. `ContinueActivity` routes both "New Game" and "Continue" flows, ensures overwrite confirmation, and passes slot metadata to `GameActivity`.
    - Achievements and the shop UI remain active (`AchievementsActivity.java`, `ShopActivity.java`); purchases adjust gold/items via `InventoryManager` and reflect immediately in the HUD.
 
 4. **Settings, onboarding, and feedback**
@@ -39,42 +39,73 @@ This roadmap documents the verified state of the ClickDungeon Android project (J
 
 ## Current Gaps & Technical Debt
 1. **Audio coverage audit.** Exploration, trap, and ability flows call `SoundManager` with fallbacks/logging; verify every remaining event (new abilities, future classes) has a cue and keep logging missing keys so QA can spot packaging gaps.
-2. **Inventory & economy UX remains barebones.** The inventory change log is captured in memory but not surfaced as a dedicated UI element; expand the dialog/activity with clearer item counts, visible change log, and richer feedback when loot is gained/used. Shop prices/stock already come from `GameBalance` + `shop_items.json`; add a small tuning helper (script or dev-only screen) to reload JSON and preview prices/stock without rebuilding, and expand stock variety over time. Tests: inventory gain/use updates UI and persists; shop purchase adjusts gold/stock and emits feedback; JSON load falls back safely when missing/invalid.
-3. **Testing gaps.** Ability targeting radius/cooldown/effects, trap-scan layouts, shop purchase decrements, smoke-veil trap avoidance, terrain/affinity helpers, item catalog/merchant/persistence helpers, and grid animation throttle coverage are in place. Remaining gaps are any future boss/elite mechanics.
+2. **Inventory & economy UX polish.** The inventory change log now appears in the dialog/activity, but it lacks richer formatting and filtering. Expand item tooltips, add clearer sell/buyback confirmations in the merchant flow, and consider a dedicated inventory change log panel for long sessions. Shop prices/stock already come from `GameBalance` + `shop_items.json`; the debug-only reload helper exists but needs a release-safe workflow for live tuning.
+3. **Testing gaps.** Coverage exists for abilities, grid animation throttling, and audio diagnostics; remaining gaps are merchant buyback edge cases, premium store delivery regressions, and instrumentation tests for sound/animation on-device.
 4. **Persistence/security follow-ups.** Schema/checksum validation, backup recovery, schema-mismatch review prompts, encrypted-prefs failure policy, key rotation, and restore/mismatch telemetry hooks are implemented. Remaining work is deciding if/when to migrate to Room as the data model expands beyond SharedPreferences.
-5. **Build/test friction.** Document JDK 17 + Windows console setup and provide a “getting tests to run locally” snippet. Wire CI (e.g., GitHub Actions) to run `./gradlew test` on Linux with JDK 17. If locals must skip heavy suites, add a lightweight target or profile Robolectric suites with shell guidance.
-6. **Premium currency roadmap.** Platinum is currently only displayed/persisted; define the future loop for purchasing platinum with real currency and for a premium merchant that sells platinum-only special items.
+5. **Build/test friction.** CI runs `./gradlew test` on JDK 17, but local developer setup still needs clear Windows console/JDK 17 guidance and a lightweight profile for faster smoke runs.
+6. **Premium currency roadmap.** Platinum now powers a placeholder premium store (no IAP); define the future loop for real purchases, premium-only items, and balancing between gold/platinum.
 
 ### Audio coverage checklist (keep updated)
 - Tile reveal (safe/empty/loot): `effect_treasure` or class move fallback
 - Trap triggers (fire/acid/poison/freeze/pitfall): `effect_trap` or trap-specific keys if added
 - Class abilities: fireball (`wizard_attack`), scan (`thief_move` fallback), shield (`knight_defend`)
-- Combat: attack/flee/potion → class keys; monster intent/attack/defend → `<monster>_<action>` with fallback to `player_<action>`
-- Meta: victory/defeat dialogs (`effect_victory`/`effect_defeat`), level-up (needs key), stair unlock/key pickup (needs key), shop purchase (`effect_positive`), inventory gain/loss (needs key)
-- Sanity test: iterate all registered keys and call `SoundManager.play(key)` asserting the test playback listener fires; log missing keys to catch packaging errors early.
+- Combat: attack/flee/potion class keys, monster intent/attack/defend with fallback to `player_<action>`
+- Meta: victory/defeat dialogs (`effect_victory`/`effect_defeat`), level-up (`effect_level_up`), stair unlock/key pickup (`effect_key_pickup`), shop purchase (`effect_shop_purchase`), inventory gain/loss (`effect_inventory`), equip (`effect_equip`)
+- Diagnostics: missing keys are captured in `SoundManager.getMissingKeys()` and viewable via Audio Diagnostics (Settings toggle).
+- Sanity test: iterate all registered keys and call `SoundManager.playAndReport(key)` asserting the test playback listener fires; log missing keys to catch packaging errors early.
 
-## Near-Term Action Plan (next 1–2 iterations)
-1. **Inventory/economy UX improvements**
-   - Enhance the inventory dialog/activity (from `GameActivity` and the main menu) with clearer counts, a visible change log, and consistent feedback when loot is acquired or expended.
-   - Keep `ShopActivity` seeded from `GameBalance` + `shop_items.json`, and add a lightweight tuning helper to reload/preview shop data without rebuilding.
+## Implementation Phases (ordered by dependency and effort)
+### Phase 1 - Inventory/Economy UX (short, UI-first)
+- [x] Inventory dialog: add visible change-log section (last N entries), clearer counts, and empty-state polish.
+- [x] InventoryActivity: mirror the same counts/change-log so main-menu access stays consistent.
+- [x] Shop tuning helper: add a dev-only screen or debug menu action to reload `shop_items.json` and preview prices/stock from `GameBalance`.
+- [x] Tests: Robolectric coverage for change-log visibility, count labels, and tuning helper reload behavior.
 
-2. **Testing & tooling**
-   - Maintain Robolectric coverage for class abilities (range checks, shield persistence, scan outcomes), shop purchase flows, inventory state changes, and SoundManager invocations in the overworld; include grid animation handler tests with faked frame/time progression.
-   - Document or script the JDK 17 + console prerequisites, add a lightweight/local test target if heavy suites are skipped, and wire CI (e.g., GitHub Action) that runs `./gradlew test` on Linux with JDK 17.
-   - Missing test cases to add immediately: inventory screen UI behaviors (empty state, change log, feedback), achievement list filters/sorts if added, and any future boss/elite mechanics.
+### Phase 2 - Testing & Tooling Foundations (short, infra-first)
+- [x] Create a lightweight local test target (e.g., `./gradlew testDebugUnitTest` shortcut script).
+- [x] Add a minimal CI workflow that runs `./gradlew test` on JDK 17 (Linux).
+- [x] Add test scaffolding guidelines (README) for new abilities and shop/inventory changes.
+- [x] Extend grid animation throttling tests for any new animation additions.
 
-3. **Persistence hardening**
-   - Add explicit user-facing migration/reset prompts for schema mismatches and decide on encrypted-prefs failure policy (fail-open vs fail-closed).
-   - Add key-rotation strategy and telemetry/logging around restore events; consider Room if the data model grows.
-4. **Premium store groundwork**
-   - Add an in-app store for purchasing platinum with real currency and a premium merchant inventory that accepts platinum only for special items.
+### Phase 3 - Audio Coverage Audit (medium, content + QA loop)
+- [x] Build a missing-cue checklist from `SoundManager` keys and actual call sites.
+- [x] Add a dev toggle or diagnostic log view that dumps missing cues per session.
+- [x] Add a smoke test that calls `SoundManager.playAndReport` for all registered keys.
+- [x] Update the audio coverage checklist once audited.
 
-## Mid-Term Milestones
-1. **Boss/elite encounters** — Scripted floors with multi-phase enemies, bespoke loot pacing, and achievement hooks once core combat/animation loops are fully reliable.
-2. **Class & progression depth** — New classes or perk trees, expanded achievements, and balance passes informed by the upcoming inventory/shop telemetry.
-3. **Monetization & live ops** — Cosmetic/IAP scaffolding, rewarded ads, analytics hooks (Firebase/Remote Config), and seasonal dungeon modifiers after economy UX is production-ready.
-4. **UX polish & localization** — Additional animation states, haptic/particle FX, richer accessibility cues, and externalized strings/assets for translation.
-5. **Connected services** — Cloud saves, leaderboards, challenge modes, and social features once persistence, security, and telemetry foundations are in place.
+### Phase 4 - Premium Store Groundwork (medium-high, new flows)
+- [x] Add a platinum store shell (UI + inventory list + buy button) using a placeholder catalog.
+- [x] Define premium items in JSON (parallel to `shop_items.json`).
+- [x] Add purchase stubs (no real IAP) and persist platinum spend.
+- [x] Add tests for spend/insufficient funds and item delivery.
+
+### Phase 5 - Boss/Elite Encounters (high)
+- [x] Define boss floor cadence and a boss encounter data model.
+- [x] Implement boss encounter flow in `GameActivity` + `CombatDialogFragment` (phased abilities + telegraphs).
+- [x] Add boss rewards and achievement hooks.
+- [x] Add tests for boss encounter triggers and win/loss outcomes.
+
+### Phase 6 - Class & Progression Expansion (high)
+- [ ] Add one new class or perk track scaffolding.
+- [ ] Extend class ability metadata and ability selection UI.
+- [ ] Add balance hooks in `GameBalance`.
+- [ ] Add tests for new class unlocks, ability targeting, and cooldowns.
+
+### Phase 7 - Monetization & Live Ops (high)
+- [ ] Introduce IAP interface stubs and remote config hook points.
+- [ ] Add event logging/analytics wrapper (no vendor lock-in).
+- [ ] Add daily/weekly challenge rules and reward hooks.
+
+### Phase 8 - UX Polish & Localization (high, cross-cutting)
+- [x] Core strings externalized and accessibility labels in place (color-blind mode, tile descriptions).
+- [ ] Expand animation states and add haptic/particle FX.
+- [ ] Accessibility improvements (content descriptions, tap targets, focus order).
+- [ ] Localization scaffolding (locale folders, translation workflow).
+
+### Phase 9 - Connected Services (highest)
+- [ ] Abstract save system for cloud sync (Room or cloud provider later).
+- [ ] Add leaderboard/challenge endpoints and offline queueing.
+- [ ] Add conflict resolution and last-known-good recovery.
 
 ## Known Risks & Code-Quality Notes
 - **Sound asset resilience:** `SoundManager.register()` guards against missing `.ogg` files but silently skips cues; logging is in place, but QA should monitor for missing keys.

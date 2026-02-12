@@ -30,7 +30,9 @@
         <activity android:name=".GameActivity" />
         <activity android:name=".ClassSelectionActivity" />
         <activity android:name=".AchievementsActivity" />
+        <activity android:name=".AudioDiagnosticsActivity" />
         <activity android:name=".SettingsActivity" />
+        <activity android:name=".PremiumStoreActivity" />
         <activity android:name=".ShopActivity" />
         <activity android:name=".InventoryActivity" />
 

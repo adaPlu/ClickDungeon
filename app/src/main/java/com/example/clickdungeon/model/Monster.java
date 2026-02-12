@@ -27,6 +27,10 @@ public class Monster {
     private MonsterFamily family;
     /** Elemental or thematic affinity for terrain effects. */
     private MonsterAffinity affinity;
+    /** True when this monster is a boss encounter. */
+    private boolean boss;
+    /** Number of phases for boss encounters. */
+    private int bossPhaseCount = 1;
 
     /** Main constructor for standard monster creation. */
     public Monster(String monsterType, int maxHP, int attack, int defense, String image) {
@@ -39,6 +43,8 @@ public class Monster {
         this.hasRangedAttack = false;
         this.family = MonsterFamily.UNKNOWN;
         this.affinity = MonsterAffinity.NONE;
+        this.boss = false;
+        this.bossPhaseCount = 1;
     }
 
     /** Extended constructor for monsters with specific family/affinity weights. */
@@ -112,6 +118,36 @@ public class Monster {
     /** Sets the affinity, defaulting to NONE when null. */
     public void setAffinity(MonsterAffinity affinity) {
         this.affinity = affinity != null ? affinity : MonsterAffinity.NONE;
+    }
+
+    /** Returns true if this monster is marked as a boss. */
+    public boolean isBoss() {
+        return boss;
+    }
+
+    /** Marks this monster as a boss encounter. */
+    public void setBoss(boolean boss) {
+        this.boss = boss;
+    }
+
+    /** Returns the configured boss phase count (defaults to 1). */
+    public int getBossPhaseCount() {
+        return bossPhaseCount;
+    }
+
+    /** Sets the boss phase count (min 1). */
+    public void setBossPhaseCount(int bossPhaseCount) {
+        this.bossPhaseCount = Math.max(1, bossPhaseCount);
+    }
+
+    /** Returns the current boss phase based on remaining HP. */
+    public int getBossPhase() {
+        if (!boss || bossPhaseCount <= 1) {
+            return 1;
+        }
+        float ratio = maxHP > 0 ? (currentHP / (float) maxHP) : 0f;
+        int phase = (int) Math.ceil(ratio * bossPhaseCount);
+        return Math.max(1, Math.min(bossPhaseCount, phase));
     }
 
     /** Updates the base attack value, clamped to 1+. */

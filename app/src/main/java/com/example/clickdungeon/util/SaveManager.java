@@ -73,9 +73,6 @@ public class SaveManager {
     /**
      * Saves a complete game session immediately to the specified slot.
      */
-    /**
-     * Saves a complete game session immediately to the specified slot.
-     */
     public void saveGame(int slotIndex,
                          CharacterProfile profile,
                          int currentFloor,
@@ -94,9 +91,6 @@ public class SaveManager {
     }
 
     /**
-     * Creates an immutable snapshot of the current game state suitable for background saving.
-     */
-    /**
      * Builds an immutable snapshot copy of the current state.
      */
     public SaveSnapshot buildSnapshot(CharacterProfile profile,
@@ -111,9 +105,6 @@ public class SaveManager {
     }
 
     /**
-     * Persists a pre-built state snapshot.
-     */
-    /**
      * Persists a pre-built snapshot to the specified slot.
      */
     public void saveSnapshot(int slotIndex, SaveSnapshot snapshot) {
@@ -126,9 +117,6 @@ public class SaveManager {
         notifyTestSave(slotIndex);
     }
 
-    /**
-     * Restores a game session from the specified slot.
-     */
     /**
      * Loads a game session from the specified slot, falling back to legacy data.
      */
@@ -443,6 +431,8 @@ public class SaveManager {
                 monster.getFamily(),
                 monster.getAffinity());
         copy.setHasRangedAttack(monster.hasRangedAttack());
+        copy.setBoss(monster.isBoss());
+        copy.setBossPhaseCount(monster.getBossPhaseCount());
         int missingHp = Math.max(0, monster.getMaxHP() - monster.getCurrentHP());
         if (missingHp > 0) {
             copy.takeDamage(missingHp);

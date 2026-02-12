@@ -50,6 +50,8 @@ public class GameActivitySaveIntegrationTest {
     public void loadAndPersist_withSaveSlot_roundTripsThroughSaveManager() throws Exception {
         SaveManager saveManager = new SaveManager(context);
         CharacterProfile profile = new CharacterProfile("Nova", PlayerClass.WIZARD);
+        profile.addExperience(120);
+        profile.increaseIntelligence(1);
         Tile[][] grid = new Tile[][]{
                 {new Tile(TileType.EMPTY), new Tile(TileType.ENEMY)},
                 {new Tile(TileType.GOLD), new Tile(TileType.TRAP_FIRE)}
@@ -73,6 +75,7 @@ public class GameActivitySaveIntegrationTest {
         assertEquals(4, currentFloor);
         assertEquals(77, currentGold);
         assertEquals(15, currentPlatinum);
+        assertEquals(1, ((CharacterProfile) getFieldValue(activity, "profile")).getAvailableStatPoints());
         assertNotNull(activeGrid);
         assertEquals(TileType.ENEMY, activeGrid[0][1].getType());
 

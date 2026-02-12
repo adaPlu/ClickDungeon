@@ -60,6 +60,7 @@ public final class SecurePreferences {
                     getAead(context));
         } catch (GeneralSecurityException | IOException ex) {
             Log.w(TAG, "Failed to initialize encrypted prefs for " + name, ex);
+            // Failure policy decides whether to block or fall back to plain prefs.
             if (PersistenceSecurityConfig.ENCRYPTED_PREFS_FAILURE_POLICY
                     == PersistenceSecurityConfig.EncryptedPrefsFailurePolicy.FAIL_CLOSED) {
                 return new BlockingSharedPreferences();
@@ -68,6 +69,7 @@ public final class SecurePreferences {
         }
     }
 
+    @SuppressWarnings("deprecation")
     private static Aead getAead(Context context) throws GeneralSecurityException, IOException {
         if (aead == null) {
             synchronized (SecurePreferences.class) {

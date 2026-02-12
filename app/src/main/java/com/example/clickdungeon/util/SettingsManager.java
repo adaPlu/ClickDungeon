@@ -20,6 +20,8 @@ public final class SettingsManager {
     private static final String KEY_COLOR_BLIND = "color_blind_mode";
     /** Key for tutorial hint preference. */
     private static final String KEY_TUTORIAL_HINTS = "tutorial_hints";
+    /** Key for audio diagnostics logging. */
+    private static final String KEY_AUDIO_DIAGNOSTICS = "audio_diagnostics";
 
     /** Default difficulty when no preference exists. */
     private static final Difficulty DEFAULT_DIFFICULTY = Difficulty.NORMAL;
@@ -71,6 +73,16 @@ public final class SettingsManager {
     /** Persists the tutorial hints flag. */
     public static void setTutorialHintsEnabled(Context context, boolean enabled) {
         getPrefs(context).edit().putBoolean(KEY_TUTORIAL_HINTS, enabled).apply();
+    }
+
+    /** Returns true if audio diagnostics are enabled. */
+    public static boolean isAudioDiagnosticsEnabled(Context context) {
+        return getPrefs(context).getBoolean(KEY_AUDIO_DIAGNOSTICS, false);
+    }
+
+    /** Persists the audio diagnostics flag. */
+    public static void setAudioDiagnosticsEnabled(Context context, boolean enabled) {
+        getPrefs(context).edit().putBoolean(KEY_AUDIO_DIAGNOSTICS, enabled).apply();
     }
 
     /** Returns the raw difficulty value string. */

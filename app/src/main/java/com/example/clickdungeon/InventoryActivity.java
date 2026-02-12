@@ -39,10 +39,13 @@ public class InventoryActivity extends AppCompatActivity {
         TextView goldView = findViewById(R.id.textInventoryGold);
         TextView platinumView = findViewById(R.id.textInventoryPlatinum);
         TextView mpView = findViewById(R.id.textInventoryMp);
+        TextView countView = findViewById(R.id.textInventoryCount);
         TextView weaponView = findViewById(R.id.textEquippedWeapon);
         TextView armorView = findViewById(R.id.textEquippedArmor);
         TextView statView = findViewById(R.id.textStatDelta);
         TextView emptyView = findViewById(R.id.textEmptyInventory);
+        TextView changeLogTitle = findViewById(R.id.textInventoryChangeLogTitle);
+        TextView changeLogView = findViewById(R.id.textInventoryChangeLog);
         
         View statAllocation = findViewById(R.id.layoutStatAllocation);
         TextView statPointsView = findViewById(R.id.textStatPoints);
@@ -78,6 +81,9 @@ public class InventoryActivity extends AppCompatActivity {
         // Update currency displays.
         goldView.setText(getString(R.string.gold_display_dynamic, InventoryManager.getGold(this)));
         platinumView.setText(getString(R.string.platinum_display_dynamic, InventoryManager.getPlatinum(this)));
+        if (countView != null) {
+            countView.setText(getString(R.string.inventory_item_count, items.size()));
+        }
         
         // Show empty state if no items exist.
         emptyView.setVisibility(items.isEmpty() ? View.VISIBLE : View.GONE);
@@ -106,6 +112,9 @@ public class InventoryActivity extends AppCompatActivity {
             statAllocation.setVisibility(View.GONE);
             mpView.setText(getString(R.string.mp_display_dynamic, 0, 0));
         }
+
+        bindChangeLog(changeLogTitle, changeLogView,
+                InventoryManager.getInventoryChangeLog(this));
     }
 
     /**
@@ -250,6 +259,27 @@ public class InventoryActivity extends AppCompatActivity {
         dexterityView.setText(getString(R.string.stat_label_dexterity, profile.getDexterity()));
         constitutionView.setText(getString(R.string.stat_label_constitution, profile.getConstitution()));
         intelligenceView.setText(getString(R.string.stat_label_intelligence, profile.getIntelligence()));
+    }
+
+    private void bindChangeLog(TextView titleView, TextView logView, List<String> entries) {
+        if (titleView == null || logView == null) {
+            return;
+        }
+        if (entries == null || entries.isEmpty()) {
+            titleView.setVisibility(View.GONE);
+            logView.setVisibility(View.GONE);
+            return;
+        }
+        titleView.setVisibility(View.VISIBLE);
+        logView.setVisibility(View.VISIBLE);
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < entries.size(); i++) {
+            if (i > 0) {
+                builder.append('\n');
+            }
+            builder.append(entries.get(i));
+        }
+        logView.setText(builder.toString());
     }
 
     /** Helper to show short informational toasts. */

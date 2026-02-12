@@ -32,6 +32,15 @@
         android:layout_marginTop="4dp" />
 
     <TextView
+        android:id="@+id/textInventoryCount"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textStyle="bold"
+        android:textSize="15sp"
+        android:layout_marginTop="6dp"
+        android:text="@string/inventory_item_count" />
+
+    <TextView
         android:id="@+id/textEquippedWeapon"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -174,4 +183,21 @@
         android:layout_marginTop="8dp"
         android:text="@string/inventory_empty"
         android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/textInventoryChangeLogTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:textStyle="bold"
+        android:textSize="15sp"
+        android:text="@string/inventory_recent_changes" />
+
+    <TextView
+        android:id="@+id/textInventoryChangeLog"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:text="@string/inventory_no_changes"
+        android:textSize="14sp" />
 </LinearLayout>

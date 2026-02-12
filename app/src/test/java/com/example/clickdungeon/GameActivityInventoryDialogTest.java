@@ -164,6 +164,20 @@ public class GameActivityInventoryDialogTest {
         assertTrue(!beforeMp.equals(afterMp));
     }
 
+    @Test
+    public void inventoryDialog_showsRecentChanges() {
+        seedProfile(PlayerClass.KNIGHT);
+        InventoryManager.recordInventoryChange(context, "Picked up Gold");
+
+        GameActivity activity = Robolectric.buildActivity(GameActivity.class).setup().get();
+        showInventoryDialog(activity);
+
+        android.app.Dialog dialog = getLatestDialog();
+        TextView changeLogView = dialog.findViewById(R.id.textInventoryChangeLog);
+        assertNotNull(changeLogView);
+        assertTrue(changeLogView.getText().toString().contains("Picked up Gold"));
+    }
+
     private CharacterProfile seedProfile(PlayerClass playerClass) {
         CharacterProfile profile = new CharacterProfile("Test", playerClass);
         context.getSharedPreferences("player_profile", Context.MODE_PRIVATE)

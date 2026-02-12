@@ -57,6 +57,40 @@ public class GameActivityGridAnimationThrottleTest {
         assertEquals(false, active.containsKey("0_0"));
     }
 
+    @Test
+    public void registryTracksOnlyActiveAnimatedTiles() {
+        android.content.Context context = androidx.test.core.app.ApplicationProvider.getApplicationContext();
+        context.getSharedPreferences("player_profile", android.content.Context.MODE_PRIVATE)
+                .edit()
+                .putString("profile", new Gson().toJson(new CharacterProfile("Test", PlayerClass.KNIGHT)))
+                .apply();
+        GameActivity activity = Robolectric.buildActivity(GameActivity.class).setup().get();
+
+        Tile[][] grid = new Tile[5][5];
+        for (int r = 0; r < 5; r++) {
+            for (int c = 0; c < 5; c++) {
+                grid[r][c] = new Tile(TileType.EMPTY);
+            }
+        }
+        Tile hiddenEnemy = new Tile(TileType.ENEMY, new com.example.clickdungeon.model.Monster("Slime", 3, 1, 0, "S"));
+        Tile revealedEnemy = new Tile(TileType.ENEMY, new com.example.clickdungeon.model.Monster("Goblin", 4, 2, 1, "G"));
+        revealedEnemy.reveal();
+        Tile playerTile = new Tile(TileType.EMPTY);
+        playerTile.setHasPlayer(true);
+
+        grid[0][0] = hiddenEnemy;
+        grid[0][1] = revealedEnemy;
+        grid[0][2] = playerTile;
+
+        ReflectionHelpers.setField(activity, "dungeonGrid", grid);
+        ReflectionHelpers.callInstanceMethod(activity, "renderGrid");
+
+        Map<String, ?> active = getMapField(activity, "activeAnimatedTiles");
+        assertEquals(true, active.containsKey("0_1"));
+        assertEquals(true, active.containsKey("0_2"));
+        assertEquals(false, active.containsKey("0_0"));
+    }
+
     private Map<String, ?> getMapField(GameActivity activity, String fieldName) {
         Object value = ReflectionHelpers.getField(activity, fieldName);
         if (value instanceof Map) {

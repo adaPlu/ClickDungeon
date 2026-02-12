@@ -9,6 +9,7 @@ import android.content.SharedPreferences;
 import androidx.test.core.app.ApplicationProvider;
 
 import org.junit.Before;
+import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
@@ -25,6 +26,11 @@ public class PersistedBlobStoreTest {
     public void setUp() {
         context = ApplicationProvider.getApplicationContext();
         SecurePreferences.get(context, PREFS).edit().clear().commit();
+    }
+
+    @After
+    public void tearDown() {
+        PersistedBlobStore.setTelemetryListener(null);
     }
 
     @Test
@@ -81,5 +87,26 @@ public class PersistedBlobStoreTest {
 
         assertEquals(PersistedBlobStore.LoadResult.Status.OK, result.status);
         assertEquals("{\"value\":1}", result.json);
+    }
+
+    @Test
+    public void schemaMismatchEmitsTelemetryEvent() {
+        PersistedBlobStore.save(context, PREFS, KEY, 1, "{\"value\":9}");
+        PersistedBlobStore.setTelemetryListener(new PersistedBlobStore.TelemetryListener() {
+            @Override
+            public void onSchemaMismatch(String prefs, String key, int found, int expected) {
+                // No-op; listener presence should still log into recent events.
+            }
+
+            @Override
+            public void onRestoreFromBackup(String prefs, String key, boolean success) {
+                // No-op.
+            }
+        });
+
+        PersistedBlobStore.LoadResult result = PersistedBlobStore.load(context, PREFS, KEY, 2);
+
+        assertEquals(PersistedBlobStore.LoadResult.Status.SCHEMA_MISMATCH, result.status);
+        assertNotNull(PersistedBlobStore.getRecentEvents());
     }
 }

@@ -155,6 +155,7 @@ public class CharacterProfile {
 
     // Attribute incrementers called from the UI.
     
+    /** Attempts to spend points on strength and recalculates derived stats. */
     public boolean increaseStrength(int points) {
         if (!spendStatPoints(points)) return false;
         strength += points;
@@ -162,6 +163,7 @@ public class CharacterProfile {
         return true;
     }
 
+    /** Attempts to spend points on intelligence and recalculates derived stats. */
     public boolean increaseIntelligence(int points) {
         if (!spendStatPoints(points)) return false;
         intelligence += points;
@@ -169,6 +171,7 @@ public class CharacterProfile {
         return true;
     }
 
+    /** Attempts to spend points on constitution and recalculates derived stats. */
     public boolean increaseConstitution(int points) {
         if (!spendStatPoints(points)) return false;
         constitution += points;
@@ -176,6 +179,7 @@ public class CharacterProfile {
         return true;
     }
 
+    /** Attempts to spend points on dexterity and recalculates derived stats. */
     public boolean increaseDexterity(int points) {
         if (!spendStatPoints(points)) return false;
         dexterity += points;

@@ -48,6 +48,7 @@ import com.example.clickdungeon.model.TileType;
 import com.example.clickdungeon.adapter.InventoryAdapter;
 import com.example.clickdungeon.ui.CombatDialogFragment;
 import com.example.clickdungeon.util.AchievementManager;
+import com.example.clickdungeon.util.BossCatalog;
 import com.example.clickdungeon.util.DungeonGenerator;
 import com.example.clickdungeon.util.FeedbackManager;
 import com.example.clickdungeon.util.GameBalance;
@@ -380,9 +381,30 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         dungeonGrid = result.grid;
         placedLockedStair = result.lockedStair;
         safeTilesToReveal = result.safeTiles;
+        maybePlaceBossEncounter();
         gridMonsterAnimations.clear();
         activeAnimatedTiles.clear();
         preWarmMonsterBitmaps(getMonsterPoolForFloor(currentFloor));
+    }
+
+    /** Replaces one enemy tile with a boss on boss floors. */
+    private void maybePlaceBossEncounter() {
+        if (dungeonGrid == null || !GameBalance.isBossFloor(currentFloor)) {
+            return;
+        }
+        Monster boss = BossCatalog.createBossForFloor(currentFloor);
+        if (boss == null) {
+            return;
+        }
+        for (int row = 0; row < dungeonGrid.length; row++) {
+            for (int col = 0; col < dungeonGrid[row].length; col++) {
+                Tile tile = dungeonGrid[row][col];
+                if (tile != null && tile.getType() == TileType.ENEMY) {
+                    tile.setMonster(boss);
+                    return;
+                }
+            }
+        }
     }
 
     private void startNewRunForActiveSlot() {
@@ -451,6 +473,7 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         if (levelUpButton == null) {
             return;
         }
+        // Surface stat allocation when the player has unspent points.
         levelUpButton.setOnClickListener(v -> showInventoryDialog());
         updateLevelUpButtonState();
     }
@@ -487,6 +510,7 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         if (abilities.length == 0) {
             return;
         }
+        // Present unlocked abilities and route to the current class effect mapping.
         String[] labels = new String[abilities.length];
         for (int i = 0; i < abilities.length; i++) {
             labels[i] = abilities[i].getName();
@@ -501,6 +525,7 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         if (profile == null || profile.getPlayerClass() == null) {
             return;
         }
+        // Ability effects are still tied to legacy class actions; names will map to distinct behavior later.
         PlayerClass playerClass = profile.getPlayerClass();
         String abilityName = ability != null ? ability.getName() : "";
         switch (playerClass) {
@@ -608,6 +633,7 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         if (profile == null || !profile.usesMp()) {
             return true;
         }
+        // Wizard abilities share a flat MP cost until per-ability tuning is introduced.
         int cost = getWizardMpCost(abilityName);
         if (profile.getCurrentMP() < cost) {
             return false;
@@ -676,6 +702,7 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         if (levelUpButton == null || profile == null) {
             return;
         }
+        // Hide the Level Up button unless stat points are available.
         levelUpButton.setVisibility(profile.getAvailableStatPoints() > 0 ? View.VISIBLE : View.GONE);
     }
 
@@ -1525,6 +1552,7 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
     }
 
     // --- Combat entry and tile interaction ---
+    /** Launches the combat dialog for the supplied monster tile and tracks rewards. */
     private void startCombat(Tile tile, View tileView) {
         if (tile == null || !tile.hasMonster() || profile == null) {
             return;
@@ -2109,6 +2137,18 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         recordGoldEarned(goldReward);
         applyMonsterLoot(monster);
         recordEnemyDefeat();
+        if (monster.isBoss()) {
+            int bossXp = GameBalance.calculateBossXpReward(currentFloor, difficultyMode);
+            int bossGold = GameBalance.calculateBossGoldReward(currentFloor, difficultyMode);
+            awardExperience(bossXp);
+            currentGold += bossGold;
+            InventoryManager.syncGoldWithCurrentRun(this, currentGold);
+            updateGoldCounter();
+            unlockAchievement(R.string.achievement_boss_slayer_title);
+            Toast.makeText(this,
+                    getString(R.string.boss_reward_message, bossXp, bossGold),
+                    Toast.LENGTH_SHORT).show();
+        }
         if (revealedSafeTiles < safeTilesToReveal) {
             revealedSafeTiles++;
             recordSafeTileReveal();
@@ -2844,6 +2884,7 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         if (profile == null || xpReward <= 0) {
             return;
         }
+        // Keep HUD state in sync when XP triggers a level-up.
         int beforeLevel = profile.getLevel();
         profile.addExperience(xpReward);
         if (profile.getLevel() != beforeLevel) {
@@ -2872,6 +2913,7 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         while (inventoryChangeLog.size() > 10) {
             inventoryChangeLog.remove(inventoryChangeLog.size() - 1);
         }
+        InventoryManager.recordInventoryChange(this, entry);
         Toast.makeText(this, entry, Toast.LENGTH_SHORT).show();
         playCueWithFallback(SoundManager.KEY_EFFECT_INVENTORY, FeedbackManager.SoundEffect.POSITIVE);
     }
@@ -2894,6 +2936,7 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
 
     // --- Combat callbacks from CombatDialogFragment ---
     @Override
+    /** Applies rewards, clears the tile, and persists state after a combat win. */
     public void onCombatVictory(@NonNull Monster monster) {
         boolean convertedEnemy = activeCombatTile != null && activeCombatTile.getType() == TileType.ENEMY;
         if (activeCombatTile != null) {
@@ -2937,6 +2980,7 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
     }
 
     @Override
+    /** Handles combat loss feedback and triggers the game over flow. */
     public void onCombatDefeat() {
         FeedbackManager.playSound(this, FeedbackManager.SoundEffect.COMBAT_DEFEAT);
         FeedbackManager.vibrate(this, FeedbackManager.VibrationPattern.HEAVY);
@@ -2945,6 +2989,7 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
     }
 
     @Override
+    /** Applies the flee penalty and cleans up the combat session. */
     public void onCombatFled(int penaltyDamage) {
         if (penaltyDamage > 0) {
             takeDamage(penaltyDamage);
@@ -2968,17 +3013,20 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
     }
 
     @Override
+    /** Refreshes UI and persists interim combat state changes. */
     public void onCombatStateUpdated() {
         updateHpCounter();
         requestSave(SaveReason.COMBAT_STATE_UPDATE);
     }
 
     @Override
+    /** Applies environmental effects when the monster attacks. */
     public void onMonsterAttack(@NonNull Monster monster) {
         applyTerrainStatusOnMonsterAttack(monster);
     }
 
     @Override
+    /** Consumes a healing potion if available and returns true when used. */
     public boolean onUseHealingPotionRequested(int healAmount) {
         if (InventoryManager.getItemQuantity(this, "Healing Potion") > 0) {
             InventoryManager.adjustItemQuantity(this, "Healing Potion", -1);
@@ -3032,6 +3080,7 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         AchievementManager.unlock(this, getString(titleResId));
     }
 
+    /** Resets transient combat tracking state after encounters. */
     private void clearCombatTracking() {
         activeCombatTile = null;
         activeCombatTileView = null;
@@ -3096,15 +3145,19 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
     }
 
     // --- Inventory + equipment UI ---
+    /** Opens the in-game inventory dialog with equipment and stat allocation controls. */
     private void showInventoryDialog() {
         View dialogView = getLayoutInflater().inflate(R.layout.dialog_inventory, null, false);
         RecyclerView recycler = dialogView.findViewById(R.id.recyclerInventory);
         TextView goldView = dialogView.findViewById(R.id.textInventoryGold);
         TextView platinumView = dialogView.findViewById(R.id.textInventoryPlatinum);
+        TextView countView = dialogView.findViewById(R.id.textInventoryCount);
         TextView weaponView = dialogView.findViewById(R.id.textEquippedWeapon);
         TextView armorView = dialogView.findViewById(R.id.textEquippedArmor);
         TextView statView = dialogView.findViewById(R.id.textStatDelta);
         TextView emptyView = dialogView.findViewById(R.id.textEmptyInventory);
+        TextView changeLogTitle = dialogView.findViewById(R.id.textInventoryChangeLogTitle);
+        TextView changeLogView = dialogView.findViewById(R.id.textInventoryChangeLog);
         View statAllocation = dialogView.findViewById(R.id.layoutStatAllocation);
         TextView statPointsView = dialogView.findViewById(R.id.textStatPoints);
         TextView statStrengthView = dialogView.findViewById(R.id.textStatStrength);
@@ -3132,6 +3185,9 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         recycler.setAdapter(adapter);
         goldView.setText(getString(R.string.gold_display_dynamic, InventoryManager.getGold(this)));
         platinumView.setText(getString(R.string.platinum_display_dynamic, InventoryManager.getPlatinum(this)));
+        if (countView != null) {
+            countView.setText(getString(R.string.inventory_item_count, items.size()));
+        }
         emptyView.setVisibility(items.isEmpty() ? View.VISIBLE : View.GONE);
         if (profile != null) {
             updateEquippedSummary(profile, weaponView, armorView, statView);
@@ -3157,6 +3213,8 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         } else if (statAllocation != null) {
             statAllocation.setVisibility(View.GONE);
         }
+        bindChangeLogViews(changeLogTitle, changeLogView,
+                InventoryManager.getInventoryChangeLog(this));
 
         new AlertDialog.Builder(this)
                 .setTitle(R.string.inventory_title)
@@ -3165,6 +3223,7 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
                 .show();
     }
 
+    /** Equips or unequips an item based on its slot, returning true on success. */
     private boolean toggleEquip(CharacterProfile profile, String itemName) {
         ItemDefinition definition = ItemCatalog.getItemDefinition(itemName);
         if (definition == null || definition.getEquipSlot() == ItemDefinition.EquipSlot.NONE) {
@@ -3198,6 +3257,7 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         }
     }
 
+    /** Updates inventory dialog labels for equipped gear and derived stats. */
     private void updateEquippedSummary(CharacterProfile profile,
                                        TextView weaponView,
                                        TextView armorView,
@@ -3213,6 +3273,7 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
                 profile.getDefenseBonus()));
     }
 
+    /** Wires stat allocation buttons to profile updates inside the dialog. */
     private void bindStatAllocationInDialog(CharacterProfile profile,
                                             View allocationView,
                                             TextView pointsView,
@@ -3276,6 +3337,7 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         });
     }
 
+    /** Refreshes stat point and attribute text fields in the dialog. */
     private void updateStatViews(CharacterProfile profile,
                                  TextView pointsView,
                                  TextView strengthView,
@@ -3287,6 +3349,27 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         dexterityView.setText(getString(R.string.stat_label_dexterity, profile.getDexterity()));
         constitutionView.setText(getString(R.string.stat_label_constitution, profile.getConstitution()));
         intelligenceView.setText(getString(R.string.stat_label_intelligence, profile.getIntelligence()));
+    }
+
+    private void bindChangeLogViews(TextView titleView, TextView logView, java.util.List<String> entries) {
+        if (titleView == null || logView == null) {
+            return;
+        }
+        if (entries == null || entries.isEmpty()) {
+            titleView.setVisibility(View.GONE);
+            logView.setVisibility(View.GONE);
+            return;
+        }
+        titleView.setVisibility(View.VISIBLE);
+        logView.setVisibility(View.VISIBLE);
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < entries.size(); i++) {
+            if (i > 0) {
+                builder.append('\n');
+            }
+            builder.append(entries.get(i));
+        }
+        logView.setText(builder.toString());
     }
 
     // --- Activity lifecycle ---

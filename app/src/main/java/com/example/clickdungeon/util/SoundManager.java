@@ -36,6 +36,9 @@ public final class SoundManager {
     private static boolean isInitialized = false;
     /** Mapping of sound key to SoundPool sound ID. */
     private static final Map<String, Integer> soundMap = new HashMap<>();
+    /** Tracks missing sound keys for diagnostics. */
+    private static final java.util.List<String> missingKeys = new java.util.ArrayList<>();
+    private static final int MAX_MISSING_KEYS = 50;
     /** True when audio output is muted. */
     private static boolean isMuted = false;
     /** Last key requested for playback (test/debug). */
@@ -157,18 +160,21 @@ public final class SoundManager {
      */
     public static boolean playAndReport(String key) {
         notifyTestListener(key);
-        if (!isInitialized || soundPool == null || key == null || key.isEmpty() || isMuted) {
+        if (key == null || key.isEmpty()) {
             return false;
         }
-
         Integer soundId = resolveSoundId(key);
-        if (soundId != null) {
-            soundPool.play(soundId, 1f, 1f, 1, 0, 1f);
-            lastPlayedKey = key;
-            return true;
+        if (soundId == null) {
+            Log.w(TAG, "Sound key not registered: " + key);
+            recordMissingKey(key);
+            return false;
         }
-        Log.w(TAG, "Sound key not registered: " + key);
-        return false;
+        if (!isInitialized || soundPool == null || isMuted) {
+            return false;
+        }
+        soundPool.play(soundId, 1f, 1f, 1, 0, 1f);
+        lastPlayedKey = key;
+        return true;
     }
 
     /** Plays a general effect sound. */
@@ -245,6 +251,7 @@ public final class SoundManager {
         isInitialized = false;
         soundMap.clear();
         lastPlayedKey = null;
+        missingKeys.clear();
     }
 
     /** Returns the last playback key requested (testing). */
@@ -257,6 +264,11 @@ public final class SoundManager {
     @VisibleForTesting
     public static java.util.Set<String> getRegisteredKeys() {
         return new java.util.HashSet<>(soundMap.keySet());
+    }
+
+    /** Returns recent missing sound keys for diagnostics. */
+    public static java.util.List<String> getMissingKeys() {
+        return new java.util.ArrayList<>(missingKeys);
     }
 
     /** Listener used by tests to observe playback requests. */
@@ -302,5 +314,18 @@ public final class SoundManager {
             }
         }
         return soundId;
+    }
+
+    private static void recordMissingKey(@Nullable String key) {
+        if (key == null || key.isEmpty()) {
+            return;
+        }
+        if (missingKeys.contains(key)) {
+            return;
+        }
+        missingKeys.add(0, key);
+        while (missingKeys.size() > MAX_MISSING_KEYS) {
+            missingKeys.remove(missingKeys.size() - 1);
+        }
     }
 }

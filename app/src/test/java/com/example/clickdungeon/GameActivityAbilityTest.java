@@ -188,6 +188,24 @@ public class GameActivityAbilityTest {
     }
 
     @Test
+    public void trapScanRevealsNearbyTrapsOnly() throws Exception {
+        GameActivity activity = launchWithProfile(PlayerClass.THIEF, 5);
+        Tile[][] grid = buildEmptyGrid();
+        Tile nearbyTrap = new Tile(TileType.TRAP_POISON);
+        Tile farTrap = new Tile(TileType.TRAP_FIRE);
+        grid[2][2] = nearbyTrap;
+        grid[0][0] = farTrap;
+        setField(activity, "dungeonGrid", grid);
+        invoke(activity, "renderGrid");
+
+        boolean resolved = (boolean) invoke(activity, "executeThiefScan", 2, 2);
+
+        assertTrue(resolved);
+        assertTrue(nearbyTrap.isRevealed());
+        assertFalse(farTrap.isRevealed());
+    }
+
+    @Test
     public void veilOfSmokeRevealsTilesAndSetsCharge() throws Exception {
         GameActivity activity = launchWithProfile(PlayerClass.THIEF, 20);
         Tile[][] grid = buildEmptyGrid();

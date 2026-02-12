@@ -45,6 +45,8 @@ public final class MonsterAnimationHelper {
         clone.setHasRangedAttack(source.hasRangedAttack());
         clone.setFamily(source.getFamily());
         clone.setAffinity(source.getAffinity());
+        clone.setBoss(source.isBoss());
+        clone.setBossPhaseCount(source.getBossPhaseCount());
         int hpDelta = clone.getCurrentHP() - source.getCurrentHP();
         if (hpDelta > 0) {
             // Sync the clone's current HP to the source by applying damage delta.
@@ -118,12 +120,102 @@ public final class MonsterAnimationHelper {
                             R.raw.witch_attack,
                             R.raw.witch_defend);
                 case "demon":
-                case "vampire":
                     return new Config(4, 130,
                             R.drawable.demon_sprite_sheet,
                             R.raw.demon_move,
                             R.raw.demon_attack,
                             R.raw.demon_defend);
+                case "vampire":
+                    return new Config(4, 120,
+                            R.drawable.vampire_sprite_sheet,
+                            R.raw.goblin_move,
+                            R.raw.goblin_attack,
+                            R.raw.goblin_defend);
+                case "rat":
+                    return new Config(4, 120,
+                            R.drawable.rat_sprite_sheet,
+                            R.raw.goblin_move,
+                            R.raw.goblin_attack,
+                            R.raw.goblin_defend);
+                case "bat":
+                    return new Config(4, 120,
+                            R.drawable.bat_sprite_sheet,
+                            R.raw.goblin_move,
+                            R.raw.goblin_attack,
+                            R.raw.goblin_defend);
+                case "spider":
+                    return new Config(4, 120,
+                            R.drawable.spider_sprite_sheet,
+                            R.raw.goblin_move,
+                            R.raw.goblin_attack,
+                            R.raw.goblin_defend);
+                case "wolf":
+                    return new Config(4, 120,
+                            R.drawable.wolf_sprite_sheet,
+                            R.raw.goblin_move,
+                            R.raw.goblin_attack,
+                            R.raw.goblin_defend);
+                case "bandit":
+                    return new Config(4, 120,
+                            R.drawable.bandit_sprite_sheet,
+                            R.raw.goblin_move,
+                            R.raw.goblin_attack,
+                            R.raw.goblin_defend);
+                case "cultist":
+                    return new Config(4, 120,
+                            R.drawable.cultist_sprite_sheet,
+                            R.raw.goblin_move,
+                            R.raw.goblin_attack,
+                            R.raw.goblin_defend);
+                case "warlock":
+                    return new Config(4, 120,
+                            R.drawable.warlock_sprite_sheet,
+                            R.raw.goblin_move,
+                            R.raw.goblin_attack,
+                            R.raw.goblin_defend);
+                case "wraith":
+                    return new Config(4, 120,
+                            R.drawable.wraith_sprite_sheet,
+                            R.raw.goblin_move,
+                            R.raw.goblin_attack,
+                            R.raw.goblin_defend);
+                case "golem":
+                    return new Config(4, 120,
+                            R.drawable.golem_sprite_sheet,
+                            R.raw.goblin_move,
+                            R.raw.goblin_attack,
+                            R.raw.goblin_defend);
+                case "lich":
+                    return new Config(4, 120,
+                            R.drawable.lich_sprite_sheet,
+                            R.raw.goblin_move,
+                            R.raw.goblin_attack,
+                            R.raw.goblin_defend);
+                case "hellhound":
+                    return new Config(4, 120,
+                            R.drawable.hellhound_sprite_sheet,
+                            R.raw.goblin_move,
+                            R.raw.goblin_attack,
+                            R.raw.goblin_defend);
+                case "revenant":
+                    return new Config(4, 120,
+                            R.drawable.revenant_sprite_sheet,
+                            R.raw.goblin_move,
+                            R.raw.goblin_attack,
+                            R.raw.goblin_defend);
+                case "archdemon":
+                    return new Config(4, 140,
+                            R.drawable.archdemon_sprite_sheet,
+                            R.raw.goblin_move,
+                            R.raw.goblin_attack,
+                            R.raw.goblin_defend);
+                case "ancient wyrm":
+                case "ancient_wyrm":
+                    return new Config(4, 150,
+                            R.drawable.ancient_wyrm_sprite_sheet,
+                            R.raw.goblin_move,
+                            R.raw.goblin_attack,
+                            R.raw.goblin_defend);
                 case "dragon":
                     return new Config(4, 150,
                             R.drawable.dragon_sprite_sheet,
@@ -140,7 +232,7 @@ public final class MonsterAnimationHelper {
          * Returns the default configuration used for unknown types.
          */
         private static Config defaultConfig() {
-            return new Config(6, 100,
+            return new Config(4, 120,
                     R.drawable.slime_sprite_sheet,
                     R.raw.slime_move,
                     R.raw.slime_attack,

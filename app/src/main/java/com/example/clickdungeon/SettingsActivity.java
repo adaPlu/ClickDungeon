@@ -6,6 +6,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.content.Intent;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.TooltipCompat;
@@ -35,10 +36,12 @@ public class SettingsActivity extends AppCompatActivity {
         SwitchMaterial vibrationSwitch = findViewById(R.id.switchVibration);
         SwitchMaterial colorBlindSwitch = findViewById(R.id.switchColorBlind);
         SwitchMaterial tutorialSwitch = findViewById(R.id.switchTutorialHints);
+        SwitchMaterial audioDiagnosticsSwitch = findViewById(R.id.switchAudioDiagnostics);
         Spinner difficultySpinner = findViewById(R.id.spinnerDifficulty);
         TextView difficultySummaryText = findViewById(R.id.textDifficultySummary);
         TextView colorBlindSummaryText = findViewById(R.id.textColorBlindSummary);
         TextView tutorialSummaryText = findViewById(R.id.textTutorialSummary);
+        TextView audioDiagnosticsSummaryText = findViewById(R.id.textAudioDiagnosticsSummary);
 
         isInitializing = true;
 
@@ -47,6 +50,9 @@ public class SettingsActivity extends AppCompatActivity {
         vibrationSwitch.setChecked(SettingsManager.isVibrationEnabled(this));
         colorBlindSwitch.setChecked(SettingsManager.isColorBlindModeEnabled(this));
         tutorialSwitch.setChecked(SettingsManager.areTutorialHintsEnabled(this));
+        if (audioDiagnosticsSwitch != null) {
+            audioDiagnosticsSwitch.setChecked(SettingsManager.isAudioDiagnosticsEnabled(this));
+        }
 
         // Set up the difficulty spinner with localized entry names.
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(
@@ -80,6 +86,9 @@ public class SettingsActivity extends AppCompatActivity {
 
         updateColorBlindSummary(colorBlindSummaryText, colorBlindSwitch.isChecked());
         updateTutorialSummary(tutorialSummaryText, tutorialSwitch.isChecked());
+        if (audioDiagnosticsSwitch != null) {
+            updateAudioDiagnosticsSummary(audioDiagnosticsSummaryText, audioDiagnosticsSwitch.isChecked());
+        }
 
         isInitializing = false;
 
@@ -117,6 +126,20 @@ public class SettingsActivity extends AppCompatActivity {
             }
             updateTutorialSummary(tutorialSummaryText, isChecked);
         });
+
+        if (audioDiagnosticsSwitch != null) {
+            audioDiagnosticsSwitch.setChecked(SettingsManager.isAudioDiagnosticsEnabled(this));
+            updateAudioDiagnosticsSummary(audioDiagnosticsSummaryText, audioDiagnosticsSwitch.isChecked());
+            audioDiagnosticsSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                if (!isInitializing) {
+                    SettingsManager.setAudioDiagnosticsEnabled(this, isChecked);
+                }
+                updateAudioDiagnosticsSummary(audioDiagnosticsSummaryText, isChecked);
+                if (isChecked) {
+                    startActivity(new Intent(this, AudioDiagnosticsActivity.class));
+                }
+            });
+        }
 
         // Difficulty selection handler.
         difficultySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -173,5 +196,15 @@ public class SettingsActivity extends AppCompatActivity {
         summaryView.setText(enabled
                 ? getString(R.string.settings_tutorial_hints_summary)
                 : getString(R.string.settings_tutorial_hints_summary_disabled));
+    }
+
+    /**
+     * Refreshes the text block describing audio diagnostics.
+     */
+    private void updateAudioDiagnosticsSummary(TextView summaryView, boolean enabled) {
+        if (summaryView == null) {
+            return;
+        }
+        summaryView.setText(getString(R.string.settings_audio_diagnostics_summary));
     }
 }

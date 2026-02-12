@@ -12,6 +12,7 @@ import com.example.clickdungeon.adapter.ShopItemAdapter;
 import com.example.clickdungeon.model.ShopItem;
 import com.example.clickdungeon.util.GameBalance;
 import com.example.clickdungeon.util.InventoryManager;
+import com.example.clickdungeon.BuildConfig;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -19,6 +20,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.android.controller.ActivityController;
+import org.robolectric.shadows.ShadowAlertDialog;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -66,6 +68,20 @@ public class ShopActivityTest {
                 .findFirst()
                 .orElse(null);
         assertEquals(Math.max(0, startingStock - 1), updated.getStock());
+    }
+
+    @Test
+    public void debugPreviewLongPressShowsDialog() {
+        ActivityController<ShopActivity> controller = Robolectric.buildActivity(ShopActivity.class);
+        ShopActivity activity = controller.setup().get();
+
+        android.widget.Button refreshButton = activity.findViewById(R.id.btnRefreshShop);
+        refreshButton.performLongClick();
+
+        android.app.AlertDialog dialog = ShadowAlertDialog.getLatestAlertDialog();
+        if (BuildConfig.DEBUG) {
+            assertTrue(dialog != null);
+        }
     }
 
     private ShopItem getShopItem(ShopItemAdapter adapter, int index) {

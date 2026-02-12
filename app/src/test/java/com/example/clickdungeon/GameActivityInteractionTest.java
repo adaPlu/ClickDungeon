@@ -2,6 +2,7 @@ package com.example.clickdungeon;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import android.content.Context;
@@ -18,6 +19,7 @@ import com.example.clickdungeon.model.PlayerClass;
 import com.example.clickdungeon.model.Tile;
 import com.example.clickdungeon.model.TileType;
 import com.example.clickdungeon.ui.CombatDialogFragment;
+import com.example.clickdungeon.util.InventoryManager;
 import com.google.gson.Gson;
 
 import org.junit.Before;
@@ -106,6 +108,48 @@ public class GameActivityInteractionTest {
         assertEquals(none, mode);
     }
 
+    @Test
+    public void onCombatVictory_clearsTileAndAwardsRewards() {
+        GameActivity activity = buildActivityWithEmptyGrid();
+        CharacterProfile profile = ReflectionHelpers.getField(activity, "profile");
+        profile.setXp(0);
+        ReflectionHelpers.setField(activity, "random", new FixedRandom(99));
+
+        Monster monster = new Monster("Imp", 3, 2, 0, "I");
+        Tile combatTile = new Tile(TileType.ENEMY, monster);
+
+        ReflectionHelpers.setField(activity, "activeCombatTile", combatTile);
+        ReflectionHelpers.setField(activity, "activeCombatTileView", null);
+        ReflectionHelpers.setField(activity, "pendingCombatGoldReward", 5);
+        ReflectionHelpers.setField(activity, "pendingCombatXpReward", 50);
+        ReflectionHelpers.setField(activity, "currentGold", 10);
+
+        activity.onCombatVictory(monster);
+
+        assertEquals(TileType.EMPTY, combatTile.getType());
+        assertNull(combatTile.getMonster());
+        assertEquals(15, (int) ReflectionHelpers.getField(activity, "currentGold"));
+        assertEquals(50, profile.getXp());
+        assertEquals(0, (int) ReflectionHelpers.getField(activity, "pendingCombatGoldReward"));
+        assertEquals(0, (int) ReflectionHelpers.getField(activity, "pendingCombatXpReward"));
+    }
+
+    @Test
+    public void onUseHealingPotionRequested_consumesInventoryAndHeals() {
+        GameActivity activity = buildActivityWithEmptyGrid();
+        CharacterProfile profile = ReflectionHelpers.getField(activity, "profile");
+        profile.setCurrentHP(4);
+
+        InventoryManager.clearInventory(activity);
+        InventoryManager.adjustItemQuantity(activity, "Healing Potion", 1);
+
+        boolean consumed = activity.onUseHealingPotionRequested(6);
+
+        assertTrue(consumed);
+        assertEquals(0, InventoryManager.getItemQuantity(activity, "Healing Potion"));
+        assertEquals(profile.getMaxHP(), profile.getCurrentHP());
+    }
+
     private GameActivity buildActivityWithEmptyGrid() {
         ActivityController<GameActivity> controller = Robolectric.buildActivity(GameActivity.class);
         GameActivity activity = controller.setup().get();
@@ -136,6 +180,19 @@ public class GameActivityInteractionTest {
             return Class.forName("com.example.clickdungeon.GameActivity$AbilityTargetMode");
         } catch (ClassNotFoundException ex) {
             throw new IllegalStateException(ex);
+        }
+    }
+
+    private static final class FixedRandom extends java.util.Random {
+        private final int value;
+
+        FixedRandom(int value) {
+            this.value = value;
+        }
+
+        @Override
+        public int nextInt(int bound) {
+            return Math.min(Math.max(0, value), bound - 1);
         }
     }
 }

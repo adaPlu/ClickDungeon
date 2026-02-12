@@ -103,7 +103,23 @@ public class ShopActivity extends AppCompatActivity {
         refreshBuybackItems();
 
         // Allow force-refreshing shop contents (primarily for testing/dev).
-        refreshButton.setOnClickListener(view -> loadShopItems());
+        refreshButton.setOnClickListener(view -> {
+            loadShopItems();
+            refreshSellItems();
+            refreshBuybackItems();
+            updateUI();
+        });
+        if (BuildConfig.DEBUG) {
+            refreshButton.setOnLongClickListener(view -> {
+                List<ShopItem> reloaded = GameBalance.reloadShopItemsForDebug(this);
+                loadShopItems();
+                refreshSellItems();
+                refreshBuybackItems();
+                updateUI();
+                showShopPreviewDialog(reloaded);
+                return true;
+            });
+        }
 
         updateUI();
     }
@@ -166,6 +182,7 @@ public class ShopActivity extends AppCompatActivity {
         platinumText.setText(getString(R.string.platinum_display_dynamic, platinum));
     }
 
+    /** Convenience overload to refresh sell items using the current shop catalog. */
     private void refreshSellItems() {
         refreshSellItems(buildShopIndex(shopItems));
     }
@@ -329,7 +346,29 @@ public class ShopActivity extends AppCompatActivity {
         }
     }
 
+    /** Returns a defensive copy of the current shop inventory (testing only). */
     public List<ShopItem> getShopItems() {
         return new ArrayList<>(shopItems);
+    }
+
+    private void showShopPreviewDialog(List<ShopItem> items) {
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < items.size(); i++) {
+            ShopItem item = items.get(i);
+            if (i > 0) {
+                builder.append('\n');
+            }
+            builder.append(item.getName())
+                    .append(" - ")
+                    .append(item.getPrice())
+                    .append("g (stock ")
+                    .append(item.getStock())
+                    .append(")");
+        }
+        new android.app.AlertDialog.Builder(this)
+                .setTitle(R.string.shop_preview_title)
+                .setMessage(builder.toString())
+                .setPositiveButton(android.R.string.ok, null)
+                .show();
     }
 }

@@ -21,7 +21,7 @@ public class MonsterFactory {
     public static AnimatedMonster create(Context context, String type) {
         switch (type.toLowerCase(Locale.ROOT)) {
             case "slime":
-                return new AnimatedMonster(context, "Slime", 3, 1, 0, 6, 100,
+                return new AnimatedMonster(context, "Slime", 3, 1, 0, 4, 120,
                         R.drawable.slime_sprite_sheet,
                         R.raw.slime_move,
                         R.raw.slime_attack,
@@ -64,7 +64,7 @@ public class MonsterFactory {
 
             case "vampire":
                 return new AnimatedMonster(context, "Vampire", 6, 4, 3, 4, 120,
-                        R.drawable.goblin_sprite_sheet,
+                        R.drawable.vampire_sprite_sheet,
                         R.raw.goblin_move,
                         R.raw.goblin_attack,
                         R.raw.goblin_defend);
@@ -78,91 +78,91 @@ public class MonsterFactory {
 
             case "rat":
                 return new AnimatedMonster(context, "Rat", 3, 1, 0, 4, 120,
-                        R.drawable.goblin_sprite_sheet,
+                        R.drawable.rat_sprite_sheet,
                         R.raw.goblin_move,
                         R.raw.goblin_attack,
                         R.raw.goblin_defend);
 
             case "bat":
                 return new AnimatedMonster(context, "Bat", 3, 2, 0, 4, 120,
-                        R.drawable.goblin_sprite_sheet,
+                        R.drawable.bat_sprite_sheet,
                         R.raw.goblin_move,
                         R.raw.goblin_attack,
                         R.raw.goblin_defend);
 
             case "spider":
                 return new AnimatedMonster(context, "Spider", 4, 2, 1, 4, 120,
-                        R.drawable.goblin_sprite_sheet,
+                        R.drawable.spider_sprite_sheet,
                         R.raw.goblin_move,
                         R.raw.goblin_attack,
                         R.raw.goblin_defend);
 
             case "wolf":
                 return new AnimatedMonster(context, "Wolf", 5, 3, 1, 4, 120,
-                        R.drawable.goblin_sprite_sheet,
+                        R.drawable.wolf_sprite_sheet,
                         R.raw.goblin_move,
                         R.raw.goblin_attack,
                         R.raw.goblin_defend);
 
             case "bandit":
                 return new AnimatedMonster(context, "Bandit", 6, 3, 2, 4, 120,
-                        R.drawable.goblin_sprite_sheet,
+                        R.drawable.bandit_sprite_sheet,
                         R.raw.goblin_move,
                         R.raw.goblin_attack,
                         R.raw.goblin_defend);
 
             case "cultist":
                 return new AnimatedMonster(context, "Cultist", 6, 3, 2, 4, 120,
-                        R.drawable.goblin_sprite_sheet,
+                        R.drawable.cultist_sprite_sheet,
                         R.raw.goblin_move,
                         R.raw.goblin_attack,
                         R.raw.goblin_defend);
 
             case "warlock":
                 return new AnimatedMonster(context, "Warlock", 6, 4, 2, 4, 120,
-                        R.drawable.goblin_sprite_sheet,
+                        R.drawable.warlock_sprite_sheet,
                         R.raw.goblin_move,
                         R.raw.goblin_attack,
                         R.raw.goblin_defend);
 
             case "wraith":
                 return new AnimatedMonster(context, "Wraith", 7, 4, 3, 4, 120,
-                        R.drawable.goblin_sprite_sheet,
+                        R.drawable.wraith_sprite_sheet,
                         R.raw.goblin_move,
                         R.raw.goblin_attack,
                         R.raw.goblin_defend);
 
             case "golem":
                 return new AnimatedMonster(context, "Golem", 8, 4, 4, 4, 120,
-                        R.drawable.goblin_sprite_sheet,
+                        R.drawable.golem_sprite_sheet,
                         R.raw.goblin_move,
                         R.raw.goblin_attack,
                         R.raw.goblin_defend);
 
             case "lich":
                 return new AnimatedMonster(context, "Lich", 9, 5, 4, 4, 120,
-                        R.drawable.goblin_sprite_sheet,
+                        R.drawable.lich_sprite_sheet,
                         R.raw.goblin_move,
                         R.raw.goblin_attack,
                         R.raw.goblin_defend);
 
             case "hellhound":
                 return new AnimatedMonster(context, "Hellhound", 9, 6, 3, 4, 120,
-                        R.drawable.goblin_sprite_sheet,
+                        R.drawable.hellhound_sprite_sheet,
                         R.raw.goblin_move,
                         R.raw.goblin_attack,
                         R.raw.goblin_defend);
 
             case "revenant":
                 return new AnimatedMonster(context, "Revenant", 8, 5, 3, 4, 120,
-                        R.drawable.goblin_sprite_sheet,
+                        R.drawable.revenant_sprite_sheet,
                         R.raw.goblin_move,
                         R.raw.goblin_attack,
                         R.raw.goblin_defend);
 
             case "archdemon":
                 return new AnimatedMonster(context, "Archdemon", 11, 7, 5, 4, 140,
-                        R.drawable.goblin_sprite_sheet,
+                        R.drawable.archdemon_sprite_sheet,
                         R.raw.goblin_move,
                         R.raw.goblin_attack,
                         R.raw.goblin_defend);
@@ -170,7 +170,7 @@ public class MonsterFactory {
             case "ancient wyrm":
             case "ancient_wyrm":
                 return new AnimatedMonster(context, "Ancient Wyrm", 12, 7, 5, 4, 150,
-                        R.drawable.goblin_sprite_sheet,
+                        R.drawable.ancient_wyrm_sprite_sheet,
                         R.raw.goblin_move,
                         R.raw.goblin_attack,
                         R.raw.goblin_defend);

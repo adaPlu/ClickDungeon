@@ -61,6 +61,8 @@ public class CombatDialogFragment extends DialogFragment {
     private static final String STATE_MONSTER_RANGED = "state_monster_ranged";
     private static final String STATE_MONSTER_FAMILY = "state_monster_family";
     private static final String STATE_MONSTER_AFFINITY = "state_monster_affinity";
+    private static final String STATE_MONSTER_BOSS = "state_monster_boss";
+    private static final String STATE_MONSTER_BOSS_PHASES = "state_monster_boss_phases";
     private static final String ARG_XP_REWARD = "arg_xp_reward";
     private static final String ARG_GOLD_REWARD = "arg_gold_reward";
 
@@ -374,10 +376,16 @@ public class CombatDialogFragment extends DialogFragment {
         }
         MonsterIntentType type = MonsterIntentType.randomType(random,
                 monster != null && monster.hasRangedAttack());
-        currentIntent = new MonsterIntent(type, type.estimateDamage(monster, profile));
+        int baseEstimate = type.estimateDamage(monster, profile);
+        int adjustedEstimate = applyBossPhaseScaling(monster, baseEstimate);
+        currentIntent = new MonsterIntent(type, adjustedEstimate);
         
+        String intentLabel = getString(type.labelRes);
+        if (monster.isBoss()) {
+            intentLabel = getString(R.string.combat_intent_boss_phase, intentLabel, monster.getBossPhase());
+        }
         monsterIntentView.setText(getString(R.string.combat_intent_display,
-                getString(type.labelRes), currentIntent.estimatedDamage));
+                intentLabel, currentIntent.estimatedDamage));
         
         int maxHp = Math.max(1, profile.getMaxHP());
         monsterIntentBar.setMax(maxHp);
@@ -528,6 +536,18 @@ public class CombatDialogFragment extends DialogFragment {
         }
     }
 
+    private int applyBossPhaseScaling(Monster monster, int damage) {
+        if (monster == null || !monster.isBoss()) {
+            return damage;
+        }
+        int phase = monster.getBossPhase();
+        if (phase <= 1) {
+            return damage;
+        }
+        float scale = 1f + (0.15f * (phase - 1));
+        return Math.max(0, Math.round(damage * scale));
+    }
+
     /** Refreshes the text blocks showing combatant status. */
     private void refreshStatBlocks() {
         if (profile == null || monster == null) {
@@ -542,10 +562,14 @@ public class CombatDialogFragment extends DialogFragment {
 
         String monsterLabel;
         String image = monster.getImage();
+        String baseName = monster.getMonsterType();
+        if (monster.isBoss()) {
+            baseName = getString(R.string.combat_boss_label, baseName);
+        }
         if (!TextUtils.isEmpty(image)) {
-            monsterLabel = image + " " + monster.getMonsterType();
+            monsterLabel = image + " " + baseName;
         } else {
-            monsterLabel = monster.getMonsterType();
+            monsterLabel = baseName;
         }
 
         String monsterStats = getString(R.string.combat_monster_stats,
@@ -629,6 +653,8 @@ public class CombatDialogFragment extends DialogFragment {
         outState.putBoolean(STATE_MONSTER_RANGED, monster.hasRangedAttack());
         outState.putString(STATE_MONSTER_FAMILY, monster.getFamily().name());
         outState.putString(STATE_MONSTER_AFFINITY, monster.getAffinity().name());
+        outState.putBoolean(STATE_MONSTER_BOSS, monster.isBoss());
+        outState.putInt(STATE_MONSTER_BOSS_PHASES, monster.getBossPhaseCount());
     }
 
     /** Restores monster state from a saved bundle. */
@@ -640,11 +666,15 @@ public class CombatDialogFragment extends DialogFragment {
         int defense = state.getInt(STATE_MONSTER_DEFENSE, 0);
         String image = state.getString(STATE_MONSTER_IMAGE, "");
         boolean ranged = state.getBoolean(STATE_MONSTER_RANGED, false);
+        boolean isBoss = state.getBoolean(STATE_MONSTER_BOSS, false);
+        int bossPhases = state.getInt(STATE_MONSTER_BOSS_PHASES, 1);
         
         Monster restored = new Monster(name, maxHp, attack, defense, image);
         restored.setHasRangedAttack(ranged);
         restored.setFamily(MonsterFamily.fromName(state.getString(STATE_MONSTER_FAMILY, MonsterFamily.UNKNOWN.name())));
         restored.setAffinity(MonsterAffinity.fromName(state.getString(STATE_MONSTER_AFFINITY, MonsterAffinity.NONE.name())));
+        restored.setBoss(isBoss);
+        restored.setBossPhaseCount(bossPhases);
         
         int currentHp = state.getInt(STATE_MONSTER_CURRENT_HP, maxHp);
         while (restored.getCurrentHP() > currentHp) {

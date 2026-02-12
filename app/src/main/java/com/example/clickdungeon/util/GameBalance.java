@@ -9,6 +9,7 @@ import androidx.annotation.RawRes;
 import com.example.clickdungeon.R;
 import com.example.clickdungeon.model.Monster;
 import com.example.clickdungeon.model.ShopItem;
+import com.example.clickdungeon.util.BossCatalog;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -54,6 +55,8 @@ public final class GameBalance {
     private static final String SHOP_STOCK_PREFIX = "stock_";
     /** Cached base shop list loaded from JSON. */
     private static List<ShopItem> cachedShopItems;
+    /** Cached premium shop list loaded from JSON. */
+    private static List<ShopItem> cachedPremiumItems;
 
     private GameBalance() {
     }
@@ -188,6 +191,29 @@ public final class GameBalance {
         }
     }
 
+    /** Returns true if the floor should host a boss encounter. */
+    public static boolean isBossFloor(int floor) {
+        return BossCatalog.isBossFloor(floor);
+    }
+
+    /** Calculates bonus XP for defeating a boss. */
+    public static int calculateBossXpReward(int floor, SettingsManager.Difficulty difficulty) {
+        int base = Math.max(10, floor * 4);
+        if (difficulty != null) {
+            base = difficulty.scaleXpReward(base);
+        }
+        return base;
+    }
+
+    /** Calculates bonus gold for defeating a boss. */
+    public static int calculateBossGoldReward(int floor, SettingsManager.Difficulty difficulty) {
+        int base = Math.max(15, floor * 3);
+        if (difficulty != null) {
+            base = difficulty.scaleGoldReward(base);
+        }
+        return base;
+    }
+
     /**
      * Loads shop stock with persisted overrides applied.
      */
@@ -207,6 +233,14 @@ public final class GameBalance {
     }
 
     /**
+     * Dev-only helper to force reloading shop items from JSON and return the resolved list.
+     */
+    public static synchronized List<ShopItem> reloadShopItemsForDebug(Context context) {
+        cachedShopItems = null;
+        return loadShopItems(context);
+    }
+
+    /**
      * Persists stock for a specific item and invalidates the cache.
      */
     public static synchronized void persistShopStock(Context context, String itemName, int stock) {
@@ -215,6 +249,16 @@ public final class GameBalance {
                 .putInt(SHOP_STOCK_PREFIX + itemName, Math.max(0, stock))
                 .apply();
         cachedShopItems = null; // force reload next time so overrides are applied.
+    }
+
+    /**
+     * Loads premium shop items from JSON (no persisted stock overrides yet).
+     */
+    public static synchronized List<ShopItem> loadPremiumItems(Context context) {
+        if (cachedPremiumItems == null) {
+            cachedPremiumItems = readShopItemsFromJson(context, R.raw.premium_items);
+        }
+        return cachedPremiumItems != null ? new ArrayList<>(cachedPremiumItems) : new ArrayList<>();
     }
 
     /**
