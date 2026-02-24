@@ -97,11 +97,16 @@ public class AnimatedMonster extends Monster {
     public Bitmap getCurrentFrame() {
         long now = System.currentTimeMillis();
 
+        if (actionStartTime == 0) {
+            actionStartTime = now;
+        }
+
         // Automatically reset action back to idle after a short animation window.
         if (!"idle".equals(currentAction) && now - actionStartTime > 600) {
             currentAction = "idle";
             currentFrame = 0;
             lastFrameChangeTime = now;
+            actionStartTime = now;
         }
 
         Bitmap[] frames;
@@ -120,10 +125,14 @@ public class AnimatedMonster extends Monster {
                 break;
         }
 
-        if (now - lastFrameChangeTime > frameLength) {
-            currentFrame = (currentFrame + 1) % frameCount;
-            lastFrameChangeTime = now;
+        if (frames == null || frames.length == 0) {
+            return null;
         }
+
+        long elapsed = Math.max(0, now - actionStartTime);
+        int frameIndex = (int) ((elapsed / frameLength) % frameCount);
+        currentFrame = frameIndex;
+        lastFrameChangeTime = now;
 
         return frames[currentFrame];
     }

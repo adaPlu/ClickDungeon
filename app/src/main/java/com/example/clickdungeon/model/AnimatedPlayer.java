@@ -92,23 +92,31 @@ public class AnimatedPlayer {
     public Bitmap getCurrentFrame() {
         long now = System.currentTimeMillis();
 
+        // Initialize action start time on first use so frames compute deterministically.
+        if (actionStartTime == 0) {
+            actionStartTime = now;
+        }
+
         // Automatically reset to idle after short animation delay
         if (!"idle".equals(currentAction) && now - actionStartTime > 600) {
             setAction("idle");
         }
 
-        Bitmap[] frames = null;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            frames = animations.getOrDefault(currentAction, animations.get("idle"));
+        Bitmap[] frames = animations.get(currentAction);
+        if (frames == null || frames.length == 0) {
+            frames = animations.get("idle");
         }
         if (frames == null || frames.length == 0) {
             return null;
         }
 
-        if (now - lastUpdateTime >= frameDuration) {
-            currentFrameIndex = (currentFrameIndex + 1) % frames.length;
-            lastUpdateTime = now;
-        }
+        // Compute frame index from elapsed time since action start. This keeps
+        // animations in sync with the action timeline even if the view loop
+        // experiences jitter or suspended ticks.
+        long elapsed = Math.max(0, now - actionStartTime);
+        int frameIndex = (int) ((elapsed / frameDuration) % frames.length);
+        currentFrameIndex = frameIndex;
+        lastUpdateTime = now;
 
         return frames[currentFrameIndex];
     }
