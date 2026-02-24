@@ -1,10 +1,12 @@
 package com.example.clickdungeon;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageView;
@@ -16,6 +18,7 @@ import androidx.test.core.app.ApplicationProvider;
 import com.example.clickdungeon.model.CharacterProfile;
 import com.example.clickdungeon.model.Monster;
 import com.example.clickdungeon.model.PlayerClass;
+import com.example.clickdungeon.model.TerrainType;
 import com.example.clickdungeon.model.Tile;
 import com.example.clickdungeon.model.TileType;
 import com.google.gson.Gson;
@@ -43,7 +46,7 @@ public class GameActivityTileViewTest {
     }
 
     @Test
-    public void bindTileView_hiddenTile_showsQuestionMark() {
+    public void bindTileView_hiddenTile_usesDoorCoverImage() {
         GameActivity activity = buildActivity();
         View tileView = LayoutInflater.from(activity).inflate(R.layout.item_tile, null, false);
         Tile tile = new Tile(TileType.EMPTY);
@@ -58,6 +61,12 @@ public class GameActivityTileViewTest {
         assertEquals(View.VISIBLE, imageTile.getVisibility());
         assertEquals(View.GONE, hpBar.getVisibility());
         assertEquals(activity.getString(R.string.tile_desc_hidden), tileView.getContentDescription());
+        assertEquals(ImageView.ScaleType.CENTER_CROP, imageTile.getScaleType());
+
+        Drawable expected = activity.getDrawable(R.drawable.dungeon_door);
+        assertNotNull(expected);
+        assertNotNull(imageTile.getDrawable());
+        assertEquals(expected.getConstantState(), imageTile.getDrawable().getConstantState());
     }
 
     @Test
@@ -76,6 +85,7 @@ public class GameActivityTileViewTest {
         assertEquals(View.GONE, textTile.getVisibility());
         assertEquals(View.VISIBLE, imageTile.getVisibility());
         assertEquals(View.VISIBLE, hpBar.getVisibility());
+        assertEquals(ImageView.ScaleType.FIT_CENTER, imageTile.getScaleType());
         assertTrue(tileView.getContentDescription().toString().contains("HP"));
     }
 
@@ -94,6 +104,103 @@ public class GameActivityTileViewTest {
 
         assertEquals(View.GONE, textTile.getVisibility());
         assertEquals(View.VISIBLE, imageTile.getVisibility());
+    }
+
+    @Test
+    public void bindTileView_revealedTile_usesTerrainBackground() {
+        GameActivity activity = buildActivity();
+        ReflectionHelpers.setField(activity, "currentTerrain", TerrainType.CAVERN);
+
+        View tileView = LayoutInflater.from(activity).inflate(R.layout.item_tile, null, false);
+        Tile tile = new Tile(TileType.GOLD);
+        tile.reveal();
+
+        callBindTileView(activity, tileView, tile, 1, 1);
+
+        Drawable expected = activity.getDrawable(R.drawable.cavern);
+        assertNotNull(expected);
+        assertNotNull(tileView.getBackground());
+        assertEquals(expected.getConstantState(), tileView.getBackground().getConstantState());
+    }
+
+    @Test
+    public void getMonsterSpriteResource_mapsKnownTypesToSpriteSheets() {
+        GameActivity activity = buildActivity();
+
+        Monster goblin = new Monster("goblin", 4, 1, 0, "");
+        Monster demon = new Monster("demon", 10, 4, 2, "");
+        Monster ancientWyrm = new Monster("ancient wyrm", 15, 6, 3, "");
+
+        int goblinRes = ReflectionHelpers.callInstanceMethod(activity, "getMonsterSpriteResource",
+                ReflectionHelpers.ClassParameter.from(Monster.class, goblin));
+        int demonRes = ReflectionHelpers.callInstanceMethod(activity, "getMonsterSpriteResource",
+                ReflectionHelpers.ClassParameter.from(Monster.class, demon));
+        int wyrmRes = ReflectionHelpers.callInstanceMethod(activity, "getMonsterSpriteResource",
+                ReflectionHelpers.ClassParameter.from(Monster.class, ancientWyrm));
+
+        assertEquals(R.drawable.goblin_sprite_sheet, goblinRes);
+        assertEquals(R.drawable.demon_sprite_sheet, demonRes);
+        assertEquals(R.drawable.ancient_wyrm_sprite_sheet, wyrmRes);
+    }
+
+    @Test
+    public void getMonsterSpriteResource_unknownOrNullFallsBackToSlimeSheet() {
+        GameActivity activity = buildActivity();
+
+        Monster unknown = new Monster("not_a_real_monster", 3, 1, 0, "");
+        Monster nullType = new Monster(null, 3, 1, 0, "");
+
+        int unknownRes = ReflectionHelpers.callInstanceMethod(activity, "getMonsterSpriteResource",
+                ReflectionHelpers.ClassParameter.from(Monster.class, unknown));
+        int nullTypeRes = ReflectionHelpers.callInstanceMethod(activity, "getMonsterSpriteResource",
+                ReflectionHelpers.ClassParameter.from(Monster.class, nullType));
+
+        assertEquals(R.drawable.slime_sprite_sheet, unknownRes);
+        assertEquals(R.drawable.slime_sprite_sheet, nullTypeRes);
+    }
+
+    @Test
+    public void getPlayerSpriteSheetResource_mapsClassAndFallback() {
+        GameActivity activity = buildActivity();
+
+        ReflectionHelpers.setField(activity, "profile", new CharacterProfile("K", PlayerClass.KNIGHT));
+        int knightRes = ReflectionHelpers.callInstanceMethod(activity, "getPlayerSpriteSheetResource");
+
+        ReflectionHelpers.setField(activity, "profile", new CharacterProfile("T", PlayerClass.THIEF));
+        int thiefRes = ReflectionHelpers.callInstanceMethod(activity, "getPlayerSpriteSheetResource");
+
+        ReflectionHelpers.setField(activity, "profile", new CharacterProfile("W", PlayerClass.WIZARD));
+        int wizardRes = ReflectionHelpers.callInstanceMethod(activity, "getPlayerSpriteSheetResource");
+
+        ReflectionHelpers.setField(activity, "profile", null);
+        int fallbackRes = ReflectionHelpers.callInstanceMethod(activity, "getPlayerSpriteSheetResource");
+
+        assertEquals(R.drawable.knight_sprite_sheet, knightRes);
+        assertEquals(R.drawable.thief_sprite_sheet, thiefRes);
+        assertEquals(R.drawable.wizard_sprite_sheet, wizardRes);
+        assertEquals(R.drawable.knight_sprite_sheet, fallbackRes);
+    }
+
+    @Test
+    public void getPlayerIconResource_mapsClassAndFallback() {
+        GameActivity activity = buildActivity();
+
+        ReflectionHelpers.setField(activity, "profile", new CharacterProfile("K", PlayerClass.KNIGHT));
+        int knightRes = ReflectionHelpers.callInstanceMethod(activity, "getPlayerIconResource");
+
+        ReflectionHelpers.setField(activity, "profile", new CharacterProfile("T", PlayerClass.THIEF));
+        int thiefRes = ReflectionHelpers.callInstanceMethod(activity, "getPlayerIconResource");
+
+        ReflectionHelpers.setField(activity, "profile", new CharacterProfile("W", PlayerClass.WIZARD));
+        int wizardRes = ReflectionHelpers.callInstanceMethod(activity, "getPlayerIconResource");
+
+        ReflectionHelpers.setField(activity, "profile", null);
+        int fallbackRes = ReflectionHelpers.callInstanceMethod(activity, "getPlayerIconResource");
+
+        assertEquals(R.drawable.icon_knight, knightRes);
+        assertEquals(R.drawable.icon_thief, thiefRes);
+        assertEquals(R.drawable.icon_wizard, wizardRes);
+        assertEquals(R.drawable.icon_knight, fallbackRes);
     }
 
     private GameActivity buildActivity() {

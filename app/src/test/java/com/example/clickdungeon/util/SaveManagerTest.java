@@ -170,4 +170,73 @@ public class SaveManagerTest {
         assertTrue(state.dungeonGrid[0][0].hasMonster());
         assertEquals(TileType.EMPTY, state.dungeonGrid[1][1].getType());
     }
+
+    @Test
+    public void restoreBackup_returnsTrueWhenValidBackupExists() {
+        SaveManager saveManager = new SaveManager(context);
+        CharacterProfile profile = new CharacterProfile("Ria", PlayerClass.WIZARD);
+        Tile[][] grid = new Tile[][]{{new Tile(TileType.EMPTY)}};
+        SaveManager.RunMetadata metadata =
+                new SaveManager.RunMetadata(-1, -1, false, 0, -1, -1, 1, null);
+
+        saveManager.saveGame(0, profile, 2, 10, 1, grid, metadata);
+        saveManager.saveGame(0, profile, 3, 22, 4, grid, metadata);
+
+        SharedPreferences prefs = SecurePreferences.get(context, "SaveSlot0");
+        prefs.edit().putString("SaveBlob", "tampered").apply();
+
+        assertTrue(saveManager.restoreBackup(0));
+        SaveManager.GameState state = saveManager.loadGame(0);
+        assertNotNull(state);
+        assertEquals(2, state.currentFloor);
+    }
+
+    @Test
+    public void restoreBackup_returnsFalseWhenNoBackupAvailable() {
+        SaveManager saveManager = new SaveManager(context);
+        CharacterProfile profile = new CharacterProfile("Ria", PlayerClass.WIZARD);
+        Tile[][] grid = new Tile[][]{{new Tile(TileType.EMPTY)}};
+        SaveManager.RunMetadata metadata =
+                new SaveManager.RunMetadata(-1, -1, false, 0, -1, -1, 1, null);
+
+        saveManager.saveGame(0, profile, 2, 10, 1, grid, metadata);
+
+        assertTrue(!saveManager.restoreBackup(0));
+    }
+
+    @Test
+    public void migrateSave_afterSchemaMismatchRestoresLoadableState() {
+        SaveManager saveManager = new SaveManager(context);
+        CharacterProfile profile = new CharacterProfile("Mia", PlayerClass.THIEF);
+        Tile[][] grid = new Tile[][]{{new Tile(TileType.EMPTY)}};
+        SaveManager.RunMetadata metadata =
+                new SaveManager.RunMetadata(1, 2, true, 4, 1, 2, 3, "CAVERN");
+        saveManager.saveGame(0, profile, 5, 55, 9, grid, metadata);
+
+        SharedPreferences prefs = SecurePreferences.get(context, "SaveSlot0");
+        prefs.edit()
+                .putInt("SaveBlob" + PersistedBlobStore.SCHEMA_SUFFIX, 99)
+                .apply();
+
+        SaveManager.LoadOutcome mismatch = saveManager.loadGameWithStatus(0);
+        assertEquals(SaveManager.LoadStatus.SCHEMA_MISMATCH, mismatch.status);
+        assertNotNull(mismatch.gameState);
+
+        saveManager.migrateSave(0, mismatch.gameState);
+
+        SaveManager.LoadOutcome restored = saveManager.loadGameWithStatus(0);
+        assertEquals(SaveManager.LoadStatus.OK, restored.status);
+        assertNotNull(restored.gameState);
+        assertEquals(5, restored.gameState.currentFloor);
+    }
+
+    @Test
+    public void malformedBlob_returnsNullGameStateWithoutCrash() {
+        SaveManager saveManager = new SaveManager(context);
+        PersistedBlobStore.save(context, "SaveSlot0", "SaveBlob", 1, "{\"junk\":true}");
+
+        SaveManager.LoadOutcome outcome = saveManager.loadGameWithStatus(0);
+        assertEquals(SaveManager.LoadStatus.OK, outcome.status);
+        assertNull(outcome.gameState);
+    }
 }

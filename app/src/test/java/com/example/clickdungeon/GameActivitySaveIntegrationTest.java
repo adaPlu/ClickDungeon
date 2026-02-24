@@ -2,6 +2,7 @@ package com.example.clickdungeon;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import android.content.Context;
 import android.content.Intent;
@@ -16,6 +17,7 @@ import com.example.clickdungeon.model.CharacterProfile;
 import com.example.clickdungeon.model.PlayerClass;
 import com.example.clickdungeon.model.Tile;
 import com.example.clickdungeon.model.TileType;
+import com.example.clickdungeon.model.TerrainType;
 import com.example.clickdungeon.util.InventoryManager;
 import com.example.clickdungeon.util.SaveManager;
 
@@ -156,6 +158,112 @@ public class GameActivitySaveIntegrationTest {
         assertEquals(1, saveCount.get());
         SaveManager.setTestSaveListener(null);
         controller.pause();
+    }
+
+    @Test
+    public void requestSave_deferredCoalescesRepeatedCalls() {
+        ActivityController<GameActivity> controller = Robolectric.buildActivity(GameActivity.class);
+        GameActivity activity = controller.setup().get();
+        activity.setSaveExecutorForTest(Runnable::run);
+        activity.setSaveDebounceMsForTest(50);
+
+        AtomicInteger saveCount = new AtomicInteger(0);
+        SaveManager.setTestSaveListener(slotIndex -> saveCount.incrementAndGet());
+        saveCount.set(0);
+
+        invokeRequestSave(activity, "OTHER");
+        invokeRequestSave(activity, "OTHER");
+        invokeRequestSave(activity, "OTHER");
+
+        assertEquals(0, saveCount.get());
+        Shadows.shadowOf(Looper.getMainLooper()).idleFor(60, TimeUnit.MILLISECONDS);
+        assertEquals(1, saveCount.get());
+
+        SaveManager.setTestSaveListener(null);
+        controller.pause();
+    }
+
+    @Test
+    public void requestSave_criticalSavesImmediately() {
+        ActivityController<GameActivity> controller = Robolectric.buildActivity(GameActivity.class);
+        GameActivity activity = controller.setup().get();
+        activity.setSaveExecutorForTest(Runnable::run);
+        activity.setSaveDebounceMsForTest(1000);
+
+        AtomicInteger saveCount = new AtomicInteger(0);
+        SaveManager.setTestSaveListener(slotIndex -> saveCount.incrementAndGet());
+        saveCount.set(0);
+
+        invokeRequestSave(activity, "PAUSE");
+
+        assertEquals(1, saveCount.get());
+
+        SaveManager.setTestSaveListener(null);
+        controller.pause();
+    }
+
+    @Test
+    public void enqueueSave_persistsRunMetadataSnapshot() throws Exception {
+        SaveManager saveManager = new SaveManager(context);
+        CharacterProfile profile = new CharacterProfile("Meta", PlayerClass.KNIGHT);
+        Tile[][] grid = new Tile[5][5];
+        for (int r = 0; r < grid.length; r++) {
+            for (int c = 0; c < grid[r].length; c++) {
+                grid[r][c] = new Tile(TileType.EMPTY);
+            }
+        }
+        SaveManager.RunMetadata metadata =
+                new SaveManager.RunMetadata(-1, -1, false, 0, -1, -1, 1, null);
+        saveManager.saveGame(0, profile, 1, 10, 5, grid, metadata);
+
+        Intent intent = new Intent(context, GameActivity.class);
+        intent.putExtra(GameActivity.EXTRA_SLOT_INDEX, 0);
+        ActivityController<GameActivity> controller = Robolectric.buildActivity(GameActivity.class, intent);
+        GameActivity activity = controller.setup().get();
+        activity.setSaveExecutorForTest(Runnable::run);
+
+        setFieldValue(activity, "playerRow", 2);
+        setFieldValue(activity, "playerCol", 3);
+        setFieldValue(activity, "knightShieldActive", true);
+        setFieldValue(activity, "knightShieldStrength", 7);
+        setFieldValue(activity, "knightShieldRow", 1);
+        setFieldValue(activity, "knightShieldCol", 4);
+        setFieldValue(activity, "nextAbilityAvailableFloor", 6);
+        setFieldValue(activity, "currentTerrain", TerrainType.ARCANE_NEXUS);
+        setFieldValue(activity, "currentFloor", 8);
+        setFieldValue(activity, "currentGold", 123);
+        setFieldValue(activity, "currentPlatinum", 44);
+
+        invokeRequestSave(activity, "PAUSE");
+
+        SaveManager.GameState updated = saveManager.loadGame(0);
+        assertNotNull(updated);
+        assertNotNull(updated.metadata);
+        assertEquals(2, updated.metadata.playerRow);
+        assertEquals(3, updated.metadata.playerCol);
+        assertTrue(updated.metadata.knightShieldActive);
+        assertEquals(7, updated.metadata.knightShieldStrength);
+        assertEquals(1, updated.metadata.knightShieldRow);
+        assertEquals(4, updated.metadata.knightShieldCol);
+        assertEquals(6, updated.metadata.nextAbilityAvailableFloor);
+        assertEquals("ARCANE_NEXUS", updated.metadata.currentTerrain);
+        assertEquals(8, updated.currentFloor);
+        assertEquals(123, updated.currentGold);
+        assertEquals(44, updated.currentPlatinum);
+
+        controller.pause();
+    }
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    private void invokeRequestSave(GameActivity activity, String reasonName) {
+        try {
+            Class reasonClass = Class.forName("com.example.clickdungeon.GameActivity$SaveReason");
+            Object reason = Enum.valueOf(reasonClass, reasonName);
+            ReflectionHelpers.callInstanceMethod(activity, "requestSave",
+                    ReflectionHelpers.ClassParameter.from(reasonClass, reason));
+        } catch (ClassNotFoundException ex) {
+            throw new AssertionError(ex);
+        }
     }
 
     private Tile[][] buildGridWithKey(TileType keyType, String customName) {

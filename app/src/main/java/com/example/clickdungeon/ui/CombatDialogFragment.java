@@ -701,7 +701,7 @@ public class CombatDialogFragment extends DialogFragment {
         ensureAnimatedPlayer(profileData);
         animatedPlayer = profileData.getAnimatedPlayer();
         if (playerAnimationView != null && animatedPlayer == null) {
-            playerAnimationView.setImageResource(getPlayerPlaceholderIcon(profileData.getPlayerClass()));
+            playerAnimationView.setImageResource(getPlayerPlaceholderSpriteSheet(profileData.getPlayerClass()));
         }
 
         if (monsterData instanceof AnimatedMonster) {
@@ -793,16 +793,16 @@ public class CombatDialogFragment extends DialogFragment {
         }
     }
 
-    /** Returns a static icon if animations are unavailable. */
-    private int getPlayerPlaceholderIcon(@Nullable PlayerClass playerClass) {
+    /** Returns a sprite-sheet placeholder if animations are unavailable. */
+    private int getPlayerPlaceholderSpriteSheet(@Nullable PlayerClass playerClass) {
         if (playerClass == null) {
-            return R.drawable.icon_knight;
+            return R.drawable.knight_sprite_sheet;
         }
         switch (playerClass) {
-            case WIZARD: return R.drawable.icon_wizard;
-            case THIEF: return R.drawable.icon_thief;
+            case WIZARD: return R.drawable.wizard_sprite_sheet;
+            case THIEF: return R.drawable.thief_sprite_sheet;
             case KNIGHT:
-            default: return R.drawable.icon_knight;
+            default: return R.drawable.knight_sprite_sheet;
         }
     }
 }

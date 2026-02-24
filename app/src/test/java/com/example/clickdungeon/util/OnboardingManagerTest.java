@@ -9,6 +9,8 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import com.example.clickdungeon.R;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -58,7 +60,7 @@ public class OnboardingManagerTest {
         dialog.getButton(android.content.DialogInterface.BUTTON_POSITIVE).performClick();
 
         SharedPreferences prefs = activity.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-        assertEquals(1, prefs.getInt("dungeon_tutorial_version", 0));
+        assertEquals(2, prefs.getInt("dungeon_tutorial_version", 0));
     }
 
     @Test
@@ -70,18 +72,41 @@ public class OnboardingManagerTest {
         dialog.getButton(android.content.DialogInterface.BUTTON_NEGATIVE).performClick();
 
         SharedPreferences prefs = activity.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-        assertEquals(1, prefs.getInt("dungeon_tutorial_version", 0));
+        assertEquals(2, prefs.getInt("dungeon_tutorial_version", 0));
         assertFalse(SettingsManager.areTutorialHintsEnabled(activity));
     }
 
     @Test
     public void showDungeonTutorialIfNeeded_alreadyShown_doesNotReshow() {
         SharedPreferences prefs = activity.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-        prefs.edit().putInt("dungeon_tutorial_version", 1).apply();
+        prefs.edit().putInt("dungeon_tutorial_version", 2).apply();
 
         OnboardingManager.showDungeonTutorialIfNeeded(activity, SettingsManager.Difficulty.NORMAL, false);
 
         assertNull(ShadowAlertDialog.getLatestAlertDialog());
+    }
+
+    @Test
+    public void getDifficultyLabel_returnsLocalizedLabelsForAllModes() {
+        String casual = org.robolectric.util.ReflectionHelpers.callStaticMethod(
+                OnboardingManager.class,
+                "getDifficultyLabel",
+                org.robolectric.util.ReflectionHelpers.ClassParameter.from(Activity.class, activity),
+                org.robolectric.util.ReflectionHelpers.ClassParameter.from(SettingsManager.Difficulty.class, SettingsManager.Difficulty.CASUAL));
+        String normal = org.robolectric.util.ReflectionHelpers.callStaticMethod(
+                OnboardingManager.class,
+                "getDifficultyLabel",
+                org.robolectric.util.ReflectionHelpers.ClassParameter.from(Activity.class, activity),
+                org.robolectric.util.ReflectionHelpers.ClassParameter.from(SettingsManager.Difficulty.class, SettingsManager.Difficulty.NORMAL));
+        String hardcore = org.robolectric.util.ReflectionHelpers.callStaticMethod(
+                OnboardingManager.class,
+                "getDifficultyLabel",
+                org.robolectric.util.ReflectionHelpers.ClassParameter.from(Activity.class, activity),
+                org.robolectric.util.ReflectionHelpers.ClassParameter.from(SettingsManager.Difficulty.class, SettingsManager.Difficulty.HARDCORE));
+
+        assertEquals(activity.getString(R.string.settings_difficulty_casual), casual);
+        assertEquals(activity.getString(R.string.settings_difficulty_normal), normal);
+        assertEquals(activity.getString(R.string.settings_difficulty_hardcore), hardcore);
     }
 
     private void clearOnboardingPrefs(Context context) {

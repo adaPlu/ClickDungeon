@@ -35,6 +35,7 @@
    - **Arcane Nexus**: Arcane is favored; arcane gains +1 ATK and non-arcane lose 1 DEF.
    - **Sunken Temple**: Beasts/elementals are favored; fire-affinity attacks deal 10% less ATK.
    - **Ash Wastes**: Demonic/elemental are favored; elementals gain +5% ATK and attacks have a 10% poison chance.
+   - Terrain progression follows enum order and now drives in-run background visuals: Cavern -> Crypt -> Lava Field -> Mire -> Frozen Ruins -> Thorn Wilds -> Storm Plateau -> Arcane Nexus -> Sunken Temple -> Ash Wastes.
 
 5. **Inventory & Currency**
    - Persistent gold, platinum, and inventory stored via SharedPreferences.
@@ -75,8 +76,9 @@
     - Settings screen controls audio, vibration, and dungeon difficulty; vibration uses VibrationEffect on API 26+ with a legacy fallback.
     - Tone and haptic feedback respect player preferences through a shared manager.
     - Difficulty tuning scales monster stats and trap lethality across floors.
-    - Dungeon-themed backgrounds and panel styling are applied across menu screens.
-    - Audio diagnostics toggle in Settings can surface missing cue keys in a diagnostics screen.
+   - Main menu uses the `dungeon_door` background and Continue/slot selection uses `dungeon_door_open`.
+   - In `GameActivity`, terrain backgrounds are applied dynamically per floor/terrain and can be re-applied when interacting with covered tiles.
+   - Audio diagnostics toggle in Settings can surface missing cue keys in a diagnostics screen.
 
 12. **Accessibility & Onboarding**
     - Color-blind mode adds letter codes to emoji tiles and enriches screen reader descriptions.

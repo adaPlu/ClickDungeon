@@ -2,6 +2,7 @@ package com.example.clickdungeon.util;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import android.content.Context;
@@ -73,5 +74,44 @@ public class SoundManagerTest {
 
         SoundManager.toggleMute();
         assertFalse(SoundManager.isMuted());
+    }
+
+    @Test
+    public void pauseResume_withReleasedPool_doesNotCrashAndKeepsState() {
+        SoundManager.release();
+
+        SoundManager.pauseAll();
+        SoundManager.resumeAll();
+
+        assertFalse(SoundManager.isMuted());
+        assertNull(SoundManager.getLastPlayedKey());
+    }
+
+    @Test
+    public void getMissingKeys_deduplicatesAndCapsAtMax() {
+        SoundManager.playAndReport("missing_once");
+        SoundManager.playAndReport("missing_once");
+        java.util.List<String> deduped = SoundManager.getMissingKeys();
+        assertEquals(1, java.util.Collections.frequency(deduped, "missing_once"));
+
+        for (int i = 0; i < 55; i++) {
+            SoundManager.playAndReport("missing_" + i);
+        }
+
+        java.util.List<String> missing = SoundManager.getMissingKeys();
+        assertEquals(50, missing.size());
+        assertEquals("missing_54", missing.get(0));
+        assertFalse(missing.contains("missing_0"));
+    }
+
+    @Test
+    public void resumeAll_respectsMuteState() {
+        SoundManager.setMuted(true);
+        SoundManager.resumeAll();
+        assertFalse(SoundManager.playAndReport(SoundManager.KEY_EFFECT_POSITIVE));
+
+        SoundManager.setMuted(false);
+        SoundManager.resumeAll();
+        assertTrue(SoundManager.playAndReport(SoundManager.KEY_EFFECT_POSITIVE));
     }
 }

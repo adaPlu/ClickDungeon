@@ -7,6 +7,7 @@ import static org.junit.Assert.assertTrue;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.widget.TextView;
 import android.view.View;
 import android.widget.Button;
 import android.widget.GridLayout;
@@ -29,6 +30,7 @@ import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.Shadows;
+import org.robolectric.shadows.ShadowDialog;
 import android.os.Looper;
 import org.robolectric.util.ReflectionHelpers;
 
@@ -150,6 +152,76 @@ public class GameActivityInteractionTest {
         assertEquals(profile.getMaxHP(), profile.getCurrentHP());
     }
 
+    @Test
+    public void handleTrap_withDisarmKit_consumesKitAndAvoidsDamage() {
+        GameActivity activity = buildActivityWithEmptyGrid();
+        CharacterProfile profile = ReflectionHelpers.getField(activity, "profile");
+        int hpBefore = profile.getCurrentHP();
+
+        InventoryManager.clearInventory(activity);
+        InventoryManager.adjustItemQuantity(activity, "Trap Disarm Kit", 1);
+
+        Tile trapTile = new Tile(TileType.TRAP_FIRE);
+        View tileView = getTileView(activity, 0, 0);
+        TextView tileText = tileView.findViewById(R.id.textTile);
+
+        ReflectionHelpers.callInstanceMethod(activity, "handleTrap",
+                ReflectionHelpers.ClassParameter.from(TextView.class, tileText),
+                ReflectionHelpers.ClassParameter.from(Tile.class, trapTile));
+
+        assertEquals(hpBefore, profile.getCurrentHP());
+        assertEquals(0, InventoryManager.getItemQuantity(activity, "Trap Disarm Kit"));
+        assertEquals(TileType.EMPTY, trapTile.getType());
+    }
+
+    @Test
+    public void applyTrapDamage_withoutMitigation_reducesHpAndClamps() {
+        GameActivity activity = buildActivityWithEmptyGrid();
+        CharacterProfile profile = ReflectionHelpers.getField(activity, "profile");
+        profile.setCurrentHP(2);
+
+        ReflectionHelpers.callInstanceMethod(activity, "applyTrapDamage");
+        ReflectionHelpers.callInstanceMethod(activity, "applyTrapDamage");
+        ReflectionHelpers.callInstanceMethod(activity, "applyTrapDamage");
+
+        assertEquals(0, profile.getCurrentHP());
+    }
+
+    @Test
+    public void applyTrapDamage_lethal_showsGameOverDialog() {
+        GameActivity activity = buildActivityWithEmptyGrid();
+        CharacterProfile profile = ReflectionHelpers.getField(activity, "profile");
+        profile.setCurrentHP(1);
+        ReflectionHelpers.setField(activity, "knightShieldActive", false);
+        ReflectionHelpers.setField(activity, "knightShieldStrength", 0);
+
+        ReflectionHelpers.callInstanceMethod(activity, "applyTrapDamage");
+        Shadows.shadowOf(Looper.getMainLooper()).idle();
+
+        android.app.Dialog dialog = ShadowDialog.getLatestDialog();
+        assertNotNull(dialog);
+        assertEquals(0, profile.getCurrentHP());
+    }
+
+    @Test
+    public void applyMonsterLoot_addsExpectedRewardsWithoutKeyOvercount() {
+        GameActivity activity = buildActivityWithEmptyGrid();
+        InventoryManager.clearInventory(activity);
+        ReflectionHelpers.setField(activity, "currentFloor", 5);
+        ReflectionHelpers.setField(activity, "currentGold", 0);
+        ReflectionHelpers.setField(activity, "random", new SequenceRandom(0, 0, 0, 0));
+
+        Monster edgeMonster = new Monster("EdgeCaseMonster", 10, 2, 1, "E");
+        ReflectionHelpers.callInstanceMethod(activity, "applyMonsterLoot",
+                ReflectionHelpers.ClassParameter.from(Monster.class, edgeMonster));
+
+        int goldAfter = ReflectionHelpers.getField(activity, "currentGold");
+        int smallKeys = InventoryManager.getItemQuantity(activity, "SMALL KEY");
+
+        assertTrue(goldAfter > 0);
+        assertEquals(1, smallKeys);
+    }
+
     private GameActivity buildActivityWithEmptyGrid() {
         ActivityController<GameActivity> controller = Robolectric.buildActivity(GameActivity.class);
         GameActivity activity = controller.setup().get();
@@ -193,6 +265,32 @@ public class GameActivityInteractionTest {
         @Override
         public int nextInt(int bound) {
             return Math.min(Math.max(0, value), bound - 1);
+        }
+    }
+
+    private static final class SequenceRandom extends java.util.Random {
+        private final int[] sequence;
+        private int index;
+
+        SequenceRandom(int... sequence) {
+            this.sequence = sequence == null ? new int[0] : sequence;
+            this.index = 0;
+        }
+
+        @Override
+        public int nextInt(int bound) {
+            if (bound <= 1) {
+                return 0;
+            }
+            int value = sequence.length == 0 ? 0 : sequence[Math.min(index, sequence.length - 1)];
+            index++;
+            if (value < 0) {
+                value = 0;
+            }
+            if (value >= bound) {
+                value = bound - 1;
+            }
+            return value;
         }
     }
 }

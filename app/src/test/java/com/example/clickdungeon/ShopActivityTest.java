@@ -12,7 +12,6 @@ import com.example.clickdungeon.adapter.ShopItemAdapter;
 import com.example.clickdungeon.model.ShopItem;
 import com.example.clickdungeon.util.GameBalance;
 import com.example.clickdungeon.util.InventoryManager;
-import com.example.clickdungeon.BuildConfig;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -76,11 +75,13 @@ public class ShopActivityTest {
         ShopActivity activity = controller.setup().get();
 
         android.widget.Button refreshButton = activity.findViewById(R.id.btnRefreshShop);
-        refreshButton.performLongClick();
+        boolean handled = refreshButton.performLongClick();
 
         android.app.AlertDialog dialog = ShadowAlertDialog.getLatestAlertDialog();
-        if (BuildConfig.DEBUG) {
+        if (handled) {
             assertTrue(dialog != null);
+        } else {
+            assertTrue(dialog == null);
         }
     }
 

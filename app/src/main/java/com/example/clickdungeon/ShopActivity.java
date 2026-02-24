@@ -1,6 +1,7 @@
 package com.example.clickdungeon;
 
 import android.os.Bundle;
+import android.content.pm.ApplicationInfo;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Button;
@@ -109,7 +110,7 @@ public class ShopActivity extends AppCompatActivity {
             refreshBuybackItems();
             updateUI();
         });
-        if (BuildConfig.DEBUG) {
+        if ((getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0) {
             refreshButton.setOnLongClickListener(view -> {
                 List<ShopItem> reloaded = GameBalance.reloadShopItemsForDebug(this);
                 loadShopItems();

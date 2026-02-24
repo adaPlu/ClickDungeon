@@ -167,7 +167,12 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
 
     // --- UI references ---
     private GridLayout gridLayout;
-    private TextView goldCounterText, platinumCounterText, mpCounterText, hpCounterText, statusEffectText, floorText;
+    private View gameRootLayout;
+    private TextView goldCounterText, platinumCounterText, hpCounterText, statusEffectText, floorText;
+    private TextView playerNameLevelText, xpCounterText;
+    private ImageView playerHudIcon;
+    private ProgressBar hpCounterBar;
+    private ProgressBar mpCounterBar;
     private Button classAbilityButton;
     private Button levelUpButton;
     private Button inventoryButton;
@@ -294,11 +299,16 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         colorBlindModeEnabled = SettingsManager.isColorBlindModeEnabled(this);
 
         // Bind UI references.
+        gameRootLayout = findViewById(R.id.layoutGameRoot);
         gridLayout = findViewById(R.id.gridDungeon);
         goldCounterText = findViewById(R.id.textGoldCounter);
         platinumCounterText = findViewById(R.id.textPlatinumCounter);
-        mpCounterText = findViewById(R.id.textMpCounter);
         hpCounterText = findViewById(R.id.textHpCounter);
+        playerNameLevelText = findViewById(R.id.textPlayerNameLevel);
+        xpCounterText = findViewById(R.id.textXpCounter);
+        playerHudIcon = findViewById(R.id.imagePlayerHudIcon);
+        hpCounterBar = findViewById(R.id.progressHpCounter);
+        mpCounterBar = findViewById(R.id.progressMpCounter);
         statusEffectText = findViewById(R.id.textStatus);
         floorText = findViewById(R.id.textFloor);
         classAbilityButton = findViewById(R.id.btnClassAbility);
@@ -329,12 +339,18 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
             if (loadProfileForSessionInvert(profileJsonOverride)) {
                 return;
             }
+            if (ensureProfileHasNameForSession()) {
+                return;
+            }
             ensureAnimatedPlayer();
             startNewRunForActiveSlot();
         } else {
             SaveManager.GameState gameState = saveManager.loadGame(activeSlotIndex);
             if (gameState != null) {
                 profile = gameState.profile;
+                if (ensureProfileHasNameForSession()) {
+                    return;
+                }
                 currentFloor = gameState.currentFloor;
                 currentGold = gameState.currentGold;
                 currentPlatinum = gameState.currentPlatinum;
@@ -352,6 +368,9 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
                 if (loadProfileForSessionInvert(profileJsonOverride)) {
                     return;
                 }
+                if (ensureProfileHasNameForSession()) {
+                    return;
+                }
                 ensureAnimatedPlayer();
                 startNewRunForActiveSlot();
             }
@@ -366,8 +385,12 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         updatePlatinumCounter();
         updateMpCounter();
         updateHpCounter();
+        updateXpCounter();
+        updatePlayerIdentityHud();
+        updatePlayerHudIcon();
         updateStatusText();
         updateFloorDisplay();
+        applyTerrainBackgroundForCurrentTerrain();
         setupClassAbilityButton();
         setupLevelUpButton();
         setupInventoryButton();
@@ -450,6 +473,7 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         smokeVeilCharges = 0;
         renderGrid();
         updateFloorDisplay();
+        applyTerrainBackgroundForCurrentTerrain();
         frozenTurnsLeft = 0;
         poisonTurnsLeft = 0;
         updateStatusText();
@@ -735,6 +759,19 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         }
         ensureAnimatedPlayer();
         return false;
+    }
+
+    private boolean ensureProfileHasNameForSession() {
+        if (profile != null && !TextUtils.isEmpty(profile.getName())
+                && !TextUtils.isEmpty(profile.getName().trim())) {
+            return false;
+        }
+        Toast.makeText(this, R.string.choose_name_and_class, Toast.LENGTH_SHORT).show();
+        Intent intent = new Intent(this, ClassSelectionActivity.class);
+        intent.putExtra(ClassSelectionActivity.EXTRA_SAVE_SLOT_INDEX, Math.max(0, activeSlotIndex));
+        startActivity(intent);
+        finish();
+        return true;
     }
 
     // --- Terrain + monster selection ---
@@ -1079,6 +1116,67 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         floorText.setText(label);
     }
 
+    private void applyTerrainBackgroundForCurrentTerrain() {
+        if (gameRootLayout == null) {
+            return;
+        }
+        int terrainRes = getTerrainBackgroundResource(currentTerrain);
+        if (terrainRes != 0) {
+            gameRootLayout.setBackgroundResource(terrainRes);
+        } else {
+            gameRootLayout.setBackgroundResource(R.drawable.bg_screen_dungeon);
+        }
+    }
+
+    private int getTerrainBackgroundResource(@Nullable TerrainType terrain) {
+        if (terrain == null) {
+            return 0;
+        }
+        String[] candidates;
+        switch (terrain) {
+            case CAVERN:
+                candidates = new String[] { "Cavern", "cavern" };
+                break;
+            case CRYPT:
+                candidates = new String[] { "Crypt", "crypt" };
+                break;
+            case LAVA_FIELD:
+                candidates = new String[] { "LavaField", "lava_field", "lavafield" };
+                break;
+            case MIRE:
+                candidates = new String[] { "Mire", "mire" };
+                break;
+            case FROZEN_RUINS:
+                candidates = new String[] { "FrozenWastes", "frozen_ruins", "frozen_wastes" };
+                break;
+            case THORN_WILDS:
+                candidates = new String[] { "ThornWilds", "thorn_wilds" };
+                break;
+            case STORM_PLATEAU:
+                candidates = new String[] { "StormPlateau", "storm_plateau" };
+                break;
+            case ARCANE_NEXUS:
+                candidates = new String[] { "ArcaneNexus", "arcane_nexus" };
+                break;
+            case SUNKEN_TEMPLE:
+                candidates = new String[] { "SunkenTemple", "sunken_temple" };
+                break;
+            case ASH_WASTES:
+                candidates = new String[] { "AshWastes", "ash_wastes" };
+                break;
+            default:
+                candidates = new String[0];
+                break;
+        }
+        for (String candidate : candidates) {
+            int resId = getResources().getIdentifier(candidate, "drawable", getPackageName());
+            if (resId != 0) {
+                return resId;
+            }
+        }
+        return 0;
+    }
+
     private void renderGrid() {
         if (gridLayout == null || dungeonGrid == null) {
             return;
@@ -1279,17 +1377,24 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         hpBar.setVisibility(View.GONE);
         tileText.setVisibility(View.VISIBLE);
 
+        boolean revealed = tile != null && tile.isRevealed();
+        tileView.setBackgroundResource(revealed
+                ? getRevealedTileBackgroundResource()
+                : R.drawable.tile_bg);
+
         String description;
         String coordKey = coordinateKey(row, col);
-        if (tile == null || !tile.isRevealed()) {
+        if (!revealed) {
             gridMonsterAnimations.remove(coordKey);
             tileImage.setVisibility(View.VISIBLE);
-            tileImage.setImageResource(R.drawable.ic_tile_unknown_c);
+            tileImage.setScaleType(ImageView.ScaleType.CENTER_CROP);
+            tileImage.setImageResource(R.drawable.dungeon_door);
             tileText.setVisibility(View.GONE);
             description = getString(R.string.tile_desc_hidden);
         } else if (tile.getType() == TileType.ENEMY && tile.hasMonster()) {
             tileText.setVisibility(View.GONE);
             tileImage.setVisibility(View.VISIBLE);
+            tileImage.setScaleType(ImageView.ScaleType.FIT_CENTER);
             AnimatedMonster animator = ensureGridAnimatedMonster(row, col, tile);
             Bitmap sprite = animator != null ? animator.getCurrentFrame() : null;
             if (sprite != null) {
@@ -1326,6 +1431,7 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
             overlay.setAlpha(0.5f);
             tileText.setVisibility(View.GONE);
             tileImage.setVisibility(View.VISIBLE);
+            tileImage.setScaleType(ImageView.ScaleType.FIT_CENTER);
             Bitmap frame = null;
             if (profile != null && profile.getAnimatedPlayer() != null) {
                 frame = profile.getAnimatedPlayer().getCurrentFrame();
@@ -1333,7 +1439,7 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
             if (frame != null) {
                 tileImage.setImageBitmap(frame);
             } else {
-                tileImage.setImageResource(getPlayerIconResource());
+                tileImage.setImageResource(getPlayerSpriteSheetResource());
             }
             activePlayerTileView = tileView;
             description = getString(R.string.tile_desc_player_here, description);
@@ -1346,6 +1452,11 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
             tile.setDirty(false);
         }
         updateAnimatedTileRegistry(row, col, tile, tileView);
+    }
+
+    private int getRevealedTileBackgroundResource() {
+        int terrainRes = getTerrainBackgroundResource(currentTerrain);
+        return terrainRes != 0 ? terrainRes : R.drawable.bg_screen_dungeon;
     }
 
     private String coordinateKey(int row, int col) {
@@ -1487,27 +1598,56 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
     private int getMonsterSpriteResource(@NonNull Monster monster) {
         String type = monster.getMonsterType();
         if (type == null) {
-            return R.drawable.slime_main;
+            return R.drawable.slime_sprite_sheet;
         }
         switch (type.toLowerCase(Locale.ROOT)) {
             case "goblin":
-                return R.drawable.goblin_main;
+                return R.drawable.goblin_sprite_sheet;
             case "skeleton":
                 return R.drawable.skeleton_sprite_sheet;
             case "orc":
                 return R.drawable.orc_sprite_sheet;
             case "troll":
-                return R.drawable.troll_main;
+                return R.drawable.troll_sprite_sheet;
             case "witch":
-                return R.drawable.witch_main;
+                return R.drawable.witch_sprite_sheet;
             case "vampire":
-                return R.drawable.demon_main;
+                return R.drawable.vampire_sprite_sheet;
             case "demon":
-                return R.drawable.demon_main;
+                return R.drawable.demon_sprite_sheet;
             case "dragon":
-                return R.drawable.dragon_main;
+                return R.drawable.dragon_sprite_sheet;
+            case "rat":
+                return R.drawable.rat_sprite_sheet;
+            case "bat":
+                return R.drawable.bat_sprite_sheet;
+            case "spider":
+                return R.drawable.spider_sprite_sheet;
+            case "wolf":
+                return R.drawable.wolf_sprite_sheet;
+            case "bandit":
+                return R.drawable.bandit_sprite_sheet;
+            case "cultist":
+                return R.drawable.cultist_sprite_sheet;
+            case "warlock":
+                return R.drawable.warlock_sprite_sheet;
+            case "wraith":
+                return R.drawable.wraith_sprite_sheet;
+            case "golem":
+                return R.drawable.golem_sprite_sheet;
+            case "lich":
+                return R.drawable.lich_sprite_sheet;
+            case "hellhound":
+                return R.drawable.hellhound_sprite_sheet;
+            case "revenant":
+                return R.drawable.revenant_sprite_sheet;
+            case "archdemon":
+                return R.drawable.archdemon_sprite_sheet;
+            case "ancient wyrm":
+            case "ancient_wyrm":
+                return R.drawable.ancient_wyrm_sprite_sheet;
             default:
-                return R.drawable.slime_main;
+                return R.drawable.slime_sprite_sheet;
         }
     }
 
@@ -1529,19 +1669,26 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         return cached;
     }
 
-    private int getPlayerIconResource() {
+    private int getPlayerSpriteSheetResource() {
         if (profile == null || profile.getPlayerClass() == null) {
-            return R.drawable.icon_knight;
+            return R.drawable.knight_sprite_sheet;
         }
         switch (profile.getPlayerClass()) {
             case THIEF:
-                return R.drawable.icon_thief;
+                return R.drawable.thief_sprite_sheet;
             case WIZARD:
-                return R.drawable.icon_wizard;
+                return R.drawable.wizard_sprite_sheet;
             case KNIGHT:
             default:
-                return R.drawable.icon_knight;
+                return R.drawable.knight_sprite_sheet;
         }
+    }
+
+    private int getPlayerIconResource() {
+        PlayerClass playerClass = profile != null ? profile.getPlayerClass() : null;
+        String className = playerClass != null ? playerClass.name().toLowerCase(Locale.ROOT) : "knight";
+        int resId = getResources().getIdentifier("icon_" + className, "drawable", getPackageName());
+        return resId != 0 ? resId : R.drawable.icon_knight;
     }
 
     private int getColorCompat(int colorRes) {
@@ -1579,6 +1726,8 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         }
         Tile clickedTile = dungeonGrid[row][col];
         if (!clickedTile.isRevealed()) {
+            // Covered tiles use the current cover image; clicking one applies the floor terrain backdrop.
+            applyTerrainBackgroundForCurrentTerrain();
             clickedTile.reveal();
             if (profile.getAnimatedPlayer() != null) {
                 profile.getAnimatedPlayer().setAction("move");
@@ -2864,19 +3013,31 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
     private void updateHpCounter() {
         if (profile != null) {
             hpCounterText.setText(getString(R.string.hp_display_dynamic, profile.getCurrentHP(), profile.getMaxHP()));
+            if (hpCounterBar != null) {
+                hpCounterBar.setMax(Math.max(1, profile.getMaxHP()));
+                hpCounterBar.setProgress(Math.max(0, profile.getCurrentHP()));
+            }
         } else {
             hpCounterText.setText(getString(R.string.hp_display_dynamic, 0, 0));
+            if (hpCounterBar != null) {
+                hpCounterBar.setMax(1);
+                hpCounterBar.setProgress(0);
+            }
         }
     }
 
     private void updateMpCounter() {
-        if (mpCounterText == null) {
+        if (mpCounterBar == null) {
             return;
         }
-        if (profile != null) {
-            mpCounterText.setText(getString(R.string.mp_display_dynamic, profile.getCurrentMP(), profile.getMaxMP()));
+        if (profile != null && profile.getMaxMP() > 0) {
+            mpCounterBar.setVisibility(View.VISIBLE);
+            mpCounterBar.setMax(Math.max(1, profile.getMaxMP()));
+            mpCounterBar.setProgress(Math.max(0, profile.getCurrentMP()));
         } else {
-            mpCounterText.setText(getString(R.string.mp_display_dynamic, 0, 0));
+            mpCounterBar.setVisibility(View.GONE);
+            mpCounterBar.setMax(1);
+            mpCounterBar.setProgress(0);
         }
     }
 
@@ -2887,11 +3048,50 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         // Keep HUD state in sync when XP triggers a level-up.
         int beforeLevel = profile.getLevel();
         profile.addExperience(xpReward);
+        updateXpCounter();
         if (profile.getLevel() != beforeLevel) {
+            updatePlayerIdentityHud();
             updateHpCounter();
             updateMpCounter();
             updateLevelUpButtonState();
         }
+    }
+
+    private void updateXpCounter() {
+        if (xpCounterText == null) {
+            return;
+        }
+        if (profile == null) {
+            xpCounterText.setText(getString(R.string.xp_display_dynamic, 0, 100));
+            return;
+        }
+        int level = Math.max(1, profile.getLevel());
+        int xpNeeded = Math.max(100, level * 100);
+        xpCounterText.setText(getString(R.string.xp_display_dynamic, profile.getXp(), xpNeeded));
+    }
+
+    private void updatePlayerIdentityHud() {
+        if (playerNameLevelText == null) {
+            return;
+        }
+        if (profile == null) {
+            playerNameLevelText.setText(getString(R.string.player_hud_name_level_placeholder));
+            return;
+        }
+        String playerName = TextUtils.isEmpty(profile.getName())
+                ? getString(R.string.player_name_fallback)
+                : profile.getName().trim();
+        playerNameLevelText.setText(getString(
+                R.string.player_hud_name_level,
+                playerName,
+                Math.max(1, profile.getLevel())));
+    }
+
+    private void updatePlayerHudIcon() {
+        if (playerHudIcon == null) {
+            return;
+        }
+        playerHudIcon.setImageResource(getPlayerIconResource());
     }
 
     private void updateStatusText() {
@@ -2960,6 +3160,9 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         recordGoldEarned(goldReward);
         applyMonsterLoot(monster);
         recordEnemyDefeat();
+        if (monster.isBoss()) {
+            unlockAchievement(R.string.achievement_boss_slayer_title);
+        }
         FeedbackManager.playSound(this, FeedbackManager.SoundEffect.COMBAT_VICTORY);
         FeedbackManager.vibrate(this, FeedbackManager.VibrationPattern.MEDIUM);
         String goldFragment = getResources().getQuantityString(

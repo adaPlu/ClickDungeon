@@ -262,6 +262,64 @@ public class CombatDialogFragmentTest {
     }
 
     @Test
+    public void prepareAnimatedCombatants_setsAnimatedInstancesWhenMissing() {
+        FragmentActivity activity = buildThemedActivity();
+
+        CharacterProfile profile = new CharacterProfile("Prep", PlayerClass.WIZARD);
+        profile.setAnimatedPlayer(null);
+        Monster monster = new Monster("Goblin", 5, 3, 1, "");
+
+        CombatDialogFragment fragment = CombatDialogFragment.newInstance(monster.getMonsterType());
+        fragment.setCombatants(profile, monster);
+        fragment.show(activity.getSupportFragmentManager(), "combat_prepare_anim");
+        ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
+
+        ReflectionHelpers.setField(fragment, "animatedPlayer", null);
+        ReflectionHelpers.setField(fragment, "animatedMonster", null);
+        ReflectionHelpers.callInstanceMethod(fragment, "prepareAnimatedCombatants",
+                ReflectionHelpers.ClassParameter.from(CharacterProfile.class, profile),
+                ReflectionHelpers.ClassParameter.from(Monster.class, monster));
+
+        AnimatedPlayer animatedPlayer = ReflectionHelpers.getField(fragment, "animatedPlayer");
+        Object animatedMonster = ReflectionHelpers.getField(fragment, "animatedMonster");
+        assertNotNull(animatedPlayer);
+        assertNotNull(animatedMonster);
+    }
+
+    @Test
+    public void updateAnimationFrames_withNoAnimators_keepsSpriteSheetPlaceholders() {
+        FragmentActivity activity = buildThemedActivity();
+
+        CharacterProfile profile = new CharacterProfile("Fallback", PlayerClass.KNIGHT);
+        Monster monster = new Monster("Slime", 4, 1, 0, "");
+
+        CombatDialogFragment fragment = CombatDialogFragment.newInstance(monster.getMonsterType());
+        fragment.setCombatants(profile, monster);
+        fragment.show(activity.getSupportFragmentManager(), "combat_null_animators");
+        ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
+
+        Dialog dialog = fragment.getDialog();
+        assertNotNull(dialog);
+        ImageView playerImage = dialog.findViewById(R.id.imagePlayerAnimation);
+        ImageView monsterImage = dialog.findViewById(R.id.imageMonsterAnimation);
+        assertNotNull(playerImage);
+        assertNotNull(monsterImage);
+
+        playerImage.setImageResource(R.drawable.knight_sprite_sheet);
+        monsterImage.setImageResource(R.drawable.slime_sprite_sheet);
+        ReflectionHelpers.setField(fragment, "animatedPlayer", null);
+        ReflectionHelpers.setField(fragment, "animatedMonster", null);
+
+        ReflectionHelpers.callInstanceMethod(fragment, "updateAnimationFrames");
+        ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
+
+        assertEquals(R.drawable.knight_sprite_sheet,
+                (int) ReflectionHelpers.getField(playerImage, "mResource"));
+        assertEquals(R.drawable.slime_sprite_sheet,
+                (int) ReflectionHelpers.getField(monsterImage, "mResource"));
+    }
+
+    @Test
     public void handleAttack_triggersClassSound() {
         FragmentActivity activity = buildThemedActivity();
 

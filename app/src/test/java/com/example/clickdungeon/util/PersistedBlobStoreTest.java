@@ -2,6 +2,7 @@ package com.example.clickdungeon.util;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -108,5 +109,35 @@ public class PersistedBlobStoreTest {
 
         assertEquals(PersistedBlobStore.LoadResult.Status.SCHEMA_MISMATCH, result.status);
         assertNotNull(PersistedBlobStore.getRecentEvents());
+    }
+
+    @Test
+    public void checksumMismatchWithoutBackupReturnsCorrupt() {
+        PersistedBlobStore.save(context, PREFS, KEY, 1, "{\"value\":7}");
+
+        SharedPreferences prefs = SecurePreferences.get(context, PREFS);
+        prefs.edit()
+                .putString(KEY, "{\"value\":8}")
+                .apply();
+
+        PersistedBlobStore.LoadResult result = PersistedBlobStore.load(context, PREFS, KEY, 1);
+        assertEquals(PersistedBlobStore.LoadResult.Status.CORRUPT, result.status);
+        assertNull(result.json);
+    }
+
+    @Test
+    public void restoreBackup_publicApiReturnsOkForValidBackup() {
+        PersistedBlobStore.save(context, PREFS, KEY, 1, "{\"value\":1}");
+        PersistedBlobStore.save(context, PREFS, KEY, 1, "{\"value\":2}");
+
+        SharedPreferences prefs = SecurePreferences.get(context, PREFS);
+        prefs.edit()
+                .putString(KEY, "{\"value\":bad}")
+                .apply();
+
+        PersistedBlobStore.LoadResult restored =
+                PersistedBlobStore.restoreBackup(context, PREFS, KEY, 1);
+        assertEquals(PersistedBlobStore.LoadResult.Status.OK, restored.status);
+        assertEquals("{\"value\":1}", restored.json);
     }
 }

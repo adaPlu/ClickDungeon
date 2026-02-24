@@ -16,6 +16,8 @@ import com.example.clickdungeon.model.CharacterProfile;
 import com.example.clickdungeon.model.PlayerClass;
 import com.google.gson.Gson;
 
+import java.util.Locale;
+
 /**
  * ClassSelectionActivity is the character creation screen.
  * It allows the player to enter a name and select a hero class (Knight, Thief, or Wizard)
@@ -116,20 +118,17 @@ public class ClassSelectionActivity extends AppCompatActivity {
         if (classPreview == null) {
             return;
         }
-        int resId;
-        switch (playerClass) {
-            case THIEF:
-                resId = R.drawable.icon_thief;
-                break;
-            case WIZARD:
-                resId = R.drawable.icon_wizard;
-                break;
-            case KNIGHT:
-            default:
-                resId = R.drawable.icon_knight;
-                break;
-        }
+        int resId = getClassIconResource(playerClass);
         classPreview.setImageResource(resId);
+    }
+
+    private int getClassIconResource(PlayerClass playerClass) {
+        if (playerClass == null) {
+            return R.drawable.icon_knight;
+        }
+        String drawableName = "icon_" + playerClass.name().toLowerCase(Locale.ROOT);
+        int resId = getResources().getIdentifier(drawableName, "drawable", getPackageName());
+        return resId != 0 ? resId : R.drawable.icon_knight;
     }
 
     /**

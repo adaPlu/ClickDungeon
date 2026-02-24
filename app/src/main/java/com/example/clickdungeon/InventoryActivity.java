@@ -82,7 +82,11 @@ public class InventoryActivity extends AppCompatActivity {
         goldView.setText(getString(R.string.gold_display_dynamic, InventoryManager.getGold(this)));
         platinumView.setText(getString(R.string.platinum_display_dynamic, InventoryManager.getPlatinum(this)));
         if (countView != null) {
-            countView.setText(getString(R.string.inventory_item_count, items.size()));
+            int totalCount = 0;
+            for (InventoryItem item : items) {
+                totalCount += Math.max(0, item.getQuantity());
+            }
+            countView.setText(getString(R.string.inventory_item_count, totalCount));
         }
         
         // Show empty state if no items exist.
