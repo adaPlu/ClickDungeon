@@ -1,6 +1,18 @@
 # ClickDungeon - Android Dungelot-Inspired Roguelite
 
+**Version**: 0.06 | **Status**: Phase G complete (2026-03-03), Phase 9 pending
+
 **ClickDungeon** is a premium Android dungeon-crawler inspired by the Dungelot series, developed in Java using Android Studio. Players explore layered floors of a hidden-tile dungeon, collect gold, unlock achievements, and use special class abilities to survive and progress. Platinum is stored and can be spent in a placeholder premium store (no real IAP yet). Designed for commercial use with built-in expansion points for monetization and further gameplay depth.
+
+---
+
+## Quick Start
+
+- [DEVELOPER_SETUP.md](docs/DEVELOPER_SETUP.md): JDK 17 / Gradle / Android Studio setup
+- [FIREBASE_SETUP.md](docs/FIREBASE_SETUP.md): online flavor setup
+- [ASSET_IMPORT_GUIDE.md](docs/ASSET_IMPORT_GUIDE.md): class/art ingestion
+- [ANIMATION_ARCHITECTURE.md](docs/ANIMATION_ARCHITECTURE.md): animation state gaps
+- [ROADMAP.md](docs/ROADMAP.md): feature status and technical debt
 
 ---
 

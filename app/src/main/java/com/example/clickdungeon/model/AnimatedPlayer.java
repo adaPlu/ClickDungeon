@@ -61,6 +61,7 @@ public class AnimatedPlayer {
         this.frameCount = derivedFrameCount;
 
         // Assuming row 0 = idle, 1 = move, 2 = attack, 3 = defend
+        // TODO: Extended states (hit, defeat, cast, loot, level_up) are spec'd in ANIMATION_ARCHITECTURE.md
         String[] actions = {"idle", "move", "attack", "defend"};
         for (int i = 0; i < actions.length && i < rows; i++) {
             Bitmap[] frames = new Bitmap[this.frameCount];
@@ -80,6 +81,10 @@ public class AnimatedPlayer {
     private int getSpriteResourceForClass(PlayerClass playerClass) {
         switch (playerClass) {
             case KNIGHT: return R.drawable.knight_sprite_sheet;
+            case RANGER:
+                // TODO: Switch to real ranger_sprite_sheet when available.
+                // Current placeholder: use thief sprite until Ranger art is supplied.
+                return R.drawable.thief_sprite_sheet;
             case THIEF:  return R.drawable.thief_sprite_sheet;
             case WIZARD: return R.drawable.wizard_sprite_sheet;
             default:     return R.drawable.knight_sprite_sheet;

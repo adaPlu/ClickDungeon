@@ -1,8 +1,14 @@
 # ClickDungeon Development Roadmap
 
-_Audit date: 2026-02-23_
+_Audit date: 2026-02-23_  
+_Last doc sync: 2026-03-03 (Phase G documentation completed)_
 
 This roadmap documents the verified state of the ClickDungeon Android project (Java sources under `app/src/main/java/com/example/clickdungeon`). Each assertion references concrete files so future work stays grounded in reality.
+
+## Documentation update note
+- Added explicit doc auditing, asset gap tracking, and phase status sections in `README.md` and `docs/INDEX.md`.
+- Confirmed Ranger fallback behavior and extended animation state gap (managed in `ANIMATION_ARCHITECTURE.md`).
+- Target: confirm Phase 9 production rollout once Firebase/Cloud Functions is ready.
 
 ## Project Snapshot
 - **Platform & build:** Android app targeting SDK 36, Kotlin-based Gradle scripts (`build.gradle.kts`, `settings.gradle.kts`), and Java activities/fragments for every screen (Main Menu, Continue, Class Selection, Game, Shop, Achievements, Settings). Save-slot metadata lives in `util/SaveManager.java`.
