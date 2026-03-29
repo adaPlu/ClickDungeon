@@ -7,6 +7,9 @@ public enum PlayerClass {
     KNIGHT(2, 2, 4, 1, false,
             "Shield Wall",
             "Deploy a shield that absorbs damage while you hold position."),
+    RANGER(1, 3, 2, 1, false,
+            "Piercing Shot",
+            "Fire a ranged shot that bypasses enemy defenses."),
     THIEF(1, 4, 2, 1, false,
             "Trap Scan",
             "Reveal nearby traps within range."),
@@ -146,6 +149,20 @@ public enum PlayerClass {
                                 "Deliver a crushing blow to a target enemy."),
                         new AbilityDefinition(20, ABILITY_KNIGHT_GUARDIANS_OATH,
                                 "Channel a protective vow that reinforces your defenses.")
+                };
+        }
+        if ("RANGER".equals(className)) {
+                return new AbilityDefinition[] {
+                        new AbilityDefinition(1, "Piercing Shot",
+                                "Fire a ranged shot that bypasses enemy defenses."),
+                        new AbilityDefinition(5, "Rapid Volley",
+                                "Shoot multiple arrows quickly at nearby enemies."),
+                        new AbilityDefinition(10, "Camouflage",
+                                "Increase evasion and reduce aggro from enemies."),
+                        new AbilityDefinition(15, "Net Trap",
+                                "Slow down an enemy and reduce its damage output."),
+                        new AbilityDefinition(20, "Eagle Eye",
+                                "Critically hit due to enhanced accuracy.")
                 };
         }
         if ("THIEF".equals(className)) {
