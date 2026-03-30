@@ -35,6 +35,15 @@ android {
             it.systemProperty("robolectric.enabledSdks", "34")
         }
     }
+
+    // Include an "online" test source directory so online-only tests
+    // placed under `app/src/online/java` are compiled with unit tests.
+    sourceSets {
+        getByName("test") {
+            java.srcDir("src/online/java")
+            resources.srcDir("src/online/resources")
+        }
+    }
 }
 
 tasks.withType<JavaCompile>().configureEach {
@@ -45,6 +54,7 @@ dependencies {
 
     implementation(libs.gson)
     implementation(libs.appcompat)
+    implementation("com.android.billingclient:billing:5.1.0")
     implementation(libs.material)
     implementation(libs.tink.android)
     testImplementation(libs.junit)
