@@ -209,14 +209,14 @@ GATE 2 — Performance ✅ ALREADY IMPLEMENTED (verified 2026-04-07)
 [x] Animation loop active-tile set — activeAnimatedTiles Map already implemented
 [x] Bitmap cache pre-warm — preWarmMonsterBitmaps() already called on floor gen
 
-GATE 3 — Release Build ⏳ SCAFFOLDED (keystore + build test pending)
+GATE 3 — Release Build ✅ COMPLETE (2026-04-07)
 [x] signingConfigs block added to build.gradle.kts (reads from gradle.properties)
 [x] isMinifyEnabled = true, isShrinkResources = true
 [x] proguard-rules.pro written with full Gson model keep rules
 [x] versionCode=2, versionName="1.0.0"
 [x] *.jks / *.keystore added to .gitignore
-[ ] MANUAL: generate keystore, add 4 properties to ~/.gradle/gradle.properties
-[ ] ./gradlew bundleRelease — green build
+[x] Keystore at ~/AndroidStudioProjects/ClickDungeon/clickdungeon.jks
+[x] ./gradlew bundleRelease — BUILD SUCCESSFUL, signed AAB at app/build/outputs/bundle/release/
 [ ] Smoke test release APK on physical device
 
 GATE 4 — Store Assets ⏳ NOT STARTED
