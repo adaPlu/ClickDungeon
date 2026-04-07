@@ -111,9 +111,12 @@
 
             <Button
                 android:id="@+id/buttonStatStrength"
-                android:layout_width="40dp"
-                android:layout_height="wrap_content"
-                android:text="@string/stat_add_button" />
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                android:text="@string/stat_add_button"
+                android:contentDescription="@string/stat_add_strength_desc" />
         </LinearLayout>
 
         <LinearLayout
@@ -131,9 +134,12 @@
 
             <Button
                 android:id="@+id/buttonStatDexterity"
-                android:layout_width="40dp"
-                android:layout_height="wrap_content"
-                android:text="@string/stat_add_button" />
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                android:text="@string/stat_add_button"
+                android:contentDescription="@string/stat_add_dexterity_desc" />
         </LinearLayout>
 
         <LinearLayout
@@ -151,9 +157,12 @@
 
             <Button
                 android:id="@+id/buttonStatConstitution"
-                android:layout_width="40dp"
-                android:layout_height="wrap_content"
-                android:text="@string/stat_add_button" />
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                android:text="@string/stat_add_button"
+                android:contentDescription="@string/stat_add_constitution_desc" />
         </LinearLayout>
 
         <LinearLayout
@@ -171,9 +180,12 @@
 
             <Button
                 android:id="@+id/buttonStatIntelligence"
-                android:layout_width="40dp"
-                android:layout_height="wrap_content"
-                android:text="@string/stat_add_button" />
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                android:text="@string/stat_add_button"
+                android:contentDescription="@string/stat_add_intelligence_desc" />
         </LinearLayout>
     </LinearLayout>
 

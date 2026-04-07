@@ -58,6 +58,8 @@ public class InventoryAdapter extends RecyclerView.Adapter<InventoryAdapter.View
             name.setText(item.getName());
             quantity.setText(itemView.getContext()
                     .getString(R.string.inventory_quantity_format, item.getQuantity()));
+            itemView.setContentDescription(itemView.getContext()
+                    .getString(R.string.inventory_item_desc, item.getName(), item.getQuantity()));
             if (listener != null) {
                 itemView.setOnClickListener(v -> listener.onItemClick(item));
             } else {

@@ -72,6 +72,7 @@ public class ShopActivity extends AppCompatActivity {
         sellHeader = findViewById(R.id.textSellHeader);
         buybackHeader = findViewById(R.id.textBuybackHeader);
         Button refreshButton = findViewById(R.id.btnRefreshShop);
+        Button exitButton = findViewById(R.id.btnExitShop);
 
         // Initialize layouts for the vertical lists.
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -121,6 +122,9 @@ public class ShopActivity extends AppCompatActivity {
                 return true;
             });
         }
+
+        // Exit shop button
+        exitButton.setOnClickListener(view -> finish());
 
         updateUI();
     }

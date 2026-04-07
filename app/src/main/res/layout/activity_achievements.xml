@@ -36,5 +36,7 @@
         android:layout_gravity="center_horizontal"
         android:layout_marginTop="12dp"
         android:background="@drawable/menu_button_bg"
-        android:textColor="#FFF3D5" />
+        android:textColor="#FFF3D5"
+        android:drawableStart="@android:drawable/ic_menu_revert"
+        android:drawablePadding="10dp" />
 </LinearLayout>

@@ -52,10 +52,13 @@ public class ShopItemAdapter extends RecyclerView.Adapter<ShopItemAdapter.ViewHo
         @SuppressLint("DefaultLocale")
         public void bind(final ShopItem item, final OnItemClickListener listener) {
             nameView.setText(item.getName());
-            String stockLabel = item.getStock() <= 0 ? "(Out of stock)" : "Stock: " + item.getStock();
-            priceView.setText(itemView.getContext().getString(R.string.shop_price_gold,
-                    item.getPrice(),
-                    stockLabel));
+            android.content.Context ctx = itemView.getContext();
+            String stockLabel = item.getStock() <= 0
+                    ? ctx.getString(R.string.shop_item_out_of_stock)
+                    : ctx.getString(R.string.shop_item_in_stock, item.getStock());
+            priceView.setText(ctx.getString(R.string.shop_price_gold, item.getPrice(), stockLabel));
+            itemView.setContentDescription(ctx.getString(R.string.shop_item_desc,
+                    item.getName(), item.getPrice(), stockLabel));
 
             itemView.setAlpha(item.getStock() <= 0 ? 0.5f : 1f);
             itemView.setEnabled(item.getStock() > 0);

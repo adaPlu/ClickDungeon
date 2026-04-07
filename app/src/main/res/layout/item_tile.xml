@@ -6,8 +6,8 @@
     android:layout_columnWeight="1"
     android:layout_rowWeight="1"
     android:layout_margin="2dp"
-    android:minWidth="64dp"
-    android:minHeight="64dp"
+    android:minWidth="@dimen/grid_tile_min_size"
+    android:minHeight="@dimen/grid_tile_min_size"
     android:background="@drawable/tile_bg">
 
     <!-- Enemy sprite or tile -->
@@ -47,7 +47,11 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/tile_damage_placeholder"
-        android:textColor="#FF4444"
+        android:textColor="#FFFFFF"
+        android:shadowColor="#CC000000"
+        android:shadowDx="1"
+        android:shadowDy="1"
+        android:shadowRadius="3"
         android:textSize="16sp"
         android:textStyle="bold"
         android:layout_gravity="center_horizontal"

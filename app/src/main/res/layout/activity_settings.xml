@@ -88,18 +88,21 @@
             android:textColor="#D6C2A5" />
 
         <TextView
+            android:id="@+id/textDifficultyLabel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/settings_difficulty_label"
             android:layout_marginBottom="8dp"
             android:textAppearance="@style/TextAppearance.MaterialComponents.Subtitle1"
-            android:textColor="#F6E6C6" />
+            android:textColor="#F6E6C6"
+            android:labelFor="@id/spinnerDifficulty" />
 
         <Spinner
             android:id="@+id/spinnerDifficulty"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:spinnerMode="dropdown" />
+            android:spinnerMode="dropdown"
+            android:contentDescription="@string/settings_difficulty_spinner_desc" />
 
         <TextView
             android:id="@+id/textDifficultySummary"

@@ -74,6 +74,7 @@ public class MainMenuActivity extends AppCompatActivity {
         boolean hasSave = hasAnySavedSlot();
         btnContinue.setEnabled(hasSave);
         btnContinue.setAlpha(hasSave ? 1f : 0.5f);
+        btnContinue.setText(hasSave ? R.string.btn_continue : R.string.btn_continue_no_save);
     }
 
     /**

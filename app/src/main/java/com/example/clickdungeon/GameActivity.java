@@ -56,6 +56,7 @@ import com.example.clickdungeon.util.FeedbackManager;
 import com.example.clickdungeon.util.GameBalance;
 import com.example.clickdungeon.util.InventoryManager;
 import com.example.clickdungeon.util.ItemCatalog;
+import com.example.clickdungeon.util.MerchantManager;
 import com.example.clickdungeon.util.MonsterAnimationHelper;
 import com.example.clickdungeon.util.MonsterLootRoll;
 import com.example.clickdungeon.util.OnboardingManager;
@@ -480,6 +481,8 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
             showVictoryDialog();
             return;
         }
+        // Clear buyback items when moving to next floor
+        MerchantManager.clearBuybackItems(this);
         currentTerrain = selectTerrainForFloor(currentFloor);
         generateDungeon();
         resetPlayerPositionToCenter();
@@ -3341,6 +3344,8 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
                 .setMessage(R.string.game_over_message)
                 .setCancelable(false)
                 .setPositiveButton(R.string.restart, (dialog, which) -> {
+                    currentFloor = 1;
+                    currentTerrain = selectTerrainForFloor(currentFloor);
                     dungeonGrid = new Tile[GRID_SIZE][GRID_SIZE];
                     currentGold = GameBalance.STARTING_GOLD;
                     currentPlatinum = GameBalance.STARTING_PLATINUM;

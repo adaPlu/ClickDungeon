@@ -5,6 +5,7 @@
 <!-- Main Menu -->
 <string name="play">Play</string>
 <string name="btn_continue">Continue</string>
+<string name="btn_continue_no_save">Continue (No Save)</string>
 <string name="settings">Settings</string>
 <string name="shop">Shop</string>
 <string name="merchant_title">Merchant</string>
@@ -34,6 +35,7 @@
 <string name="premium_purchase_success">Purchased %1$s.</string>
 <string name="premium_selected">Selected %1$s.</string>
 <string name="settings_difficulty_label">Difficulty</string>
+<string name="settings_difficulty_spinner_desc">Select game difficulty</string>
 <string name="settings_difficulty_casual">Casual</string>
 <string name="settings_difficulty_normal">Normal</string>
 <string name="settings_difficulty_hardcore">Hardcore</string>
@@ -106,6 +108,7 @@
 <string name="knight_shield_broken">Your shield shatters!</string>
 <string name="player_position_unknown">Reveal a tile first to anchor your position.</string>
     <string name="refresh_shop">Refresh Shop</string>
+    <string name="exit_shop">Exit Shop</string>
     <string name="shop_preview_title">Shop Preview</string>
 <string name="shop_price_gold">Gold: %1$d  %2$s</string>
 <string name="shop_section_inventory_sell">Sell Inventory</string>
@@ -137,6 +140,8 @@
 <string name="monster_loot_item">Bonus loot: %1$s.</string>
 <string name="monster_loot_magic">Bonus loot: %1$s.</string>
     <string name="open_inventory">Open Inventory</string>
+    <string name="use_ability_desc">Use your class ability in combat</string>
+    <string name="open_inventory_desc">Open inventory during combat</string>
     <string name="inventory_item_count">Items: %1$d</string>
     <string name="inventory_recent_changes">Recent changes</string>
     <string name="inventory_no_changes">No recent inventory changes.</string>
@@ -146,6 +151,7 @@
 
 <!-- Character Selection -->
 <string name="enter_name">Enter character name</string>
+<string name="character_name_field_desc">Enter your character name</string>
 <string name="knight_option">Knight</string>
 <string name="ranger_option">Ranger</string>
 <string name="thief_option">Thief</string>
@@ -274,6 +280,10 @@ Adjust these preferences anytime from Settings.</string>
 <string name="tile_damage_placeholder">-3</string>
 <string name="tile_unknown_placeholder">[]</string>
 <string name="inventory_quantity_format">x%1$d</string>
+<string name="inventory_item_desc">%1$s, quantity %2$d</string>
+<string name="shop_item_desc">%1$s, %2$d gold, %3$s</string>
+<string name="shop_item_out_of_stock">out of stock</string>
+<string name="shop_item_in_stock">%1$d in stock</string>
 <string name="floor_display_hard_suffix"> (Hard)</string>
 <string name="stat_allocate_title">Allocate Stat Points</string>
 <string name="stat_points_available">Stat points: %1$d</string>
@@ -282,6 +292,10 @@ Adjust these preferences anytime from Settings.</string>
 <string name="stat_label_constitution">CON: %1$d</string>
 <string name="stat_label_intelligence">INT: %1$d</string>
 <string name="stat_add_button">+</string>
+<string name="stat_add_strength_desc">Increase Strength</string>
+<string name="stat_add_dexterity_desc">Increase Dexterity</string>
+<string name="stat_add_constitution_desc">Increase Constitution</string>
+<string name="stat_add_intelligence_desc">Increase Intelligence</string>
 <plurals name="gold_found_message">
     <item quantity="one">You found %1$d gold!</item>
     <item quantity="other">You found %1$d gold!</item>
