@@ -10,19 +10,52 @@ android {
         applicationId = "com.example.clickdungeon"
         minSdk = 21
         targetSdk = 36
-        versionCode = 1
-        versionName = "0.06"
+        versionCode = 2
+        versionName = "1.0.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    // Release signing is configured via ~/.gradle/gradle.properties to keep
+    // credentials out of source control. Add the following four properties
+    // to that file before running `./gradlew bundleRelease`:
+    //
+    //   CLICKDUNGEON_STORE_FILE=/absolute/path/to/clickdungeon.jks
+    //   CLICKDUNGEON_STORE_PASSWORD=<keystore password>
+    //   CLICKDUNGEON_KEY_ALIAS=clickdungeon
+    //   CLICKDUNGEON_KEY_PASSWORD=<key password>
+    //
+    // Generate the keystore once with:
+    //   keytool -genkey -v -keystore clickdungeon.jks -alias clickdungeon \
+    //           -keyalg RSA -keysize 2048 -validity 10000
+    // Then back it up offline — losing it permanently locks the app out of Play.
+    signingConfigs {
+        create("release") {
+            val storeFilePath = project.findProperty("CLICKDUNGEON_STORE_FILE") as String?
+            val storePass    = project.findProperty("CLICKDUNGEON_STORE_PASSWORD") as String?
+            val keyAlias     = project.findProperty("CLICKDUNGEON_KEY_ALIAS") as String?
+            val keyPass      = project.findProperty("CLICKDUNGEON_KEY_PASSWORD") as String?
+            if (storeFilePath != null && storePass != null && keyAlias != null && keyPass != null) {
+                storeFile = file(storeFilePath)
+                storePassword = storePass
+                this.keyAlias = keyAlias
+                keyPassword = keyPass
+            }
+        }
+    }
+
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            val releaseSigning = signingConfigs.findByName("release")
+            if (releaseSigning?.storeFile != null) {
+                signingConfig = releaseSigning
+            }
         }
     }
     compileOptions {

@@ -1380,6 +1380,13 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         }
     }
 
+    private void updateTileTextDisplay(TextView tileText, Tile tile) {
+        if (tileText != null) {
+            tileText.setText(getTileDisplay(tile));
+            tileText.setContentDescription(getTileContentDescription(tile));
+        }
+    }
+
     private void bindTileView(@NonNull View tileView,
                               @Nullable Tile tile,
                               int row,
@@ -1696,6 +1703,8 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
                 return R.drawable.thief_sprite_sheet;
             case WIZARD:
                 return R.drawable.wizard_sprite_sheet;
+            case RANGER:
+                // Ranger sprite sheet not yet available; falls back to knight until v1.1.
             case KNIGHT:
             default:
                 return R.drawable.knight_sprite_sheet;
@@ -1939,10 +1948,7 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
             playCueWithFallback(SoundManager.KEY_EFFECT_POSITIVE, FeedbackManager.SoundEffect.POSITIVE);
         }
         tile.reveal();
-        if (tileText != null) {
-            tileText.setText(getTileDisplay(tile));
-            tileText.setContentDescription(getTileContentDescription(tile));
-        }
+        updateTileTextDisplay(tileText, tile);
         int damage = calculateFireballDamage();
         if (tile.hasMonster()) {
             Monster monster = tile.getMonster();
@@ -2244,29 +2250,36 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         return true;
     }
 
-    private boolean executeKnightFortify() {
+    private void clearStatusEffects() {
         frozenTurnsLeft = 0;
         poisonTurnsLeft = 0;
         updateStatusText();
+    }
+
+    private void healPlayer(int amount) {
+        if (profile != null) {
+            profile.setCurrentHP(Math.min(profile.getMaxHP(), profile.getCurrentHP() + amount));
+            updateHpCounter();
+        }
+    }
+
+    private boolean executeKnightFortify() {
+        clearStatusEffects();
         int heal = 4 + getAbilityLevelScale();
-        profile.setCurrentHP(Math.min(profile.getMaxHP(), profile.getCurrentHP() + heal));
-        updateHpCounter();
+        healPlayer(heal);
         playCueWithFallback(SoundManager.KEY_EFFECT_POSITIVE, FeedbackManager.SoundEffect.POSITIVE);
         Toast.makeText(this, R.string.fortify_ready, Toast.LENGTH_SHORT).show();
         return true;
     }
 
     private boolean executeKnightGuardiansOath() {
-        frozenTurnsLeft = 0;
-        poisonTurnsLeft = 0;
-        updateStatusText();
+        clearStatusEffects();
         int heal = 6 + (getAbilityLevelScale() * 2);
-        profile.setCurrentHP(Math.min(profile.getMaxHP(), profile.getCurrentHP() + heal));
+        healPlayer(heal);
         knightShieldStrength = calculateKnightShieldStrength();
         knightShieldRow = playerRow;
         knightShieldCol = playerCol;
         knightShieldActive = true;
-        updateHpCounter();
         playCueWithFallback(SoundManager.KEY_EFFECT_POSITIVE, FeedbackManager.SoundEffect.POSITIVE);
         Toast.makeText(this, R.string.guardians_oath_ready, Toast.LENGTH_SHORT).show();
         return true;
@@ -2531,6 +2544,7 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
 
     private void goToMainMenu() {
         Intent intent = new Intent(this, MainMenuActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
         finish();
     }
@@ -2566,8 +2580,7 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
     // --- Tile reveal, loot, keys, and traps ---
     private void revealTile(View tileView, TextView tileText, Tile tile) {
         normalizeLegacyTile(tile);
-        tileText.setText(getTileDisplay(tile));
-        tileText.setContentDescription(getTileContentDescription(tile));
+        updateTileTextDisplay(tileText, tile);
         switch (tile.getType()) {
             case GOLD:
                 int goldFound = GameBalance.calculateGoldPile(currentFloor, difficultyMode, random);
@@ -2638,10 +2651,7 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         addInventoryChange(displayName, true);
         tile.setType(TileType.EMPTY);
         tile.setMonster(null);
-        if (tileText != null) {
-            tileText.setText(getTileDisplay(tile));
-            tileText.setContentDescription(getTileContentDescription(tile));
-        }
+        updateTileTextDisplay(tileText, tile);
         requestSave(SaveReason.INVENTORY_CHANGE);
     }
 
@@ -2671,8 +2681,7 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
                     getString(R.string.locked_stair_missing, neededKeyDisplay),
                     Toast.LENGTH_SHORT).show();
         }
-        tileText.setText(getTileDisplay(tile));
-        tileText.setContentDescription(getTileContentDescription(tile));
+        updateTileTextDisplay(tileText, tile);
     }
 
     private void handleChest(TextView tileText, Tile tile) {
@@ -2718,10 +2727,7 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
 
         tile.setType(TileType.EMPTY);
         tile.setMonster(null);
-        if (tileText != null) {
-            tileText.setText(getTileDisplay(tile));
-            tileText.setContentDescription(getTileContentDescription(tile));
-        }
+        updateTileTextDisplay(tileText, tile);
         requestSave(SaveReason.INVENTORY_CHANGE);
     }
 
@@ -2803,16 +2809,12 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
     }
 
     private void handleTrap(TextView tileText, Tile tile) {
-        tileText.setText(getTileDisplay(tile));
-        tileText.setContentDescription(getTileContentDescription(tile));
+        updateTileTextDisplay(tileText, tile);
         if (smokeVeilCharges > 0) {
             smokeVeilCharges = Math.max(0, smokeVeilCharges - 1);
             tile.setType(TileType.EMPTY);
             tile.setMonster(null);
-            if (tileText != null) {
-                tileText.setText(getTileDisplay(tile));
-                tileText.setContentDescription(getTileContentDescription(tile));
-            }
+            updateTileTextDisplay(tileText, tile);
             Toast.makeText(this, R.string.smoke_veil_triggered, Toast.LENGTH_SHORT).show();
             playCueWithFallback(SoundManager.KEY_EFFECT_POSITIVE, FeedbackManager.SoundEffect.POSITIVE);
             return;
@@ -2824,8 +2826,7 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
             awardTrapDisabledXp();
             tile.setType(TileType.EMPTY);
             tile.setMonster(null);
-            tileText.setText(getTileDisplay(tile));
-            tileText.setContentDescription(getTileContentDescription(tile));
+            updateTileTextDisplay(tileText, tile);
             unlockAchievement(R.string.achievement_trap_dodger_title);
             playCueWithFallback(SoundManager.KEY_EFFECT_POSITIVE, FeedbackManager.SoundEffect.POSITIVE);
             FeedbackManager.vibrate(this, FeedbackManager.VibrationPattern.LIGHT);
@@ -3328,12 +3329,7 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
                     updateHpCounter();
                     requestSave(SaveReason.START_NEW_RUN);
                 })
-                .setNegativeButton(R.string.main_menu, (dialog, which) -> {
-                    Intent intent = new Intent(GameActivity.this, MainMenuActivity.class);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                    startActivity(intent);
-                    finish();
-                })
+                .setNegativeButton(R.string.main_menu, (dialog, which) -> goToMainMenu())
                 .show();
     }
 
@@ -3343,27 +3339,8 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
                 .setTitle(R.string.game_over_title)
                 .setMessage(R.string.game_over_message)
                 .setCancelable(false)
-                .setPositiveButton(R.string.restart, (dialog, which) -> {
-                    currentFloor = 1;
-                    currentTerrain = selectTerrainForFloor(currentFloor);
-                    dungeonGrid = new Tile[GRID_SIZE][GRID_SIZE];
-                    currentGold = GameBalance.STARTING_GOLD;
-                    currentPlatinum = GameBalance.STARTING_PLATINUM;
-                    lastFloorClearAwarded = -1;
-                    profile.setCurrentHP(profile.getMaxHP());
-                    generateDungeon();
-                    renderGrid();
-                    updateGoldCounter();
-                    updatePlatinumCounter();
-                    updateHpCounter();
-                    requestSave(SaveReason.START_NEW_RUN);
-                })
-                .setNegativeButton(R.string.main_menu, (dialog, which) -> {
-                    Intent intent = new Intent(GameActivity.this, MainMenuActivity.class);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                    startActivity(intent);
-                    finish();
-                })
+                .setPositiveButton(R.string.restart, (dialog, which) -> startNewRunForActiveSlot())
+                .setNegativeButton(R.string.main_menu, (dialog, which) -> goToMainMenu())
                 .show();
     }
 

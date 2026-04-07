@@ -51,62 +51,64 @@
 
 ---
 
-### GATE 1 — Critical Bug Fixes (1–2 sessions)
-These are blocking bugs that will cause crashes or bad game-state in production.
+### GATE 1 — Critical Bug Fixes ✅ COMPLETE
 
-**1.1 Fix CombatDialogFragment bitmap bundle (TransactionTooLargeException)**  
-- File: [CombatDialogFragment.java](../app/src/main/java/com/example/clickdungeon/ui/CombatDialogFragment.java)
-- Change: Remove `Bitmap` passing through fragment arguments. Pass only `monsterId`/`monsterType` string; have the fragment fetch its own frames from `MonsterAnimationHelper` / `LruCache` on `onCreateView`.
-- Reference: `PERFORMANCE_PLAN.md` Phase 3, Action 3.1–3.2
+**1.1 CombatDialogFragment bitmap bundle** — ALREADY CLEAN  
+`newInstance()` passes only a `String monsterType`. `onSaveInstanceState` saves only primitives. No bitmaps in bundles. Verified 2026-04-06.
 
-**1.2 Enable ProGuard/R8 for release**  
-- File: [build.gradle.kts](../app/build.gradle.kts)
-- Change: Set `isMinifyEnabled = true`, add ProGuard keep rules for Gson models, Robolectric is test-only (already fine)
-- Keep rules needed for: `CharacterProfile`, `InventoryItem`, `ShopItem`, `PricedItem`, `Achievement`, `AnimatedPlayer`, `AnimatedMonster`
+**1.2 ProGuard keep rules** — DONE  
+`proguard-rules.pro` updated with keep rules for all Gson-serialized models (`CharacterProfile`, `Tile`, `Monster`, `Achievement`, `InventoryItem`, `ShopItem`, `PricedItem`, `SaveBlob`, enums). `isMinifyEnabled = true` and `isShrinkResources = true` set in `build.gradle.kts`.
 
-**1.3 Decide: finish Ranger or hide it**  
-Two options:
-- **Option A (defer to v1.1):** Ranger is not on `ClassSelectionActivity` UI now — confirm no code path reaches `PlayerClass.RANGER` during normal play, add a `getPlayerSpriteSheetResource` case for it (return knight fallback explicitly), add a unit test asserting Ranger falls back cleanly.
-- **Option B (ship in v1.0):** Add `ranger_sprite_sheet.png` + `icon_ranger.png` assets, define 5 Ranger abilities in `PlayerClass`, wire a Ranger button in `ClassSelectionActivity`, add Ranger ability handling in `GameActivity.useAbility()`.
-
-Recommendation: **Option A for v1.0**, ship Ranger as v1.1 content.
+**1.3 Ranger fallback** — DONE (Option A)  
+Explicit `case RANGER:` added to `getPlayerSpriteSheetResource()` falling through to knight. Unit test in `GameActivityTileViewTest` asserts `RANGER` returns `knight_sprite_sheet` without crash. Ranger button remains `visibility=gone` in `ClassSelectionActivity`.
 
 ---
 
-### GATE 2 — Performance Fixes (1–2 sessions)
-Required before Play Store submission to avoid ANRs on mid/low-end devices.
+### GATE 2 — Performance Fixes ✅ ALREADY IMPLEMENTED
 
-**2.1 Grid dirty-flag optimization**  
-- `PERFORMANCE_PLAN.md` Phase 1: Add `isDirty()` flag to `Tile`, update `renderGrid()` to skip clean tiles, add `refreshTile(row, col)` for targeted updates.
+All three phases were completed during the "Optimization Overhaul" commit series (2025-2026):
 
-**2.2 Animation loop active-tile set**  
-- `PERFORMANCE_PLAN.md` Phase 2: Replace polling all 25 tiles in `gridAnimationRunnable` with a maintained `List<TileView>` of active animated tiles (player + revealed enemies only).
+**2.1 Dirty-flag grid rendering** — ALREADY DONE  
+`Tile.isDirty()` / `setDirty()` implemented in `model/Tile.java`. `renderGrid()` skips tiles where `!tile.isDirty()` at line 1251 and clears flag after bind at line 1470.
 
-**2.3 Memory cache tuning**  
-- `PERFORMANCE_PLAN.md` Phase 4: Profile heap during 15-floor run, adjust `initBitmapCache` to a fixed or conservative memory fraction, pre-warm floor monster bitmaps before `renderGrid`.
+**2.2 Active-tile animation set** — ALREADY DONE  
+`activeAnimatedTiles` (`Map<String, View>`) tracks only player tile + revealed enemy tiles. `animateGridFrame()` iterates only that map. `updateAnimatedTileRegistry()` maintains the set on every bind.
 
-> Note: Phase 3 (bitmap bundle) is already captured in Gate 1.1.
+**2.3 Bitmap cache pre-warm** — ALREADY DONE  
+`preWarmMonsterBitmaps(getMonsterPoolForFloor(currentFloor))` called at floor generation (line 426). `initBitmapCache()` uses a conservative LruCache sized from available memory.
 
 ---
 
-### GATE 3 — Release Build Config (1 session)
+### GATE 3 — Release Build Config ✅ SCAFFOLDED (keystore generation pending)
 
-**3.1 Create release signing config**  
-- Generate a keystore: `keytool -genkey -v -keystore clickdungeon.jks -alias clickdungeon -keyalg RSA -keysize 2048 -validity 10000`
-- Store credentials in `~/.gradle/gradle.properties` (not in repo)
-- Add `signingConfigs` block to `build.gradle.kts`, reference it in `release` buildType
-- Add `clickdungeon.jks` to `.gitignore`
+**3.1 Signing config scaffold** — DONE  
+`signingConfigs { release { ... } }` block added to `build.gradle.kts`. Reads credentials from `~/.gradle/gradle.properties` via `project.findProperty()` — safe to commit, no secrets in repo. `*.jks`, `*.keystore`, `keystore.properties` added to `.gitignore`.
 
-**3.2 Enable minification**  
-- `isMinifyEnabled = true`, `isShrinkResources = true`
-- Write `proguard-rules.pro` keep rules for all Gson-serialized models
+**Remaining manual step — generate the keystore (do once, back up offline):**
+```
+keytool -genkey -v -keystore clickdungeon.jks -alias clickdungeon \
+        -keyalg RSA -keysize 2048 -validity 10000
+```
+Then add to `~/.gradle/gradle.properties`:
+```
+CLICKDUNGEON_STORE_FILE=/absolute/path/to/clickdungeon.jks
+CLICKDUNGEON_STORE_PASSWORD=<keystore password>
+CLICKDUNGEON_KEY_ALIAS=clickdungeon
+CLICKDUNGEON_KEY_PASSWORD=<key password>
+```
 
-**3.3 Bump version**  
-- `versionCode = 2`, `versionName = "1.0.0"` in `build.gradle.kts`
+**3.2 Minification** — DONE  
+`isMinifyEnabled = true`, `isShrinkResources = true` set. ProGuard rules in `proguard-rules.pro`.
 
-**3.4 Build and smoke-test the release APK**  
-- `./gradlew assembleRelease`
-- Install on a physical device and run through at least: new game → floor 1 → combat → shop → save/quit → continue
+**3.3 Version bump** — DONE  
+`versionCode = 2`, `versionName = "1.0.0"` in `build.gradle.kts`.
+
+**3.4 Build and smoke-test** — PENDING (requires keystore)  
+```
+./gradlew bundleRelease          # produces .aab for Play Console
+./gradlew assembleRelease        # produces .apk for device sideload test
+```
+Smoke-test path: new game → floor 1 → combat → shop → save/quit → continue.
 
 ---
 
@@ -190,47 +192,51 @@ Once v1.0 is live and crash-free for 2 weeks, tackle in order:
 ## Checklist Summary
 
 ```
-GATE 0 — Commit & Merge
-[ ] Commit GameActivity floor reset + MerchantManager.clearBuybackItems
-[ ] Commit ShopActivity exit button + layout
-[ ] Commit main menu margin tweak
-[ ] Commit BillingManager tests
-[ ] Merge PreError → main
+GATE 0 — Commit & Merge ✅ COMPLETE (2026-04-06)
+[x] Commit GameActivity floor reset + MerchantManager.clearBuybackItems
+[x] Commit ShopActivity exit button + layout
+[x] Commit main menu margin tweak
+[x] Commit BillingManager tests
+[x] Merge PreError → main
 
-GATE 1 — Critical Bug Fixes
-[ ] Fix CombatDialogFragment bitmap-in-bundle (pass monsterId only)
-[ ] Confirm Ranger is unreachable or add explicit fallback + test
-[ ] ProGuard keep rules for Gson models (prep for Gate 3)
+GATE 1 — Critical Bug Fixes ✅ COMPLETE (2026-04-07)
+[x] CombatDialogFragment bitmap-in-bundle — already clean (verified)
+[x] RANGER explicit fallback in getPlayerSpriteSheetResource + unit test added
+[x] ProGuard keep rules written in proguard-rules.pro
 
-GATE 2 — Performance
-[ ] Tile dirty-flag system + renderGrid skip
-[ ] Animation loop active-tile set
-[ ] Bitmap cache pre-warm + size tuning
+GATE 2 — Performance ✅ ALREADY IMPLEMENTED (verified 2026-04-07)
+[x] Tile dirty-flag system + renderGrid skip — already in Tile.java / GameActivity
+[x] Animation loop active-tile set — activeAnimatedTiles Map already implemented
+[x] Bitmap cache pre-warm — preWarmMonsterBitmaps() already called on floor gen
 
-GATE 3 — Release Build
-[ ] Generate keystore, add signingConfigs to build.gradle.kts
-[ ] isMinifyEnabled = true, write proguard-rules.pro
-[ ] versionCode=2, versionName="1.0.0"
+GATE 3 — Release Build ⏳ SCAFFOLDED (keystore + build test pending)
+[x] signingConfigs block added to build.gradle.kts (reads from gradle.properties)
+[x] isMinifyEnabled = true, isShrinkResources = true
+[x] proguard-rules.pro written with full Gson model keep rules
+[x] versionCode=2, versionName="1.0.0"
+[x] *.jks / *.keystore added to .gitignore
+[ ] MANUAL: generate keystore, add 4 properties to ~/.gradle/gradle.properties
 [ ] ./gradlew bundleRelease — green build
-[ ] Smoke test release APK on device
+[ ] Smoke test release APK on physical device
 
-GATE 4 — Store Assets
-[ ] Custom launcher icon (all densities)
+GATE 4 — Store Assets ⏳ NOT STARTED
+[ ] Custom launcher icon (all mipmap densities)
 [ ] Screenshots (phone, ≥2)
 [ ] Feature graphic (1024×500)
 [ ] Short + full store description written
 [ ] Privacy policy hosted at stable URL
 
-GATE 5 — Play Console
+GATE 5 — Play Console ⏳ NOT STARTED
 [ ] App created in Play Console
-[ ] Internal test APK uploaded + tested
+[ ] Internal test AAB uploaded + tested
 [ ] Content rating questionnaire complete
 [ ] Production release submitted
 
-GATE 6 — Firebase
+GATE 6 — Firebase ⏳ NOT STARTED
 [ ] Firebase project created, google-services.json added
-[ ] Crashlytics integrated and tested
-[ ] firebase-bom version pinned in build.gradle.kts
+[ ] Crashlytics + Analytics dependencies added to build.gradle.kts
+[ ] Initialized in ClickDungeonApp.java
+[ ] Non-fatal test crash verified in Firebase console
 ```
 
 ---
@@ -239,9 +245,9 @@ GATE 6 — Firebase
 
 | Risk | Impact | Mitigation |
 |------|--------|------------|
-| TransactionTooLargeException from bitmap bundle | High — crash on rotation during combat | Gate 1.1 fix |
+| ~~TransactionTooLargeException from bitmap bundle~~ | ~~High~~ | Already clean — no bitmaps in bundles ✅ |
 | keystore loss after first upload | Critical — permanent app lock-out | Back up keystore + passwords to secure offline storage immediately after creation |
-| Ranger selected via saved profile from a future test | Medium — falls back to knight sprite silently | Add explicit RANGER case in `getPlayerSpriteSheetResource` now |
-| ProGuard stripping Gson model fields | High — save data parse failure | Gate 1.2/3.2 keep rules |
-| `versionCode=1` already used in Play Console | Build fail at upload | Bump to `versionCode=2` before any Play Console upload |
+| ~~Ranger selected via saved profile~~ | ~~Medium~~ | Explicit RANGER fallback + test added ✅ |
+| ~~ProGuard stripping Gson model fields~~ | ~~High~~ | proguard-rules.pro keep rules written ✅ |
+| ~~versionCode=1 already used in Play Console~~ | ~~Build fail~~ | Bumped to versionCode=2 ✅ |
 | google-services.json committed to repo | Security | Add to `.gitignore` now, use CI secrets per `docs/CI_SECRETS.md` |

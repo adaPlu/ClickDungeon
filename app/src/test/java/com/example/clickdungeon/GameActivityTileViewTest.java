@@ -172,12 +172,17 @@ public class GameActivityTileViewTest {
         ReflectionHelpers.setField(activity, "profile", new CharacterProfile("W", PlayerClass.WIZARD));
         int wizardRes = ReflectionHelpers.callInstanceMethod(activity, "getPlayerSpriteSheetResource");
 
+        ReflectionHelpers.setField(activity, "profile", new CharacterProfile("R", PlayerClass.RANGER));
+        int rangerRes = ReflectionHelpers.callInstanceMethod(activity, "getPlayerSpriteSheetResource");
+
         ReflectionHelpers.setField(activity, "profile", null);
         int fallbackRes = ReflectionHelpers.callInstanceMethod(activity, "getPlayerSpriteSheetResource");
 
         assertEquals(R.drawable.knight_sprite_sheet, knightRes);
         assertEquals(R.drawable.thief_sprite_sheet, thiefRes);
         assertEquals(R.drawable.wizard_sprite_sheet, wizardRes);
+        // Ranger has no sprite sheet yet; must fall back to knight (not crash).
+        assertEquals(R.drawable.knight_sprite_sheet, rangerRes);
         assertEquals(R.drawable.knight_sprite_sheet, fallbackRes);
     }
 
