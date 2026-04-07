@@ -16,26 +16,26 @@
 # -----------------------------------------------------------------------
 
 # Core model layer
--keep class com.example.clickdungeon.model.CharacterProfile { *; }
--keep class com.example.clickdungeon.model.Tile { *; }
--keep class com.example.clickdungeon.model.TileType { *; }
--keep class com.example.clickdungeon.model.Monster { *; }
--keep class com.example.clickdungeon.model.AnimatedMonster { *; }
--keep class com.example.clickdungeon.model.AnimatedPlayer { *; }
--keep class com.example.clickdungeon.model.AnimationState { *; }
--keep class com.example.clickdungeon.model.Achievement { *; }
--keep class com.example.clickdungeon.model.InventoryItem { *; }
--keep class com.example.clickdungeon.model.ItemDefinition { *; }
--keep class com.example.clickdungeon.model.ShopItem { *; }
--keep class com.example.clickdungeon.model.PricedItem { *; }
--keep class com.example.clickdungeon.model.PlayerClass { *; }
--keep class com.example.clickdungeon.model.PlayerClass$AbilityDefinition { *; }
--keep class com.example.clickdungeon.model.TerrainType { *; }
--keep class com.example.clickdungeon.model.MonsterFamily { *; }
--keep class com.example.clickdungeon.model.MonsterAffinity { *; }
+-keep class com.adaplu.clickdungeon.model.CharacterProfile { *; }
+-keep class com.adaplu.clickdungeon.model.Tile { *; }
+-keep class com.adaplu.clickdungeon.model.TileType { *; }
+-keep class com.adaplu.clickdungeon.model.Monster { *; }
+-keep class com.adaplu.clickdungeon.model.AnimatedMonster { *; }
+-keep class com.adaplu.clickdungeon.model.AnimatedPlayer { *; }
+-keep class com.adaplu.clickdungeon.model.AnimationState { *; }
+-keep class com.adaplu.clickdungeon.model.Achievement { *; }
+-keep class com.adaplu.clickdungeon.model.InventoryItem { *; }
+-keep class com.adaplu.clickdungeon.model.ItemDefinition { *; }
+-keep class com.adaplu.clickdungeon.model.ShopItem { *; }
+-keep class com.adaplu.clickdungeon.model.PricedItem { *; }
+-keep class com.adaplu.clickdungeon.model.PlayerClass { *; }
+-keep class com.adaplu.clickdungeon.model.PlayerClass$AbilityDefinition { *; }
+-keep class com.adaplu.clickdungeon.model.TerrainType { *; }
+-keep class com.adaplu.clickdungeon.model.MonsterFamily { *; }
+-keep class com.adaplu.clickdungeon.model.MonsterAffinity { *; }
 
 # SaveManager internal blob (private static inner class used with Gson)
--keep class com.example.clickdungeon.util.SaveManager$SaveBlob { *; }
+-keep class com.adaplu.clickdungeon.util.SaveManager$SaveBlob { *; }
 
 # Generic Gson rules: keep field names on any class annotated with
 # @SerializedName, and preserve the Gson runtime itself.
@@ -45,20 +45,25 @@
 -keep interface com.google.gson.** { *; }
 
 # Keep enum values (Gson serializes enums by name by default)
--keepclassmembers enum com.example.clickdungeon.** {
+-keepclassmembers enum com.adaplu.clickdungeon.** {
     public static **[] values();
     public static ** valueOf(java.lang.String);
 }
 
 # -----------------------------------------------------------------------
-# Firebase / Play Billing (referenced but not yet initialized in release;
-# suppress warnings until libraries are fully wired in v1.1)
+# Strip debug/verbose log calls from release builds.
 # -----------------------------------------------------------------------
--dontwarn com.google.firebase.**
--dontwarn com.android.billingclient.**
+-assumenosideeffects class android.util.Log {
+    public static int d(...);
+    public static int v(...);
+}
 
 # -----------------------------------------------------------------------
-# Robolectric / test-only code is never in the release APK; suppress any
-# residual references that sneak through the compile classpath.
+# Firebase (not yet added; suppress residual references from Tink/etc)
+# -----------------------------------------------------------------------
+-dontwarn com.google.firebase.**
+
+# -----------------------------------------------------------------------
+# Robolectric / test-only code -- never in the release APK.
 # -----------------------------------------------------------------------
 -dontwarn org.robolectric.**

@@ -41,3 +41,7 @@ Exit criteria
 Notes
    - The repo currently compiles `app/src/online` as part of the standard `test` source set, so `:app:testDebugUnitTest` runs them together.
    - For backward compatibility, `:app:testOnlineDebugUnitTest` is available as an alias to the same task.
+
+Recent additions (scaffolds)
+- `app/src/online/java/com/example/clickdungeon/CloudSaveServiceMockTest.java` — mock cloud client sync/restore scaffold
+- `app/src/online/java/com/example/clickdungeon/LeaderboardServiceMockTest.java` — mock leaderboard submit/query scaffold

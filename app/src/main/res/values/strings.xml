@@ -254,7 +254,7 @@
 <string name="unequip_success">Unequipped: %1$s</string>
 <string name="equip_not_allowed">This item cannot be equipped.</string>
 <string name="onboarding_dungeon_title">Welcome to ClickDungeon</string>
-<string name="onboarding_dungeon_message">You are delving on %1$s difficulty.
+<string name="onboarding_dungeon_message">You are delving at %1$s difficulty.
 
 Tips:
 - Tap hidden tiles to explore.
@@ -282,7 +282,7 @@ Adjust these preferences anytime from Settings.</string>
 <string name="inventory_quantity_format">x%1$d</string>
 <string name="inventory_item_desc">%1$s, quantity %2$d</string>
 <string name="shop_item_desc">%1$s, %2$d gold, %3$s</string>
-<string name="shop_item_out_of_stock">out of stock</string>
+<string name="shop_item_out_of_stock">Out of stock</string>
 <string name="shop_item_in_stock">%1$d in stock</string>
 <string name="floor_display_hard_suffix"> (Hard)</string>
 <string name="stat_allocate_title">Allocate Stat Points</string>

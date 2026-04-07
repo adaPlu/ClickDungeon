@@ -3,11 +3,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.clickdungeon"
+    namespace = "com.adaplu.clickdungeon"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.example.clickdungeon"
+        applicationId = "com.adaplu.clickdungeon"
         minSdk = 21
         targetSdk = 36
         versionCode = 2
@@ -87,7 +87,8 @@ dependencies {
 
     implementation(libs.gson)
     implementation(libs.appcompat)
-    implementation("com.android.billingclient:billing:5.1.0")
+    // billingclient removed until real IAP is wired in v1.1
+    // implementation("com.android.billingclient:billing:5.1.0")
     implementation(libs.material)
     implementation(libs.tink.android)
     testImplementation(libs.junit)

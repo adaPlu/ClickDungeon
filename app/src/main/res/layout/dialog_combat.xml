@@ -25,7 +25,7 @@
             android:layout_marginEnd="8dp"
             android:layout_weight="1"
             android:background="@drawable/tile_bg"
-            android:importantForAccessibility="no">
+            android:importantForAccessibility="auto">
 
             <ImageView
                 android:id="@+id/imagePlayerAnimation"
@@ -53,7 +53,7 @@
             android:layout_height="@dimen/combat_anim_height"
             android:layout_weight="1"
             android:background="@drawable/tile_bg"
-            android:importantForAccessibility="no">
+            android:importantForAccessibility="auto">
 
             <ImageView
                 android:id="@+id/imageMonsterAnimation"

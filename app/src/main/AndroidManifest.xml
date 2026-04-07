@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.VIBRATE" />
-    <uses-permission android:name="com.android.vending.BILLING" />
+    <!-- BILLING permission removed until real IAP is wired in v1.1 -->
 
     <application
         android:name=".ClickDungeonApp"

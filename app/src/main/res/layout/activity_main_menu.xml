@@ -16,70 +16,221 @@
         android:maxWidth="480dp"
         android:layout_gravity="center_horizontal">
 
-    <Button
+    <FrameLayout
         android:id="@+id/btnNewGame"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/play"
+        android:minHeight="48dp"
+        android:clickable="true"
+        android:focusable="true"
         android:background="@drawable/menu_button_bg"
-        android:textColor="#FFF3D5"
-        android:drawableStart="@android:drawable/ic_media_play"
-        android:drawablePadding="10dp"/>
+        android:layout_marginTop="0dp">
 
-    <Button
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp">
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@android:drawable/ic_media_play"
+                android:contentDescription="@null"
+                android:importantForAccessibility="no"
+                android:layout_marginEnd="8dp" />
+
+            <TextView
+                android:id="@+id/btnNewGame_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/play"
+                android:textColor="#FFF3D5" />
+
+        </LinearLayout>
+    </FrameLayout>
+
+    <FrameLayout
         android:id="@+id/btnContinue"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/btn_continue"
+        android:minHeight="48dp"
+        android:clickable="true"
+        android:focusable="true"
         android:layout_marginTop="6dp"
-        android:background="@drawable/menu_button_bg"
-        android:textColor="#FFF3D5"
-        android:drawableStart="@android:drawable/ic_menu_recent_history"
-        android:drawablePadding="10dp"/>
+        android:background="@drawable/menu_button_bg">
 
-    <Button
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp">
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@android:drawable/ic_menu_recent_history"
+                android:contentDescription="@null"
+                android:importantForAccessibility="no"
+                android:layout_marginEnd="8dp" />
+
+            <TextView
+                android:id="@+id/btnContinue_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/btn_continue"
+                android:textColor="#FFF3D5" />
+
+        </LinearLayout>
+    </FrameLayout>
+
+    <FrameLayout
         android:id="@+id/btnSettings"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/settings"
+        android:minHeight="48dp"
+        android:clickable="true"
+        android:focusable="true"
         android:layout_marginTop="6dp"
-        android:background="@drawable/menu_button_bg"
-        android:textColor="#FFF3D5"
-        android:drawableStart="@android:drawable/ic_menu_manage"
-        android:drawablePadding="10dp"/>
+        android:background="@drawable/menu_button_bg">
 
-    <Button
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp">
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@android:drawable/ic_menu_manage"
+                android:contentDescription="@null"
+                android:importantForAccessibility="no"
+                android:layout_marginEnd="8dp" />
+
+            <TextView
+                android:id="@+id/btnSettings_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/settings"
+                android:textColor="#FFF3D5" />
+
+        </LinearLayout>
+    </FrameLayout>
+
+    <FrameLayout
         android:id="@+id/btnShop"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/shop"
+        android:minHeight="48dp"
+        android:clickable="true"
+        android:focusable="true"
         android:layout_marginTop="6dp"
-        android:background="@drawable/menu_button_bg"
-        android:textColor="#FFF3D5"
-        android:drawableStart="@android:drawable/ic_menu_share"
-        android:drawablePadding="10dp"/>
+        android:background="@drawable/menu_button_bg">
 
-    <Button
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp">
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@android:drawable/ic_menu_share"
+                android:contentDescription="@null"
+                android:importantForAccessibility="no"
+                android:layout_marginEnd="8dp" />
+
+            <TextView
+                android:id="@+id/btnShop_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/shop"
+                android:textColor="#FFF3D5" />
+
+        </LinearLayout>
+    </FrameLayout>
+
+    <FrameLayout
         android:id="@+id/btnInventory"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/open_inventory"
+        android:minHeight="48dp"
+        android:clickable="true"
+        android:focusable="true"
         android:layout_marginTop="6dp"
-        android:background="@drawable/menu_button_bg"
-        android:textColor="#FFF3D5"
-        android:drawableStart="@android:drawable/ic_menu_agenda"
-        android:drawablePadding="10dp"/>
+        android:background="@drawable/menu_button_bg">
 
-    <Button
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp">
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@android:drawable/ic_menu_agenda"
+                android:contentDescription="@null"
+                android:importantForAccessibility="no"
+                android:layout_marginEnd="8dp" />
+
+            <TextView
+                android:id="@+id/btnInventory_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/open_inventory"
+                android:textColor="#FFF3D5" />
+
+        </LinearLayout>
+    </FrameLayout>
+
+    <FrameLayout
         android:id="@+id/btnAchievements"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/achievements"
+        android:minHeight="48dp"
+        android:clickable="true"
+        android:focusable="true"
         android:layout_marginTop="6dp"
-        android:background="@drawable/menu_button_bg"
-        android:textColor="#FFF3D5"
-        android:drawableStart="@android:drawable/ic_menu_info_details"
-        android:drawablePadding="10dp"/>
+        android:background="@drawable/menu_button_bg">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp">
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@android:drawable/ic_menu_info_details"
+                android:contentDescription="@null"
+                android:importantForAccessibility="no"
+                android:layout_marginEnd="8dp" />
+
+            <TextView
+                android:id="@+id/btnAchievements_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/achievements"
+                android:textColor="#FFF3D5" />
+
+        </LinearLayout>
+    </FrameLayout>
 
     </LinearLayout>
 </ScrollView>
