@@ -1382,9 +1382,78 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         }
     }
 
+    private int getBoardTileImageResource(@Nullable Tile tile) {
+        if (tile == null) {
+            return 0;
+        }
+        switch (tile.getType()) {
+            case EMPTY:
+                return R.drawable.ic_tile_empty_128x128;
+            case GOLD:
+                return R.drawable.ic_tile_gold_128x128;
+            case STAIR_DOWN:
+                return R.drawable.ic_stairs_down_128x128;
+            case STAIR_DOWN_LOCKED:
+                return R.drawable.ic_stairs_locked_128x128;
+            case STAIR_UP:
+                return R.drawable.ic_stairs_up_128x128;
+            case SMALL_KEY:
+                return colorBlindModeEnabled
+                        ? R.drawable.ic_small_key_cb_128x128
+                        : R.drawable.ic_small_key_128x128;
+            case BIG_KEY:
+                return colorBlindModeEnabled
+                        ? R.drawable.ic_big_key_cb_128x128
+                        : R.drawable.ic_big_key_128x128;
+            case CHEST:
+                return R.drawable.ic_chest_closed_128x128;
+            case TRAP_FIRE:
+                return colorBlindModeEnabled
+                        ? R.drawable.ic_trap_fire_cb_128x128
+                        : R.drawable.ic_trap_fire_128x128;
+            case TRAP_POISON:
+                return colorBlindModeEnabled
+                        ? R.drawable.ic_trap_poison_cb_128x128
+                        : R.drawable.ic_trap_poison_128x128;
+            case TRAP_ACID:
+                return colorBlindModeEnabled
+                        ? R.drawable.ic_trap_acid_cb_128x128
+                        : R.drawable.ic_trap_acid_128x128;
+            case TRAP_FREEZE:
+                return colorBlindModeEnabled
+                        ? R.drawable.ic_trap_freeze_cb_128x128
+                        : R.drawable.ic_trap_freeze_128x128;
+            case TRAP_PITFALL:
+                return colorBlindModeEnabled
+                        ? R.drawable.ic_trap_pitfall_cb_128x128
+                        : R.drawable.ic_trap_pitfall_128x128;
+            default:
+                return 0;
+        }
+    }
+
     private void updateTileTextDisplay(TextView tileText, Tile tile) {
         if (tileText != null) {
-            tileText.setText(getTileDisplay(tile));
+            ImageView tileImage = null;
+            View parent = (View) tileText.getParent();
+            if (parent != null) {
+                tileImage = parent.findViewById(R.id.imageTile);
+            }
+
+            int imageRes = getBoardTileImageResource(tile);
+            if (tileImage != null && imageRes != 0) {
+                tileImage.setVisibility(View.VISIBLE);
+                tileImage.setScaleType(ImageView.ScaleType.FIT_CENTER);
+                tileImage.setImageResource(imageRes);
+                tileText.setVisibility(View.GONE);
+            } else {
+                if (tileImage != null) {
+                    tileImage.setVisibility(View.GONE);
+                    tileImage.setImageDrawable(null);
+                }
+                tileText.setVisibility(View.VISIBLE);
+                tileText.setText(getTileDisplay(tile));
+            }
             tileText.setContentDescription(getTileContentDescription(tile));
         }
     }
@@ -1446,8 +1515,7 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
                     tile.getMonster().getMaxHP());
         } else {
             gridMonsterAnimations.remove(coordKey);
-            tileText.setVisibility(View.VISIBLE);
-            tileText.setText(getTileDisplay(tile));
+            updateTileTextDisplay(tileText, tile);
             description = getTileContentDescription(tile);
         }
 
@@ -3656,5 +3724,4 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         }
     }
 }
-
 
