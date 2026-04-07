@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls app/src/main/res/mipmap-*)"
+    ]
+  }
+}

@@ -36,7 +36,7 @@ android {
             val keyAlias     = project.findProperty("CLICKDUNGEON_KEY_ALIAS") as String?
             val keyPass      = project.findProperty("CLICKDUNGEON_KEY_PASSWORD") as String?
             if (storeFilePath != null && storePass != null && keyAlias != null && keyPass != null) {
-                storeFile = file(storeFilePath)
+                storeFile = File(storeFilePath)
                 storePassword = storePass
                 this.keyAlias = keyAlias
                 keyPassword = keyPass
