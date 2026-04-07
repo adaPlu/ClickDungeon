@@ -31,6 +31,16 @@ public final class GameBalance {
     public static final int STARTING_GOLD = 50;
     /** Starting premium currency for a new run. */
     public static final int STARTING_PLATINUM = 100;
+    /** MP cost for the Wizard's Meteor ability. */
+    public static final int WIZARD_MP_COST_METEOR = 7;
+    /** MP cost for the Wizard's Chain Lightning ability. */
+    public static final int WIZARD_MP_COST_CHAIN_LIGHTNING = 5;
+    /** MP cost for the Wizard's Frost Nova ability. */
+    public static final int WIZARD_MP_COST_FROST_NOVA = 4;
+    /** MP cost for the Wizard's Arcane Shield ability. */
+    public static final int WIZARD_MP_COST_ARCANE_SHIELD = 4;
+    /** Default MP cost for unrecognized Wizard abilities. */
+    public static final int WIZARD_MP_COST_DEFAULT = 3;
     /** Base XP for clearing a floor before scaling. */
     private static final int BASE_FLOOR_CLEAR_XP = 6;
     /** Base XP for finding items before scaling. */

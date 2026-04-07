@@ -49,7 +49,7 @@ public class BillingManager implements PurchasesUpdatedListener {
                 if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
                     Log.i(TAG, "BillingClient setup finished");
                 } else {
-                    Log.w(TAG, "BillingClient setup failed: " + billingResult.getDebugMessage());
+                    Log.d(TAG, "BillingClient setup failed: " + billingResult.getDebugMessage());
                 }
             }
         });
@@ -79,7 +79,7 @@ public class BillingManager implements PurchasesUpdatedListener {
             if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
                 handlePurchases(purchasesList);
             } else {
-                Log.w(TAG, "queryPurchases failed: " + billingResult.getDebugMessage());
+                Log.d(TAG, "queryPurchases failed: " + billingResult.getDebugMessage());
             }
         });
     }
@@ -94,7 +94,7 @@ public class BillingManager implements PurchasesUpdatedListener {
                         .setPurchaseToken(p.getPurchaseToken())
                         .build();
                 billingClient.acknowledgePurchase(ackParams, (billingResult) -> {
-                    Log.i(TAG, "Acknowledge result: " + billingResult.getDebugMessage());
+                    Log.d(TAG, "Acknowledge result: " + billingResult.getDebugMessage());
                 });
             }
         }
@@ -107,7 +107,7 @@ public class BillingManager implements PurchasesUpdatedListener {
         } else if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.USER_CANCELED) {
             Log.i(TAG, "User canceled purchase");
         } else {
-            Log.w(TAG, "Purchase failed: " + billingResult.getDebugMessage());
+            Log.d(TAG, "Purchase failed: " + billingResult.getDebugMessage());
         }
     }
 

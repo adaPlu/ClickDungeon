@@ -62,7 +62,7 @@ public class ShopItemAdapter extends RecyclerView.Adapter<ShopItemAdapter.ViewHo
 
             itemView.setAlpha(item.getStock() <= 0 ? 0.5f : 1f);
             itemView.setEnabled(item.getStock() > 0);
-            itemView.setOnClickListener(v -> listener.onItemClick(item));
+            itemView.setOnClickListener(listener != null ? v -> listener.onItemClick(item) : null);
         }
     }
 

@@ -3,6 +3,8 @@ package com.example.clickdungeon.util;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import androidx.annotation.VisibleForTesting;
+
 import com.example.clickdungeon.model.CharacterProfile;
 import com.example.clickdungeon.model.Monster;
 import com.example.clickdungeon.model.Tile;
@@ -277,6 +279,7 @@ public class SaveManager {
                 .apply();
     }
 
+    @VisibleForTesting
     public static void setTestSaveListener(SaveListener listener) { testSaveListener = listener; }
     private static void notifyTestSave(int slotIndex) {
         if (testSaveListener != null) testSaveListener.onSave(slotIndex);

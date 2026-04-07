@@ -74,7 +74,7 @@ public final class MerchantManager {
 
     /** Returns the merchant-specific preferences handle. */
     private static SharedPreferences getPrefs(Context context) {
-        return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        return SecurePreferences.get(context, PREFS_NAME);
     }
 
     /** Finds an existing buyback entry by name and price. */

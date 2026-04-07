@@ -124,7 +124,9 @@ public class ShopActivity extends AppCompatActivity {
         }
 
         // Exit shop button
-        exitButton.setOnClickListener(view -> finish());
+        if (exitButton != null) {
+            exitButton.setOnClickListener(view -> finish());
+        }
 
         updateUI();
     }
@@ -187,6 +189,27 @@ public class ShopActivity extends AppCompatActivity {
         platinumText.setText(getString(R.string.platinum_display_dynamic, platinum));
     }
 
+    /**
+     * Creates or incrementally updates a PricedItemAdapter on a RecyclerView.
+     * Returns the adapter (newly created or the existing one).
+     */
+    private PricedItemAdapter refreshAdapter(
+            PricedItemAdapter existing,
+            List<PricedItem> items,
+            int previousSize,
+            RecyclerView recycler,
+            PricedItemAdapter.OnItemClickListener listener) {
+        if (existing == null) {
+            PricedItemAdapter adapter = new PricedItemAdapter(items, listener);
+            recycler.setAdapter(adapter);
+            return adapter;
+        } else {
+            if (previousSize > 0) existing.notifyItemRangeRemoved(0, previousSize);
+            if (!items.isEmpty()) existing.notifyItemRangeInserted(0, items.size());
+            return existing;
+        }
+    }
+
     /** Convenience overload to refresh sell items using the current shop catalog. */
     private void refreshSellItems() {
         refreshSellItems(buildShopIndex(shopItems));
@@ -206,17 +229,8 @@ public class ShopActivity extends AppCompatActivity {
             int resale = getResaleValue(item.getName(), shopIndex);
             sellItems.add(new PricedItem(item.getName(), resale, item.getQuantity()));
         }
-        if (sellAdapter == null) {
-            sellAdapter = new PricedItemAdapter(sellItems, item -> sellItem(item, shopIndex));
-            sellRecycler.setAdapter(sellAdapter);
-        } else {
-            if (previousSize > 0) {
-                sellAdapter.notifyItemRangeRemoved(0, previousSize);
-            }
-            if (!sellItems.isEmpty()) {
-                sellAdapter.notifyItemRangeInserted(0, sellItems.size());
-            }
-        }
+        sellAdapter = refreshAdapter(sellAdapter, sellItems, previousSize, sellRecycler,
+                item -> sellItem(item, shopIndex));
     }
 
     /**
@@ -229,17 +243,8 @@ public class ShopActivity extends AppCompatActivity {
         int previousSize = buybackItems.size();
         buybackItems.clear();
         buybackItems.addAll(MerchantManager.loadBuybackItems(this));
-        if (buybackAdapter == null) {
-            buybackAdapter = new PricedItemAdapter(buybackItems, this::buybackItem);
-            buybackRecycler.setAdapter(buybackAdapter);
-        } else {
-            if (previousSize > 0) {
-                buybackAdapter.notifyItemRangeRemoved(0, previousSize);
-            }
-            if (!buybackItems.isEmpty()) {
-                buybackAdapter.notifyItemRangeInserted(0, buybackItems.size());
-            }
-        }
+        buybackAdapter = refreshAdapter(buybackAdapter, buybackItems, previousSize, buybackRecycler,
+                this::buybackItem);
     }
 
     /**

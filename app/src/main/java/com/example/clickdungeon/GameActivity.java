@@ -688,16 +688,16 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
 
     private int getWizardMpCost(String abilityName) {
         if (PlayerClass.ABILITY_WIZARD_METEOR.equals(abilityName)) {
-            return 7;
+            return GameBalance.WIZARD_MP_COST_METEOR;
         }
         if (PlayerClass.ABILITY_WIZARD_CHAIN_LIGHTNING.equals(abilityName)) {
-            return 5;
+            return GameBalance.WIZARD_MP_COST_CHAIN_LIGHTNING;
         }
         if (PlayerClass.ABILITY_WIZARD_FROST_NOVA.equals(abilityName)
                 || PlayerClass.ABILITY_WIZARD_ARCANE_SHIELD.equals(abilityName)) {
-            return 4;
+            return GameBalance.WIZARD_MP_COST_FROST_NOVA;
         }
-        return 3;
+        return GameBalance.WIZARD_MP_COST_DEFAULT;
     }
 
     private void beginAbilityTargeting(AbilityTargetMode mode, int promptPluralResId) {
