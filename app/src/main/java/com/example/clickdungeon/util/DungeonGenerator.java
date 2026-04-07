@@ -18,6 +18,14 @@ public final class DungeonGenerator {
     private DungeonGenerator() {
     }
 
+    /**
+     * Generates a randomized grid for a floor using fixed counts per tile type.
+     *
+     * @param gridSize width/height of the square grid
+     * @param floor current floor index used to label the big key
+     * @param monsterFactory factory for creating enemy instances
+     * @return result bundle with grid, locked stair, key name, and safe tile count
+     */
     public static Result generateFloor(int gridSize,
                                        int floor,
                                        @NonNull MonsterFactory monsterFactory) {
@@ -29,6 +37,12 @@ public final class DungeonGenerator {
         for (int i = 0; i < 5; i++) {
             pool.add(new Tile(TileType.ENEMY, monsterFactory.create()));
         }
+        for (int i = 0; i < 2; i++) {
+            pool.add(new Tile(TileType.CHEST));
+        }
+        for (int i = 0; i < 2; i++) {
+            pool.add(new Tile(TileType.SMALL_KEY));
+        }
         pool.add(new Tile(TileType.TRAP_FIRE));
         pool.add(new Tile(TileType.TRAP_FIRE));
         pool.add(new Tile(TileType.TRAP_POISON));
@@ -37,15 +51,9 @@ public final class DungeonGenerator {
         pool.add(new Tile(TileType.TRAP_FREEZE));
         pool.add(new Tile(TileType.TRAP_PITFALL));
 
-        TileType[] keyTypes = {TileType.RED_KEY, TileType.BLUE_KEY, TileType.GREEN_KEY};
-        TileType[] lockTypes = {TileType.STAIR_DOWN_LOCKED_RED, TileType.STAIR_DOWN_LOCKED_BLUE, TileType.STAIR_DOWN_LOCKED_GREEN};
-        int keyIndex = (floor - 1) % keyTypes.length;
-        TileType selectedKeyType = keyTypes[keyIndex];
-        TileType lockedStair = lockTypes[keyIndex];
-
-        String keyName = selectedKeyType.name().replace("_KEY", " Key (F" + floor + ")");
-
-        pool.add(new Tile(selectedKeyType, keyName));
+        String keyName = getBigKeyNameForFloor(floor);
+        TileType lockedStair = TileType.STAIR_DOWN_LOCKED;
+        pool.add(new Tile(TileType.BIG_KEY, keyName));
         pool.add(new Tile(lockedStair));
         pool.add(new Tile(TileType.STAIR_DOWN));
         if (floor > 1) {
@@ -65,6 +73,7 @@ public final class DungeonGenerator {
             for (int col = 0; col < gridSize; col++) {
                 Tile tile = pool.get(index++);
                 grid[row][col] = tile;
+                // Count tiles that are safe to reveal for victory tracking.
                 if (tile.getType() != TileType.ENEMY) {
                     safeTiles++;
                 }
@@ -74,11 +83,24 @@ public final class DungeonGenerator {
         return new Result(grid, lockedStair, keyName, safeTiles);
     }
 
+    /**
+     * Functional interface used to provide a monster instance for enemy tiles.
+     */
     public interface MonsterFactory {
         @NonNull
         Monster create();
     }
 
+    /**
+     * Builds the display name for the big key on the given floor.
+     */
+    public static String getBigKeyNameForFloor(int floor) {
+        return "BIG KEY (F" + Math.max(1, floor) + ")";
+    }
+
+    /**
+     * Container for generator outputs.
+     */
     public static final class Result {
         public final Tile[][] grid;
         public final TileType lockedStair;

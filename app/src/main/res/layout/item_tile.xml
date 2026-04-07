@@ -1,8 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="64dp"
-    android:layout_height="64dp"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="0dp"
+    android:layout_height="0dp"
+    android:layout_columnWeight="1"
+    android:layout_rowWeight="1"
     android:layout_margin="2dp"
+    android:minWidth="@dimen/grid_tile_min_size"
+    android:minHeight="@dimen/grid_tile_min_size"
     android:background="@drawable/tile_bg">
 
     <!-- Enemy sprite or tile -->
@@ -10,7 +15,8 @@
         android:id="@+id/imageTile"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:scaleType="centerInside"
+        android:scaleType="centerCrop"
+        android:contentDescription="@string/tile_desc_hidden"
         android:visibility="gone" />
 
     <!-- Damage overlay (e.g. red flash) -->
@@ -40,8 +46,12 @@
         android:id="@+id/textFloatingDamage"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="-3"
-        android:textColor="#FF4444"
+        android:text="@string/tile_damage_placeholder"
+        android:textColor="#FFFFFF"
+        android:shadowColor="#CC000000"
+        android:shadowDx="1"
+        android:shadowDy="1"
+        android:shadowRadius="3"
         android:textSize="16sp"
         android:textStyle="bold"
         android:layout_gravity="center_horizontal"
@@ -55,7 +65,13 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:gravity="center"
-        android:textSize="20sp"
-        android:text="?"
+        app:autoSizeTextType="uniform"
+        app:autoSizeMinTextSize="12sp"
+        app:autoSizeMaxTextSize="48sp"
+        app:autoSizeStepGranularity="2sp"
+        android:includeFontPadding="false"
+        android:lineSpacingExtra="0dp"
+        android:textSize="32sp"
+        android:text="@string/tile_unknown_placeholder"
         android:textStyle="bold" />
 </FrameLayout>

@@ -1,9 +1,11 @@
 package com.example.clickdungeon.util;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 
 import androidx.test.core.app.ApplicationProvider;
 
@@ -24,7 +26,7 @@ public class InventoryManagerTest {
     @Before
     public void setUp() {
         context = ApplicationProvider.getApplicationContext();
-        context.getSharedPreferences("player_prefs", Context.MODE_PRIVATE)
+        SecurePreferences.get(context, "player_prefs")
                 .edit()
                 .clear()
                 .commit();
@@ -56,7 +58,7 @@ public class InventoryManagerTest {
 
     @Test
     public void goldOperationsClampToValidRange() {
-        assertEquals(500, InventoryManager.getGold(context));
+        assertEquals(GameBalance.STARTING_GOLD, InventoryManager.getGold(context));
 
         InventoryManager.setGold(context, 1200);
         assertEquals(1200, InventoryManager.getGold(context));
@@ -66,5 +68,81 @@ public class InventoryManagerTest {
 
         InventoryManager.adjustGold(context, -1000);
         assertEquals(0, InventoryManager.getGold(context));
+    }
+
+    @Test
+    public void platinumOperationsClampToValidRange() {
+        assertEquals(GameBalance.STARTING_PLATINUM, InventoryManager.getPlatinum(context));
+
+        InventoryManager.setPlatinum(context, 240);
+        assertEquals(240, InventoryManager.getPlatinum(context));
+
+        InventoryManager.adjustPlatinum(context, -40);
+        assertEquals(200, InventoryManager.getPlatinum(context));
+
+        InventoryManager.adjustPlatinum(context, -1000);
+        assertEquals(0, InventoryManager.getPlatinum(context));
+    }
+
+    @Test
+    public void clearInventoryRemovesAllItems() {
+        InventoryManager.adjustItemQuantity(context, "Potion", 2);
+        InventoryManager.adjustItemQuantity(context, "Trap Disarm Kit", 1);
+
+        InventoryManager.clearInventory(context);
+
+        assertTrue(InventoryManager.loadInventory(context).isEmpty());
+    }
+
+    @Test
+    public void getInventoryItemReturnsFirstMatchOrNull() {
+        assertNull(InventoryManager.getInventoryItem(context, "Unknown"));
+
+        InventoryManager.adjustItemQuantity(context, "Potion", 2);
+        InventoryItem item = InventoryManager.getInventoryItem(context, "Potion");
+
+        assertEquals("Potion", item.getName());
+        assertEquals(2, item.getQuantity());
+    }
+
+    @Test
+    public void syncGoldWithCurrentRunUpdatesStoredGold() {
+        InventoryManager.setGold(context, 100);
+        InventoryManager.syncGoldWithCurrentRun(context, 250);
+
+        assertEquals(250, InventoryManager.getGold(context));
+    }
+
+    @Test
+    public void syncPlatinumWithCurrentRunUpdatesStoredPlatinum() {
+        InventoryManager.setPlatinum(context, 80);
+        InventoryManager.syncPlatinumWithCurrentRun(context, 140);
+
+        assertEquals(140, InventoryManager.getPlatinum(context));
+    }
+
+    @Test
+    public void corruptInventoryRestoresBackup() {
+        InventoryManager.adjustItemQuantity(context, "Potion", 1);
+        InventoryManager.adjustItemQuantity(context, "Potion", 1);
+
+        SharedPreferences prefs = SecurePreferences.get(context, "player_prefs");
+        prefs.edit()
+                .putString("inventory", "corrupt")
+                .apply();
+
+        assertEquals(1, InventoryManager.getItemQuantity(context, "Potion"));
+    }
+
+    @Test
+    public void inventorySchemaMismatchReturnsEmptyList() {
+        InventoryManager.adjustItemQuantity(context, "Potion", 1);
+
+        SharedPreferences prefs = SecurePreferences.get(context, "player_prefs");
+        prefs.edit()
+                .putInt("inventory" + PersistedBlobStore.SCHEMA_SUFFIX, 99)
+                .apply();
+
+        assertTrue(InventoryManager.loadInventory(context).isEmpty());
     }
 }

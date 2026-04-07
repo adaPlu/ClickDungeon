@@ -1,51 +1,85 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout 
+<ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
-    android:gravity="center"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp">
+    android:fillViewport="true"
+    android:fitsSystemWindows="true"
+    android:background="@drawable/dungeon_door">
 
-    <TextView
-        android:id="@+id/titleTextView"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:orientation="vertical"
+        android:gravity="center"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/app_name"
-        android:textSize="24sp"
-        android:layout_marginBottom="20dp"/>
+        android:padding="16dp"
+        android:maxWidth="480dp"
+        android:layout_gravity="center_horizontal">
 
     <Button
         android:id="@+id/btnNewGame"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/play"/>
+        android:text="@string/play"
+        android:background="@drawable/menu_button_bg"
+        android:textColor="#FFF3D5"
+        android:drawableStart="@android:drawable/ic_media_play"
+        android:drawablePadding="10dp"/>
 
     <Button
         android:id="@+id/btnContinue"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/btn_continue"
-        android:layout_marginTop="10dp"/>
+        android:layout_marginTop="6dp"
+        android:background="@drawable/menu_button_bg"
+        android:textColor="#FFF3D5"
+        android:drawableStart="@android:drawable/ic_menu_recent_history"
+        android:drawablePadding="10dp"/>
 
     <Button
         android:id="@+id/btnSettings"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/settings"
-        android:layout_marginTop="10dp"/>
+        android:layout_marginTop="6dp"
+        android:background="@drawable/menu_button_bg"
+        android:textColor="#FFF3D5"
+        android:drawableStart="@android:drawable/ic_menu_manage"
+        android:drawablePadding="10dp"/>
 
     <Button
         android:id="@+id/btnShop"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/shop"
-        android:layout_marginTop="10dp"/>
+        android:layout_marginTop="6dp"
+        android:background="@drawable/menu_button_bg"
+        android:textColor="#FFF3D5"
+        android:drawableStart="@android:drawable/ic_menu_share"
+        android:drawablePadding="10dp"/>
+
+    <Button
+        android:id="@+id/btnInventory"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/open_inventory"
+        android:layout_marginTop="6dp"
+        android:background="@drawable/menu_button_bg"
+        android:textColor="#FFF3D5"
+        android:drawableStart="@android:drawable/ic_menu_agenda"
+        android:drawablePadding="10dp"/>
 
     <Button
         android:id="@+id/btnAchievements"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/achievements"
-        android:layout_marginTop="10dp"/>
-</LinearLayout>
+        android:layout_marginTop="6dp"
+        android:background="@drawable/menu_button_bg"
+        android:textColor="#FFF3D5"
+        android:drawableStart="@android:drawable/ic_menu_info_details"
+        android:drawablePadding="10dp"/>
+
+    </LinearLayout>
+</ScrollView>

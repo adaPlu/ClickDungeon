@@ -1,11 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/layoutGameRoot"
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="8dp">
+    android:padding="4dp"
+    android:fitsSystemWindows="true"
+    android:background="@drawable/bg_screen_dungeon">
 
-    <!-- Top bar for gold, HP, and floor -->
+    <!-- Top bar for currency and floor -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -24,11 +27,11 @@
             android:padding="4dp" />
 
         <TextView
-            android:id="@+id/textHpCounter"
+            android:id="@+id/textPlatinumCounter"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="HP: 10/10"
+            android:text="@string/platinum_display"
             android:textStyle="bold"
             android:textSize="18sp"
             android:gravity="center"
@@ -39,7 +42,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Floor 1"
+            android:text="@string/floor_display_placeholder"
             android:textSize="18sp"
             android:gravity="end"
             android:padding="4dp" />
@@ -52,27 +55,163 @@
         android:layout_height="wrap_content"
         android:text=""
         android:textStyle="italic"
-        android:textColor="#88000000"
+        android:textColor="@color/status_effect_text"
         android:paddingTop="6dp" />
 
     <!-- Dungeon grid -->
-    <GridLayout
-        android:id="@+id/gridDungeon"
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
-        android:columnCount="5"
-        android:rowCount="5"
-        android:alignmentMode="alignMargins"
-        android:useDefaultMargins="true"
-        android:paddingTop="8dp" />
+        android:layout_weight="1">
 
-    <!-- Class ability button -->
-    <Button
-        android:id="@+id/btnClassAbility"
+        <GridLayout
+            android:id="@+id/gridDungeon"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:columnCount="5"
+            android:rowCount="5"
+            android:alignmentMode="alignMargins"
+            android:useDefaultMargins="true"
+            android:paddingTop="8dp" />
+    </FrameLayout>
+
+    <!-- Bottom HUD: name/level, XP+MP stack, and centered class icon with HP bar -->
+    <LinearLayout
+        android:id="@+id/layoutPlayerHud"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/use_ability"
-        android:layout_marginTop="8dp"
+        android:orientation="vertical"
+        android:layout_marginTop="6dp"
+        android:layout_marginBottom="4dp">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingBottom="4dp">
+
+            <TextView
+                android:id="@+id/textPlayerNameLevel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:text="@string/player_hud_name_level_placeholder"
+                android:textStyle="bold"
+                android:textSize="16sp" />
+
+            <LinearLayout
+                android:id="@+id/layoutXpMpStack"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:orientation="vertical"
+                android:gravity="end">
+
+                <TextView
+                    android:id="@+id/textXpCounter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/xp_display_placeholder"
+                    android:textStyle="bold"
+                    android:textSize="14sp" />
+            </LinearLayout>
+        </RelativeLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:id="@+id/imagePlayerHudIcon"
+                android:layout_width="54dp"
+                android:layout_height="54dp"
+                android:contentDescription="@string/combat_player_animation_desc"
+                android:src="@drawable/icon_knight"
+                android:scaleType="centerInside"
+                android:layout_gravity="center_vertical" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:layout_marginStart="10dp">
+
+                <ProgressBar
+                    android:id="@+id/progressHpCounter"
+                    style="?android:attr/progressBarStyleHorizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="8dp"
+                    android:max="100"
+                    android:progress="100"
+                    android:progressTint="#FF4CAF50"
+                    android:background="#33000000" />
+
+                <TextView
+                    android:id="@+id/textHpCounter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="@string/hp_display_placeholder"
+                    android:textStyle="bold"
+                    android:textSize="14sp" />
+
+                <ProgressBar
+                    android:id="@+id/progressMpCounter"
+                    style="?android:attr/progressBarStyleHorizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="8dp"
+                    android:layout_marginTop="4dp"
+                    android:max="100"
+                    android:progress="0"
+                    android:progressTint="#2196F3"
+                    android:background="#33000000"
+                    android:visibility="gone" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:orientation="vertical"
+                android:gravity="end">
+
+                <Button
+                    android:id="@+id/btnClassAbility"
+                    android:layout_width="wrap_content"
+                    android:layout_height="40dp"
+                    android:minHeight="0dp"
+                    android:minWidth="0dp"
+                    android:paddingStart="8dp"
+                    android:paddingEnd="8dp"
+                    android:text="@string/use_ability"
+                    android:contentDescription="@string/use_ability_desc"
+                    android:textSize="11sp" />
+
+                <Button
+                    android:id="@+id/btnInventory"
+                    android:layout_width="wrap_content"
+                    android:layout_height="40dp"
+                    android:layout_marginTop="6dp"
+                    android:minHeight="0dp"
+                    android:minWidth="0dp"
+                    android:paddingStart="8dp"
+                    android:paddingEnd="8dp"
+                    android:text="@string/open_inventory"
+                    android:contentDescription="@string/open_inventory_desc"
+                    android:textSize="11sp" />
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/btnLevelUp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/level_up"
+        android:layout_marginTop="6dp"
         android:visibility="gone" />
+
 </LinearLayout>

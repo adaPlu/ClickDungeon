@@ -1,5 +1,8 @@
 package com.example.clickdungeon.model;
 
+/**
+ * Enumerates all tile types that can appear in the dungeon grid.
+ */
 public enum TileType {
     EMPTY,
     GOLD,
@@ -15,12 +18,12 @@ public enum TileType {
     // Stairs
     STAIR_UP,
     STAIR_DOWN,
-    STAIR_DOWN_LOCKED_BLUE,
-    STAIR_DOWN_LOCKED_GREEN,
-    STAIR_DOWN_LOCKED_RED,
+    STAIR_DOWN_LOCKED,
 
     // Keys
-    RED_KEY,
-    BLUE_KEY,
-    GREEN_KEY
+    SMALL_KEY,
+    BIG_KEY,
+
+    // Chests
+    CHEST
 }

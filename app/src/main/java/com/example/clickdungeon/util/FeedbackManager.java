@@ -1,11 +1,10 @@
 package com.example.clickdungeon.util;
 
 import android.content.Context;
-import android.media.AudioManager;
-import android.media.ToneGenerator;
 import android.os.Build;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
+import android.os.VibratorManager;
 
 import androidx.annotation.NonNull;
 
@@ -16,31 +15,55 @@ import androidx.annotation.NonNull;
  */
 public final class FeedbackManager {
 
-    private static final Object LOCK = new Object();
-    private static ToneGenerator toneGenerator;
-
     private FeedbackManager() {
         // No instances.
     }
 
-    public static void playSound(@NonNull Context context, @NonNull SoundEffect effect) {
-        if (!SettingsManager.isAudioEnabled(context)) {
-            return;
-        }
-        try {
-            ToneGenerator generator = obtainToneGenerator();
-            generator.startTone(effect.getToneType(), effect.getDurationMs());
-        } catch (RuntimeException ignored) {
-            // Some devices can throw if audio focus is unavailable. We silently ignore failures.
-        }
+    /** Tracks the last vibration duration, mainly for test assertions. */
+    private static volatile long lastVibrationDuration;
+
+    /** Resets the last vibration duration tracker. */
+    public static void resetVibrationTracker() {
+        lastVibrationDuration = 0;
     }
 
+    /** Returns the most recent vibration duration. */
+    public static long getLastVibrationDuration() {
+        return lastVibrationDuration;
+    }
+
+    /**
+     * Plays a one-shot sound effect if audio is enabled in settings.
+     */
+    public static void playSound(@NonNull Context context, @NonNull SoundEffect effect) {
+        if (!SettingsManager.isAudioEnabled(context)) {
+            SoundManager.syncMuteFromSettings(context);
+            return;
+        }
+        SoundManager.syncMuteFromSettings(context);
+        SoundManager.playEffect(effect.getSoundKey());
+    }
+
+    /**
+     * Triggers a simple vibration pattern if the player enables haptics.
+     */
+    @SuppressWarnings("deprecation")
     public static void vibrate(@NonNull Context context, @NonNull VibrationPattern pattern) {
         if (!SettingsManager.isVibrationEnabled(context)) {
             return;
         }
-        Vibrator vibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
-        if (vibrator == null || !vibrator.hasVibrator()) {
+        Vibrator vibrator = null;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            VibratorManager manager =
+                    (VibratorManager) context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE);
+            if (manager != null) {
+                vibrator = manager.getDefaultVibrator();
+            }
+        } else {
+            //noinspection deprecation
+            vibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
+        }
+        if (vibrator == null) {
             return;
         }
 
@@ -48,43 +71,33 @@ public final class FeedbackManager {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             vibrator.vibrate(VibrationEffect.createOneShot(duration, VibrationEffect.DEFAULT_AMPLITUDE));
         } else {
+            //noinspection deprecation
             vibrator.vibrate(duration);
         }
+        lastVibrationDuration = duration;
     }
 
-    private static ToneGenerator obtainToneGenerator() {
-        synchronized (LOCK) {
-            if (toneGenerator == null) {
-                toneGenerator = new ToneGenerator(AudioManager.STREAM_MUSIC, 70);
-            }
-            return toneGenerator;
-        }
-    }
-
+    /** Supported sound effect cues routed through the SoundManager. */
     public enum SoundEffect {
-        TREASURE(ToneGenerator.TONE_PROP_ACK, 150),
-        POSITIVE(ToneGenerator.TONE_PROP_BEEP2, 180),
-        TRAP(ToneGenerator.TONE_SUP_ERROR, 220),
-        COMBAT_VICTORY(ToneGenerator.TONE_CDMA_ALERT_CALL_GUARD, 280),
-        COMBAT_DEFEAT(ToneGenerator.TONE_CDMA_ABBR_ALERT, 350);
+        TREASURE(SoundManager.KEY_EFFECT_TREASURE),
+        POSITIVE(SoundManager.KEY_EFFECT_POSITIVE),
+        TRAP(SoundManager.KEY_EFFECT_TRAP),
+        COMBAT_VICTORY(SoundManager.KEY_EFFECT_VICTORY),
+        COMBAT_DEFEAT(SoundManager.KEY_EFFECT_DEFEAT);
 
-        private final int toneType;
-        private final int durationMs;
+        private final String soundKey;
 
-        SoundEffect(int toneType, int durationMs) {
-            this.toneType = toneType;
-            this.durationMs = durationMs;
+        SoundEffect(String soundKey) {
+            this.soundKey = soundKey;
         }
 
-        int getToneType() {
-            return toneType;
-        }
-
-        int getDurationMs() {
-            return durationMs;
+        /** Returns the SoundManager key for the effect. */
+        public String getSoundKey() {
+            return soundKey;
         }
     }
 
+    /** Simple one-shot vibration lengths used across the UI. */
     public enum VibrationPattern {
         LIGHT(25),
         MEDIUM(60),
@@ -96,6 +109,7 @@ public final class FeedbackManager {
             this.durationMs = durationMs;
         }
 
+        /** Returns the vibration duration in milliseconds. */
         long getDurationMs() {
             return durationMs;
         }

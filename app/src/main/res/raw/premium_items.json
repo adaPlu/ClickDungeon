@@ -1,0 +1,5 @@
+[
+  { "name": "Platinum Potion", "price": 20, "resaleValue": 0, "stock": 5 },
+  { "name": "Arcane Relic", "price": 50, "resaleValue": 0, "stock": 2 },
+  { "name": "Mythic Sigil", "price": 100, "resaleValue": 0, "stock": 1 }
+]

@@ -81,4 +81,39 @@ public class SettingsManagerTest {
         assertEquals(12, difficulty.scaleXpReward(10));
         assertEquals(12, difficulty.scaleGoldReward(10));
     }
+
+    @Test
+    public void difficultyFromValueFallsBackToDefault() {
+        SettingsManager.setDifficulty(context, "not_a_mode");
+
+        assertEquals(SettingsManager.Difficulty.NORMAL, SettingsManager.getDifficultyMode(context));
+        assertEquals("NORMAL", SettingsManager.getDifficulty(context));
+    }
+
+    @Test
+    public void audioDiagnosticsTogglePersists() {
+        assertFalse(SettingsManager.isAudioDiagnosticsEnabled(context));
+
+        SettingsManager.setAudioDiagnosticsEnabled(context, true);
+        assertTrue(SettingsManager.isAudioDiagnosticsEnabled(context));
+
+        SettingsManager.setAudioDiagnosticsEnabled(context, false);
+        assertFalse(SettingsManager.isAudioDiagnosticsEnabled(context));
+    }
+
+    @Test
+    public void scaleMonsterDefense_respectsDifficultyBoundaries() {
+        int base = 10;
+
+        int casual = SettingsManager.Difficulty.CASUAL.scaleMonsterDefense(base);
+        int normal = SettingsManager.Difficulty.NORMAL.scaleMonsterDefense(base);
+        int hardcore = SettingsManager.Difficulty.HARDCORE.scaleMonsterDefense(base);
+
+        assertTrue(casual >= 0);
+        assertTrue(casual < normal);
+        assertEquals(9, normal);
+        assertTrue(hardcore > normal);
+
+        assertEquals(0, SettingsManager.Difficulty.CASUAL.scaleMonsterDefense(0));
+    }
 }

@@ -14,13 +14,19 @@ import com.example.clickdungeon.R;
  */
 public final class OnboardingManager {
 
+    /** Shared preferences file for onboarding state. */
     private static final String PREFS_NAME = "onboarding_prompts";
+    /** Key storing the last tutorial version shown. */
     private static final String KEY_DUNGEON_TUTORIAL_VERSION = "dungeon_tutorial_version";
-    private static final int CURRENT_TUTORIAL_VERSION = 1;
+    /** Current tutorial version for which the prompt should appear once. */
+    private static final int CURRENT_TUTORIAL_VERSION = 2;
 
     private OnboardingManager() {
     }
 
+    /**
+     * Shows the dungeon tutorial dialog if it has not been displayed for this version.
+     */
     public static void showDungeonTutorialIfNeeded(@NonNull Activity activity,
                                                    @NonNull SettingsManager.Difficulty difficulty,
                                                    boolean colorBlindModeEnabled) {
@@ -51,6 +57,9 @@ public final class OnboardingManager {
                 .show();
     }
 
+    /**
+     * Returns the localized label for the selected difficulty.
+     */
     private static String getDifficultyLabel(@NonNull Activity activity,
                                              @NonNull SettingsManager.Difficulty difficulty) {
         switch (difficulty) {

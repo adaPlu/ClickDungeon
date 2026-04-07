@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    package="com.example.clickdungeon">
+    xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.VIBRATE" />
 
     <application
+        android:name=".ClickDungeonApp"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -27,11 +27,16 @@
 
         <!-- Other activities -->
         <activity android:name=".ContinueActivity" />
-        <activity android:name=".GameActivity" />
+        <activity android:name=".GameActivity"
+            android:resizeableActivity="true"
+            android:screenOrientation="portrait" />
         <activity android:name=".ClassSelectionActivity" />
         <activity android:name=".AchievementsActivity" />
+        <activity android:name=".AudioDiagnosticsActivity" />
         <activity android:name=".SettingsActivity" />
+        <activity android:name=".PremiumStoreActivity" />
         <activity android:name=".ShopActivity" />
+        <activity android:name=".InventoryActivity" />
 
     </application>
 </manifest>

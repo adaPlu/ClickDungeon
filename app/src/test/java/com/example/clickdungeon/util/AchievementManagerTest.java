@@ -5,6 +5,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 
 import androidx.test.core.app.ApplicationProvider;
 
@@ -27,7 +28,7 @@ public class AchievementManagerTest {
     @Before
     public void setUp() {
         context = ApplicationProvider.getApplicationContext();
-        context.getSharedPreferences("player_prefs", Context.MODE_PRIVATE)
+        SecurePreferences.get(context, "player_prefs")
                 .edit()
                 .clear()
                 .commit();
@@ -64,6 +65,36 @@ public class AchievementManagerTest {
         assertTrue("Expected merged achievements to contain " + title, index >= 0);
         Achievement refreshed = merged.get(index);
         assertEquals(context.getString(R.string.achievement_first_blood_description), refreshed.getDescription());
+    }
+
+    @Test
+    public void corruptAchievementsRestoreBackup() {
+        List<Achievement> achievements = AchievementManager.loadAchievements(context);
+        achievements.get(0).setUnlocked(true);
+        AchievementManager.saveAchievements(context, achievements);
+        AchievementManager.saveAchievements(context, achievements);
+
+        SharedPreferences prefs = SecurePreferences.get(context, "player_prefs");
+        prefs.edit()
+                .putString("achievements", "corrupt")
+                .apply();
+
+        List<Achievement> restored = AchievementManager.loadAchievements(context);
+        assertTrue(restored.get(0).isUnlocked());
+    }
+
+    @Test
+    public void achievementSchemaMismatchResetsToDefaults() {
+        AchievementManager.saveAchievements(context, new ArrayList<>());
+
+        SharedPreferences prefs = SecurePreferences.get(context, "player_prefs");
+        prefs.edit()
+                .putInt("achievements" + PersistedBlobStore.SCHEMA_SUFFIX, 99)
+                .apply();
+
+        List<Achievement> restored = AchievementManager.loadAchievements(context);
+        assertEquals(7, restored.size());
+        assertFalse(restored.get(0).isUnlocked());
     }
 
     private static int findAchievementIndex(List<Achievement> achievements, String title) {

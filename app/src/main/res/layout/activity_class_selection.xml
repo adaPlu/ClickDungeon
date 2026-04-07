@@ -1,75 +1,148 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
-    android:padding="24dp"
-    android:gravity="center_horizontal"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:fillViewport="true"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
+    android:background="@drawable/bg_screen_dungeon">
 
-    <EditText
-        android:id="@+id/editName"
-        android:hint="Enter character name"
+    <LinearLayout
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:gravity="center_horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:inputType="textPersonName"
-        android:maxLines="1"
-        android:layout_marginBottom="16dp" />
+        android:maxWidth="500dp"
+        android:layout_gravity="center_horizontal">
+
+        <EditText
+            android:id="@+id/editName"
+            android:hint="@string/enter_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/panel_bg"
+            android:textColor="#F6E6C6"
+            android:textColorHint="#C9B28A"
+            android:inputType="textPersonName"
+            android:autofillHints="name"
+            android:maxLines="1"
+            android:padding="12dp"
+            android:layout_marginBottom="32dp"
+            android:contentDescription="@string/character_name_field_desc" />
 
     <ImageView
         android:id="@+id/imageClassPreview"
-        android:layout_width="96dp"
-        android:layout_height="96dp"
+        android:layout_width="120dp"
+        android:layout_height="120dp"
         android:src="@drawable/icon_knight"
-        android:layout_marginBottom="16dp"
-        android:contentDescription="Class Preview" />
+        android:layout_marginBottom="24dp"
+        android:layout_marginTop="8dp"
+        android:contentDescription="@string/class_preview_content_desc" />
 
 	<TextView
-		android:id="@+id/textSlotDisplay"
-		android:layout_width="wrap_content"
-		android:layout_height="wrap_content"
-		android:text="Slot: 1"
-		android:textSize="16sp"
-		android:textColor="#888888"
-		android:layout_marginBottom="8dp" />
+        android:id="@+id/textSlotDisplay"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/slot_display_placeholder"
+        android:textSize="14sp"
+        android:textColor="#D6C2A5"
+        android:layout_marginBottom="16dp" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Choose your class:"
-        android:textSize="18sp"
-        android:layout_marginBottom="12dp" />
+        android:text="@string/choose_class_label"
+        android:textSize="16sp"
+        android:textColor="#F6E6C6"
+        android:layout_marginBottom="16dp" />
 
-    <LinearLayout
-        android:orientation="horizontal"
-        android:layout_width="wrap_content"
+    <TableLayout
+        android:id="@+id/classOptionsGrid"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center">
+        android:stretchColumns="*"
+        android:shrinkColumns="*"
+        android:layout_marginBottom="24dp">
 
-        <Button
-            android:id="@+id/btnKnight"
-            android:text="Knight"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="8dp" />
+        <TableRow>
+            <Button
+                android:id="@+id/btnKnight"
+                style="?android:attr/buttonBarButtonStyle"
+                android:text="@string/knight_option"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginEnd="6dp"
+                android:layout_marginBottom="8dp"
+                android:background="@drawable/menu_button_bg"
+                android:textColor="#FFF3D5"
+                android:textSize="13sp"
+                android:drawableStart="@drawable/icon_knight"
+                android:drawablePadding="6dp" />
 
-        <Button
-            android:id="@+id/btnThief"
-            android:text="Thief"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="8dp" />
+            <Button
+                android:id="@+id/btnRanger"
+                style="?android:attr/buttonBarButtonStyle"
+                android:text="@string/ranger_option"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginBottom="8dp"
+                android:background="@drawable/menu_button_bg"
+                android:textColor="#FFF3D5"
+                android:textSize="13sp"
+                android:drawableStart="@drawable/icon_thief"
+                android:drawablePadding="6dp"
+                android:visibility="gone" />
+        </TableRow>
 
-        <Button
-            android:id="@+id/btnWizard"
-            android:text="Wizard"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-    </LinearLayout>
+        <TableRow>
+            <Button
+                android:id="@+id/btnThief"
+                style="?android:attr/buttonBarButtonStyle"
+                android:text="@string/thief_option"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginEnd="6dp"
+                android:background="@drawable/menu_button_bg"
+                android:textColor="#FFF3D5"
+                android:textSize="13sp"
+                android:drawableStart="@drawable/icon_thief"
+                android:drawablePadding="6dp" />
+
+            <Button
+                android:id="@+id/btnWizard"
+                style="?android:attr/buttonBarButtonStyle"
+                android:text="@string/wizard_option"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:background="@drawable/menu_button_bg"
+                android:textColor="#FFF3D5"
+                android:textSize="13sp"
+                android:drawableStart="@drawable/icon_wizard"
+                android:drawablePadding="6dp" />
+        </TableRow>
+    </TableLayout>
+
+    <Button
+        android:id="@+id/btnShop"
+        android:text="@string/shop"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="12dp"
+        android:layout_width="match_parent"
+        android:layout_height="44dp"
+        android:background="@drawable/menu_button_bg"
+        android:textColor="#FFF3D5"
+        android:textSize="14sp" />
 
     <Button
         android:id="@+id/btnStart"
-        android:text="Start Adventure"
-        android:layout_marginTop="24dp"
+        android:text="@string/start_game"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="16dp"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
-</LinearLayout>
+        android:layout_height="44dp"
+        android:background="@drawable/menu_button_bg"
+        android:textColor="#FFF3D5"
+        android:textSize="14sp" />
+
+    </LinearLayout>
+</ScrollView>
