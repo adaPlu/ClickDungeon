@@ -147,6 +147,7 @@
 <!-- Character Selection -->
 <string name="enter_name">Enter character name</string>
 <string name="knight_option">Knight</string>
+<string name="ranger_option">Ranger</string>
 <string name="thief_option">Thief</string>
 <string name="wizard_option">Wizard</string>
 <string name="start_game">Start Adventure</string>

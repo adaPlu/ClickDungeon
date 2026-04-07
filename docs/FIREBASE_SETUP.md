@@ -1,394 +1,147 @@
-# Firebase Configuration Guide - ClickDungeon Online Flavor
+# Firebase / Connected Services Setup - ClickDungeon
 
-This guide covers setting up Firebase for the **online flavor** of ClickDungeon. The offline flavor requires no Firebase setup and will build/run without these steps.
-
----
-
-## Overview
-
-The **online flavor** (`app/src/online/`) includes Firebase integration for:
-- **Authentication** (optional user accounts)
-- **Cloud Firestore** (save backup and sync)
-- **Remote Config** (feature flags and A/B testing)
-- **Cloud Functions** (backend endpoints)
-- **Telemetry** (optional event logging)
-
-The **offline flavor** (`app/src/offline/`) provides no-op implementations and requires no configuration.
+This guide reflects the **current repository state as of 2026-03-30**. Connected-services work is underway, but Firebase and Play Console provisioning are still part of **Track 2 rollout preparation** rather than a fully enabled shipping path.
 
 ---
 
-## Prerequisites
+## Current repo state
 
-1. **Firebase Project**
-   - Visit [Firebase Console](https://console.firebase.google.com/)
-   - Create a new project (or use existing)
-   - Note your Firebase Project ID (e.g., `clickdungeon-abc123`)
-
-2. **Google Account**
-   - Required to manage Firebase project settings
-
-3. **Android Studio or ClickDungeon Repository**
-   - Already on your machine
+- The project currently builds as a **single Android app module** with the normal `debug` / `release` variants.
+- There is **no separate Gradle-defined `online` or `offline` app flavor** in `app/build.gradle.kts` yet.
+- `app/src/online/java` is currently used for **online-only test and service scaffolding** and is compiled into `:app:testDebugUnitTest`.
+- Firebase SDK/plugin enablement and real backend credentials are still gated on external provisioning.
 
 ---
 
-## Step 1: Create Firebase Project
+## Use this guide when you need
 
-### 1.1 Access Firebase Console
-
-1. Go to [Firebase Console](https://console.firebase.google.com/)
-2. Click **Create a project** or select an existing project
-3. Enter **Project Name**: `ClickDungeon` (or preferred name)
-4. Accept terms and click **Create project**
-5. Wait for provisioning (1-2 minutes)
-
-### 1.2 Register Android App
-
-1. In Firebase Console, click **Add app** > **Android**
-2. Fill in app details:
-   - **Android package name**: `com.example.clickdungeon`
-   - **App nickname** (optional): `ClickDungeon Android`
-   - **Debug signing certificate SHA-1** (optional for now):
-     - Run: `./gradlew signingReport` to get your debug key SHA-1
-     - Copy value for `offline` variant `debugAndroidTest`
-   - Click **Register app**
-
-3. Download `google-services.json` file
-   - Click **Download google-services.json**
-   - Save file to: `app/google-services.json` (root of app module)
+- a Firebase project for ClickDungeon
+- `app/google-services.json` for local validation
+- App Check configuration
+- Play Console API or service-account access for purchase validation
+- challenge-signing key material for connected-services rollout
 
 ---
 
-## Step 2: Add google-services.json to Project
+## Step 1: Create and register the Firebase project
 
-### 2.1 Copy File
+1. Open [Firebase Console](https://console.firebase.google.com/).
+2. Create or select the `ClickDungeon` project.
+3. Register the Android app with package name `com.example.clickdungeon`.
+4. Download `google-services.json`.
+
+For local-only testing, place the file at:
+
+```text
+app/google-services.json
+```
+
+> Do **not** commit this file. Use CI secrets for shared automation; see `docs/CI_SECRETS.md`.
+
+---
+
+## Step 2: Store secrets safely
+
+### Local development
 
 ```powershell
-# From your downloads folder, copy to app module root
 Copy-Item "C:\Users\YourName\Downloads\google-services.json" `
           -Destination "ClickDungeon/app/google-services.json"
 ```
 
-### 2.2 Verify Location
+### CI / GitHub Actions
 
-```
-ClickDungeon/
-├── app/
-│   ├── google-services.json        ← Should be HERE
-│   ├── build.gradle.kts
-│   ├── src/
-│   │   ├── main/
-│   │   ├── offline/
-│   │   └── online/
-```
+Use the instructions in `docs/CI_SECRETS.md` and the placeholder workflow in `.github/workflows/ci-secrets-placeholder.yml`.
 
-### 2.3 Verify Gradle Plugin
+Recommended secret names:
+- `GOOGLE_SERVICES_JSON`
+- `PLAY_SERVICE_ACCOUNT_JSON`
 
-Check `app/build.gradle.kts` includes Google Services plugin:
+---
 
-```kotlin
-plugins {
-    id("com.android.application")
-    id("com.google.gms.google-services")  // ← Should be present
-}
-```
+## Step 3: Enable Firebase/Play integration when owners are ready
 
-If missing, add:
-```kotlin
-plugins {
-    // ... existing plugins
-    id("com.google.gms.google-services")
-}
-```
+The repository does **not** yet enable the Google Services plugin by default. When Track 2 moves from provisioning to active integration, add the required plugins/dependencies in `app/build.gradle.kts`.
 
-And in root `build.gradle.kts`:
+Typical additions will include:
+
 ```kotlin
 plugins {
     id("com.google.gms.google-services") version "4.4.0" apply false
 }
 ```
 
----
+and in `app/build.gradle.kts` when the app is ready to consume Firebase SDKs:
 
-## Step 3: Initialize Firebase Services
-
-### 3.1 Enable Firestore (Optional - for save sync)
-
-1. In Firebase Console: **Firestore Database** > **Create database**
-2. Select **Start in test mode** (development)
-3. Choose region: `us-central1` or nearest to your users
-4. Click **Create**
-
-### 3.2 Enable Authentication (Optional - for user accounts)
-
-1. **Authentication** > **Get started**
-2. Select **Anonymous** or **Email/Password** as sign-in methods
-3. Save configuration
-
-### 3.3 Set Up Remote Config (Optional - for feature flags)
-
-1. **Remote Config** > **Create config**
-2. Add sample parameters (e.g., `enable_premium_store = true`)
-3. Publish config
-
----
-
-## Step 4: Build Online Flavor
-
-### 4.1 Build with Firebase Dependencies
-
-```powershell
-# Online flavor (requires google-services.json)
-./gradlew assembleOnlineDebug
-
-# Test with Firebase integration
-./gradlew testOnlineDebugUnitTest
-
-# Run on emulator/device
-./gradlew installOnlineDebug
-```
-
-### 4.2 If Build Fails
-
-**Error**: `google-services.json not found`
-- **Fix**: Ensure `app/google-services.json` exists (not in `app/src/main/`)
-- **Verify**: Run `Get-ChildItem app/google-services.json`
-
-**Error**: Firebase BOM version conflict
-- **Fix**: Update Firebase BOM in `app/build.gradle.kts`:
-  ```kotlin
-  implementation(platform("com.google.firebase:firebase-bom:34.2.0"))
-  ```
-
-**Error**: Google Services plugin not found
-- **Fix**: Add plugin to `build.gradle.kts` as shown in Step 3.1
-
----
-
-## Step 5: Implement Backend Endpoints
-
-The online flavor's `app/src/online/java/...` package provides service stubs for:
-
-- `AuthService.java` — User authentication
-- `SaveService.java` — Cloud save sync
-- `RemoteConfigService.java` — Feature flags
-- `TelemetryManager.java` — Event logging
-- `ChallengeService.java` — Challenge/leaderboard data
-
-See [backend/functions/README.md](../backend/functions/README.md) for endpoint implementation details.
-
----
-
-## Step 6: Deploy Cloud Functions (Optional)
-
-For backend endpoints, deploy Cloud Functions:
-
-```powershell
-# Navigate to functions directory
-cd backend/functions
-
-# Deploy (requires Firebase CLI)
-firebase deploy --only functions
-
-# Verify deployment
-firebase functions:list
-```
-
-See [backend/functions/README.md](../backend/functions/README.md) for detailed endpoint specs.
-
----
-
-## Configuration Reference
-
-### Firestore Rules (Optional)
-
-Sample rules for read/write access (test mode):
-
-```javascript
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    // Allow read/write for authenticated users
-    match /users/{userId}/saves/{saveId} {
-      allow read, write: if request.auth.uid == userId;
-    }
-    
-    // Public challenge data (read-only)
-    match /challenges/{document=**} {
-      allow read: if true;
-    }
-  }
+```kotlin
+plugins {
+    id("com.google.gms.google-services")
 }
-```
 
-Apply via Firebase Console: **Firestore** > **Rules** > **Edit and publish**
-
-### Remote Config Sample
-
-Add these to Firebase Console > **Remote Config**:
-
-| Parameter | Type | Value | Description |
-|-----------|------|-------|-------------|
-| `enable_premium_store` | Boolean | `true` | Show premium store |
-| `event_logging_enabled` | Boolean | `true` | Enable telemetry |
-| `cloud_save_enabled` | Boolean | `true` | Enable save sync |
-
----
-
-## Testing Firebase Integration
-
-### 4.1 Test Auth (if implemented)
-
-```java
-// In GameActivity or test
-FirebaseAuth auth = FirebaseAuth.getInstance();
-auth.signInAnonymously().addOnCompleteListener(task -> {
-    if (task.isSuccessful()) {
-        String uid = auth.getCurrentUser().getUid();
-        Log.d("Firebase", "Auth OK: " + uid);
-    }
-});
-```
-
-### 4.2 Test Firestore (if implemented)
-
-```java
-// Test save backup read
-FirebaseFirestore db = FirebaseFirestore.getInstance();
-db.collection("users")
-  .document(uid)
-  .collection("saves")
-  .get()
-  .addOnSuccessListener(snapshot -> {
-      Log.d("Firebase", "Saves: " + snapshot.size());
-  });
-```
-
-### 4.3 Test Remote Config (if implemented)
-
-```java
-// Test feature flag fetch
-FirebaseRemoteConfig config = FirebaseRemoteConfig.getInstance();
-config.fetchAndActivate().addOnCompleteListener(task -> {
-    boolean isPremiumEnabled = config.getBoolean("enable_premium_store");
-    Log.d("Firebase", "Premium enabled: " + isPremiumEnabled);
-});
+implementation(platform("com.google.firebase:firebase-bom:<version>"))
 ```
 
 ---
 
-## Security Best Practices
+## Step 4: Verify the current local build path
 
-### 1. Restrict google-services.json
-
-**Add to `.gitignore`** to prevent accidental commit:
-
-```
-# .gitignore
-app/google-services.json
-```
-
-### 2. Use Service-Specific Rules
-
-Firestore rules should restrict access by user/role:
-
-```javascript
-// Restrict saves to owner only
-match /users/{userId}/saves/{saveId} {
-  allow read, write: if request.auth.uid == userId;
-}
-```
-
-### 3. Rotate Debug Keys Before Release
-
-Before production, replace debug signing key SHA-1 with release key:
+These commands are valid **today** and match the current project setup:
 
 ```powershell
-# Get release key SHA-1 (after signing config is set)
-./gradlew signingReport
+# Build the current debug variant
+.\gradlew.bat :app:assembleDebug
+
+# Run the verified local unit-test target
+.\gradlew.bat :app:testDebugUnitTest --no-daemon
 ```
 
-Add release key SHA-1 in Firebase Console: **App settings** > **Add SHA-1**
+Verified locally on **2026-03-30**: `:app:testDebugUnitTest` passes.
 
-### 4. Enable Firestore Security Rules
-
-Before release, switch from **Test Mode** to **Production Mode**:
-- Firebase Console > Firestore > **Rules** > **Edit and publish**
-- Ensure rules restrict access properly
+> Tests under `app/src/online/java` are included in `:app:testDebugUnitTest`. The legacy alias `:app:testOnlineDebugUnitTest` is also available for older scripts and docs, but it currently maps to the same standard unit-test run.
 
 ---
 
-## Flavor Structure
+## Step 5: External rollout checklist (Track 2)
 
-### Offline Flavor (No Firebase)
+Before connected services can be considered validated, the following external items still need owners and credentials:
 
-```
-app/src/offline/java/com/example/clickdungeon/
-├── util/backend/
-│   ├── AuthService.java        (no-op)
-│   ├── SaveService.java        (no-op)
-│   └── RemoteConfigService.java (no-op)
-```
-
-**Build**: `./gradlew assembleOfflineDebug`  
-**No dependencies required**
-
-### Online Flavor (With Firebase)
-
-```
-app/src/online/java/com/example/clickdungeon/
-├── util/backend/
-│   ├── AuthService.java        (Firebase Auth)
-│   ├── SaveService.java        (Firestore)
-│   └── RemoteConfigService.java (Remote Config)
-```
-
-**Build**: `./gradlew assembleOnlineDebug`  
-**Requires**: `google-services.json`
+- [ ] Firebase project setup complete
+- [ ] `google-services.json` issued and stored securely
+- [ ] App Check configured
+- [ ] Play Console API access granted for purchase validation
+- [ ] challenge-signing key material created and stored in a secure vault
+- [ ] device-matrix validation run for auth, leaderboard, friends, cloud save, challenges, and sandbox purchases
 
 ---
 
 ## Troubleshooting
 
-### Build Failures
+### `google-services.json not found`
+- Ensure the file is placed at `app/google-services.json`
+- Do not place it under `app/src/main/`
 
-**Plugin not found: `com.google.gms.google-services`**
-- Ensure root `build.gradle.kts` includes plugin definition
+### CI cannot decode secrets
+- Re-encode the JSON with base64 and update the matching GitHub secret
+- Check `.github/workflows/ci-secrets-placeholder.yml` for the expected secret names
 
-**google-services.json conflicts**
-- Check that only one `google-services.json` exists (not in `src/main/`, only in `app/`)
-
-### Runtime Errors
-
-**FirebaseAuth.getInstance() returns null**
-- Ensure `google-services.json` is valid and app is registered in Firebase Console
-
-**Firestore queries return empty**
-- Check Firestore rules allow the authenticated user access
-- Verify data is published to the correct collection/document path
-
-### Emulator Issues
-
-**Firebase emulator offline**
-- Use online flavor with physical device or Firebase emulator suite
-- For testing, use offline flavor which has no external dependencies
+### Build works but Firebase is still inactive
+- That is expected until the Google Services plugin and Firebase SDKs are enabled in the app module
 
 ---
 
-## Next Steps
+## Security notes
 
-1. ✅ Copy `google-services.json` to `app/` directory
-2. ✅ Build with `./gradlew assembleOnlineDebug`
-3. 📖 Read [backend/functions/README.md](../backend/functions/README.md) for endpoint details
-4. 🔒 Configure Firestore rules for production
-5. 🚀 Plan Cloud Functions deployment
+- Never commit `google-services.json`, Play service-account JSON, or private signing keys.
+- Store them in your organization secrets manager or CI secret store.
+- Keep production Firebase rules and Play access limited to authorized owners.
 
 ---
 
-## Additional Resources
+## Additional resources
 
 - [Firebase Console](https://console.firebase.google.com)
-- [Firebase Android Docs](https://firebase.google.com/docs/android/setup)
-- [Firestore Security Rules](https://firebase.google.com/docs/firestore/security/get-started)
-- [Remote Config Guide](https://firebase.google.com/docs/remote-config)
+- [Firebase Android setup](https://firebase.google.com/docs/android/setup)
+- [Google Play Billing overview](https://developer.android.com/google/play/billing)
+- `docs/CI_SECRETS.md`
+- `docs/NEXT_PHASE_PLAN.md`
 

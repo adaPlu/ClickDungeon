@@ -2,7 +2,7 @@
 
 Summary
 -------
-This draft captures the concrete steps needed to provision and validate connected services for ClickDungeon: Firebase (google-services.json, App Check) and Play Console access (purchase validation / sandbox). Use this as the first comment when opening the Track 2 issue from the template.
+This draft captures the concrete steps required to provision and validate ClickDungeon's connected services: Firebase (`google-services.json`, App Check) and Play Console access for purchase validation and sandbox testing. Use it as the opening comment when filing the Track 2 issue from the template.
 
 Owners & Contacts
 ------------------

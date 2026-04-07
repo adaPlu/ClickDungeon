@@ -1,6 +1,6 @@
 # ClickDungeon - Android Dungelot-Inspired Roguelite
 
-**Version**: 0.06 | **Status**: Phase G complete (2026-03-03), Phase 9 pending
+**Version**: 0.06 | **Status**: Core content is implemented; Phase 13 polish and Track 2 connected-services work are currently in progress (verified 2026-03-30)
 
 **ClickDungeon** is a premium Android dungeon-crawler inspired by the Dungelot series, developed in Java using Android Studio. Players explore layered floors of a hidden-tile dungeon, collect gold, unlock achievements, and use special class abilities to survive and progress. Platinum is stored and can be spent in a placeholder premium store (no real IAP yet). Designed for commercial use with built-in expansion points for monetization and further gameplay depth.
 
@@ -9,7 +9,7 @@
 ## Quick Start
 
 - [DEVELOPER_SETUP.md](docs/DEVELOPER_SETUP.md): JDK 17 / Gradle / Android Studio setup
-- [FIREBASE_SETUP.md](docs/FIREBASE_SETUP.md): online flavor setup
+- [FIREBASE_SETUP.md](docs/FIREBASE_SETUP.md): Firebase / connected-services provisioning
 - [ASSET_IMPORT_GUIDE.md](docs/ASSET_IMPORT_GUIDE.md): class/art ingestion
 - [ANIMATION_ARCHITECTURE.md](docs/ANIMATION_ARCHITECTURE.md): animation state gaps
 - [ROADMAP.md](docs/ROADMAP.md): feature status and technical debt
@@ -218,7 +218,7 @@ ClickDungeon/
 
 ## Roadmap
 
-See `docs/ROADMAP.md` for the current, detailed roadmap and milestone tracking. The detailed phase checklist is maintained there to avoid drift.
+See `docs/ROADMAP.md` for the verified feature roadmap and technical-debt list, and `docs/NEXT_PHASE_PLAN.md` for the current execution order across Track 1-4 work. The detailed phase checklist is maintained there to avoid drift.
 
 ---
 
@@ -233,7 +233,8 @@ This project is licensed for commercial use. Redistribution, sublicensing, or mo
 ## Local development & testing
 - Install Android SDK with platform 36 and ensure `sdk.dir` in `local.properties` points to it (see `local.properties.example`).
 - Robolectric tests can be run with `./gradlew test` (SDK 34 pinned via `app/src/test/resources/robolectric.properties`); Android Studio or the Gradle daemon will reuse the configured SDK and cached dependencies.
-- For a lightweight local target, run `scripts/testDebugUnitTest.ps1` (Windows PowerShell) to execute `testDebugUnitTest`.
+- For a lightweight local target, run `scripts/testDebugUnitTest.ps1` or `scripts/run_online_tests.ps1` (Windows PowerShell) to execute `:app:testDebugUnitTest`.
+- `app/src/online/java` is currently compiled into the standard unit-test source set, so online smoke tests run under `:app:testDebugUnitTest` until a dedicated Gradle task is split out.
 - If running in a restricted network environment, pre-seed the Gradle wrapper and Android SDK offline to avoid proxy download failures during CI.
 
 ### Test scaffolding guidelines

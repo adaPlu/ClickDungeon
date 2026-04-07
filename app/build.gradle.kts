@@ -63,3 +63,25 @@ dependencies {
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
 }
+
+// Compatibility aliases for older docs/scripts that still reference
+// offline/online-flavored task names. The project currently builds a
+// single app variant, so these redirect to the existing debug tasks.
+listOf(
+    Triple("assembleOfflineDebug", "assembleDebug", "Build the current debug APK via the legacy offline task name."),
+    Triple("assembleOnlineDebug", "assembleDebug", "Build the current debug APK via the legacy online task name."),
+    Triple("installOfflineDebug", "installDebug", "Install the current debug APK via the legacy offline task name."),
+    Triple("installOnlineDebug", "installDebug", "Install the current debug APK via the legacy online task name."),
+    Triple("testOfflineDebugUnitTest", "testDebugUnitTest", "Run the standard unit-test suite via the legacy offline task name."),
+    Triple("testOnlineDebugUnitTest", "testDebugUnitTest", "Run the standard unit-test suite via the legacy online task name."),
+    Triple("connectedOfflineAndroidTest", "connectedDebugAndroidTest", "Run connected tests via the legacy offline task name."),
+    Triple("connectedOnlineDebugAndroidTest", "connectedDebugAndroidTest", "Run connected tests via the legacy online task name.")
+).forEach { (aliasName, targetName, taskDescription) ->
+    if (tasks.findByName(aliasName) == null) {
+        tasks.register(aliasName) {
+            group = "verification"
+            description = taskDescription
+            dependsOn(targetName)
+        }
+    }
+}

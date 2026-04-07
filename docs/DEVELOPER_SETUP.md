@@ -1,6 +1,6 @@
 # Developer Setup Guide - ClickDungeon Android
 
-This guide walks you through setting up a development environment to build and test ClickDungeon locally.
+This guide walks through the recommended local setup for building and testing ClickDungeon.
 
 ---
 
@@ -20,7 +20,7 @@ This guide walks you through setting up a development environment to build and t
 
 3. **Android SDK** (via Android Studio)
    - Target SDK: **36** (Android 16)
-   - Min SDK: **21** (offline), **23** (online)
+   - Min SDK: **21**
    - Compile SDK: **36**
    - Install via Android Studio > SDK Manager > SDK Platforms:
      - ✅ Android 16 (API 36)
@@ -86,17 +86,14 @@ java -version
 # Run all unit tests
 ./gradlew test
 
-# Run tests for offline flavor only
-./gradlew testOfflineDebugUnitTest
+# Run the main local smoke target (verified 2026-03-30)
+./gradlew :app:testDebugUnitTest
 
-# Run tests for online flavor (includes Firebase stubs)
-./gradlew testOnlineDebugUnitTest
-
-# Run quick smoke tests
-./gradlew testDebugUnitTest
+# Windows helper script for the same task + report collection
+./scripts/run_online_tests.ps1
 ```
 
-**Note**: Tests pin SDK 34 via `robolectric.properties`. Ensure JDK 17+ is configured.
+**Note**: Tests pin SDK 34 via `robolectric.properties`. `app/src/online/java` is currently included in the standard `test` source set, so online smoke tests run under `:app:testDebugUnitTest`. For compatibility with older scripts/docs, the alias task `:app:testOnlineDebugUnitTest` also works and redirects to the same suite.
 
 ### Instrumentation Tests (Device/Emulator)
 
@@ -105,8 +102,8 @@ java -version
 # Run instrumentation tests
 ./gradlew connectedAndroidTest
 
-# Run for specific flavor
-./gradlew connectedOfflineAndroidTest
+# Or target the current debug variant explicitly
+./gradlew :app:connectedDebugAndroidTest
 ```
 
 ### Troubleshooting Test Failures
@@ -117,28 +114,17 @@ java -version
 
 ---
 
-## Building for Desktop/Preview
-
-### Offline Flavor
+## Building the App
 
 ```powershell
-# Build debug APK (no Firebase dependencies)
-./gradlew assembleOfflineDebug
-# Output: app/build/outputs/apk/offline/debug/app-offline-debug.apk
+# Build the shared debug APK
+./gradlew :app:assembleDebug
 
-# Install on emulator/device
-./gradlew installOfflineDebug
+# Install on an emulator or connected device
+./gradlew :app:installDebug
 ```
 
-### Online Flavor
-
-```powershell
-# Requires Firebase setup (see docs/FIREBASE_SETUP.md)
-./gradlew assembleOnlineDebug
-# Output: app/build/outputs/apk/online/debug/app-online-debug.apk
-
-./gradlew installOnlineDebug
-```
+> The repository does **not** currently define separate `online` and `offline` product flavors. Connected-services work is being staged through Track 2 documentation and scaffolding rather than through a distinct app variant.
 
 ---
 
@@ -186,14 +172,14 @@ java -version
 | `./gradlew assembleDebug` | Build debug APK |
 | `./gradlew check` | Run lint + tests (CI-equivalent) |
 
-### Flavor-Specific Tasks
+### Current App Tasks
 
 | Task | Purpose |
 |------|---------|
-| `./gradlew assembleOfflineDebug` | Build offline flavor APK |
-| `./gradlew assembleOnlineDebug` | Build online flavor APK (requires Firebase) |
-| `./gradlew testOfflineDebugUnitTest` | Test offline flavor only |
-| `./gradlew testOnlineDebugUnitTest` | Test online flavor (with Firebase mocks) |
+| `./gradlew :app:assembleDebug` | Build the current debug APK |
+| `./gradlew :app:installDebug` | Install the current debug APK on a device/emulator |
+| `./gradlew :app:testDebugUnitTest` | Run the verified local Robolectric/JUnit smoke target |
+| `./scripts/run_online_tests.ps1` | Windows helper for the same unit-test run and report collection |
 
 ---
 

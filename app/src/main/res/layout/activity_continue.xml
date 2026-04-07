@@ -2,21 +2,26 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
     android:background="@drawable/dungeon_door_open">
 
     <LinearLayout 
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="16dp">
+        android:padding="12dp"
+        android:maxWidth="550dp"
+        android:layout_gravity="center_horizontal">
 
         <!-- Slot 1 -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:padding="12dp"
-            android:layout_marginBottom="12dp"
+            android:padding="14dp"
+            android:layout_marginBottom="10dp"
+            android:layout_marginStart="2dp"
+            android:layout_marginEnd="2dp"
             android:background="@drawable/panel_bg">
 
             <TextView
@@ -25,16 +30,23 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="@string/continue_slot_info_placeholder"
-                android:textSize="16sp"
-                android:textColor="#F6E6C6" />
+                android:textSize="14sp"
+                android:textColor="#F6E6C6"
+                android:ellipsize="end"
+                android:maxLines="2" />
 
             <Button
                 android:id="@+id/slot1Button"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="40dp"
+                android:minWidth="0dp"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
+                android:layout_marginStart="10dp"
                 android:text="@string/continue_slot_action_placeholder"
                 android:background="@drawable/menu_button_bg"
-                android:textColor="#FFF3D5" />
+                android:textColor="#FFF3D5"
+                android:textSize="12sp" />
         </LinearLayout>
 
         <!-- Slot 2 -->
@@ -42,8 +54,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:padding="12dp"
-            android:layout_marginBottom="12dp"
+            android:padding="14dp"
+            android:layout_marginBottom="10dp"
+            android:layout_marginStart="2dp"
+            android:layout_marginEnd="2dp"
             android:background="@drawable/panel_bg">
 
             <TextView
@@ -52,16 +66,23 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="@string/continue_slot_info_placeholder"
-                android:textSize="16sp"
-                android:textColor="#F6E6C6" />
+                android:textSize="14sp"
+                android:textColor="#F6E6C6"
+                android:ellipsize="end"
+                android:maxLines="2" />
 
             <Button
                 android:id="@+id/slot2Button"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="40dp"
+                android:minWidth="0dp"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
+                android:layout_marginStart="10dp"
                 android:text="@string/continue_slot_action_placeholder"
                 android:background="@drawable/menu_button_bg"
-                android:textColor="#FFF3D5" />
+                android:textColor="#FFF3D5"
+                android:textSize="12sp" />
         </LinearLayout>
 
         <!-- Slot 3 -->
@@ -69,8 +90,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:padding="12dp"
-            android:layout_marginBottom="12dp"
+            android:padding="14dp"
+            android:layout_marginBottom="10dp"
+            android:layout_marginStart="2dp"
+            android:layout_marginEnd="2dp"
             android:background="@drawable/panel_bg">
 
             <TextView
@@ -79,16 +102,23 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="@string/continue_slot_info_placeholder"
-                android:textSize="16sp"
-                android:textColor="#F6E6C6" />
+                android:textSize="14sp"
+                android:textColor="#F6E6C6"
+                android:ellipsize="end"
+                android:maxLines="2" />
 
             <Button
                 android:id="@+id/slot3Button"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="40dp"
+                android:minWidth="0dp"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
+                android:layout_marginStart="10dp"
                 android:text="@string/continue_slot_action_placeholder"
                 android:background="@drawable/menu_button_bg"
-                android:textColor="#FFF3D5" />
+                android:textColor="#FFF3D5"
+                android:textSize="12sp" />
         </LinearLayout>
 
         <!-- Slot 4 -->
@@ -96,8 +126,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:padding="12dp"
-            android:layout_marginBottom="12dp"
+            android:padding="14dp"
+            android:layout_marginBottom="16dp"
+            android:layout_marginStart="2dp"
+            android:layout_marginEnd="2dp"
             android:background="@drawable/panel_bg">
 
             <TextView
@@ -106,16 +138,23 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="@string/continue_slot_info_placeholder"
-                android:textSize="16sp"
-                android:textColor="#F6E6C6" />
+                android:textSize="14sp"
+                android:textColor="#F6E6C6"
+                android:ellipsize="end"
+                android:maxLines="2" />
 
             <Button
                 android:id="@+id/slot4Button"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="40dp"
+                android:minWidth="0dp"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
+                android:layout_marginStart="10dp"
                 android:text="@string/continue_slot_action_placeholder"
                 android:background="@drawable/menu_button_bg"
-                android:textColor="#FFF3D5" />
+                android:textColor="#FFF3D5"
+                android:textSize="12sp" />
         </LinearLayout>
 
     </LinearLayout>

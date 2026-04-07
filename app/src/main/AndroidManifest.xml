@@ -27,7 +27,9 @@
 
         <!-- Other activities -->
         <activity android:name=".ContinueActivity" />
-        <activity android:name=".GameActivity" />
+        <activity android:name=".GameActivity"
+            android:resizeableActivity="true"
+            android:screenOrientation="portrait" />
         <activity android:name=".ClassSelectionActivity" />
         <activity android:name=".AchievementsActivity" />
         <activity android:name=".AudioDiagnosticsActivity" />

@@ -1,14 +1,15 @@
 # ClickDungeon Development Roadmap
 
 _Audit date: 2026-02-23_  
-_Last doc sync: 2026-03-03 (Phase G documentation completed)_
+_Last doc sync: 2026-03-30 (Track 1 verified locally; Track 2 scaffolding added)_
 
-This roadmap documents the verified state of the ClickDungeon Android project (Java sources under `app/src/main/java/com/example/clickdungeon`). Each assertion references concrete files so future work stays grounded in reality.
+This roadmap documents the verified state of the ClickDungeon Android project (Java sources under `app/src/main/java/com/example/clickdungeon`). Each assertion is tied to concrete files so future planning stays grounded in the current codebase.
 
 ## Documentation update note
-- Added explicit doc auditing, asset gap tracking, and phase status sections in `README.md` and `docs/INDEX.md`.
-- Confirmed Ranger fallback behavior and extended animation state gap (managed in `ANIMATION_ARCHITECTURE.md`).
-- Target: confirm Phase 9 production rollout once Firebase/Cloud Functions is ready.
+- Updated `README.md`, `docs/INDEX.md`, `docs/DEVELOPER_SETUP.md`, and `docs/FIREBASE_SETUP.md` to match the current repository state.
+- Added Track 1 support docs (`docs/TRACK1_TRIAGE.md`, `scripts/run_online_tests.ps1`) and verified `:app:testDebugUnitTest` locally on 2026-03-30.
+- Added Track 2 preparation docs and scaffolding (`docs/CI_SECRETS.md`, GitHub issue templates/drafts, CI secret-injection placeholder, and `BillingManager`).
+- Target: complete external Firebase / Play provisioning and then validate the connected-services rollout gates on real devices.
 
 ## Project Snapshot
 - **Platform & build:** Android app targeting SDK 36, Kotlin-based Gradle scripts (`build.gradle.kts`, `settings.gradle.kts`), and Java activities/fragments for every screen (Main Menu, Continue, Class Selection, Game, Shop, Achievements, Settings). Save-slot metadata lives in `util/SaveManager.java`.
@@ -17,7 +18,7 @@ This roadmap documents the verified state of the ClickDungeon Android project (J
 - **UI theming:** Menu/continue screens now use door-themed backgrounds (`dungeon_door`, `dungeon_door_open`) while panel/button styling still uses shared assets (`panel_bg.xml`, `menu_button_bg.xml`). `GameActivity` now applies terrain-specific backgrounds dynamically based on the active terrain. Achievements show Locked/Completed state in the list.
 - **Audio & settings:** `util/SoundManager.java` loads class/monster/effect cues once at app startup (`ClickDungeonApp.java`) with graceful fallbacks when a raw asset is absent and logs missing keys. `FeedbackManager` uses the same SoundPool and respects settings from `SettingsManager`. Audio/vibration/difficulty/color-blind preferences wire directly into `SettingsActivity`.
 - **Persistence/UI surface:** Inventory, achievements, onboarding tips, and shop purchases are shared across runs via SharedPreferences + Gson with schema/checksum validation and backup recovery; Tink + Android Keystore encrypted prefs are used on API 23+ with fallback. Gold is the main shop currency; platinum is stored as a premium placeholder. Inventory UI supports equipment toggles, stat allocation, and MP display (inventory dialog + inventory activity), with an in-memory change log used for toast feedback. Merchant visits add sell/buyback lists on eligible floors. Multi-slot save/continue flows use ContinueActivity and GameActivity pause-triggered saves with debounced background persistence for non-critical events.
-- **Tests:** Robolectric suites in app/src/test/java cover SaveManager integration, CombatDialog interactions (including animation/sound behavior), Settings UI, inventory/achievement helpers, dungeon generator, tile binding for the grid visuals, item catalog/merchant/loot roll helpers, persisted blob store and SecurePreferences coverage, plus added model/adapter/activity coverage. Core ability flows (cooldown, targeting, chooser) are unit-tested alongside terrain/affinity helpers and animation cloning with affinity metadata. Save snapshot immutability and coalesced save job coverage live alongside the SaveManager integration suite. Tests pin SDK 34 via robolectric.properties (local JDK 17 still required).
+- **Tests:** Robolectric suites in app/src/test/java cover SaveManager integration, CombatDialog interactions (including animation/sound behavior), Settings UI, inventory/achievement helpers, dungeon generator, tile binding for the grid visuals, item catalog/merchant/loot roll helpers, persisted blob store and SecurePreferences coverage, plus added model/adapter/activity coverage. Core ability flows (cooldown, targeting, chooser) are unit-tested alongside terrain/affinity helpers and animation cloning with affinity metadata. Save snapshot immutability and coalesced save job coverage live alongside the SaveManager integration suite. Tests pin SDK 34 via robolectric.properties (local JDK 17 still required), and `app/src/online/java` is now included in the standard unit-test source set for smoke coverage.
 
 ## Confirmed Feature Coverage
 1. **Dungeon exploration & status effects**
@@ -49,7 +50,7 @@ This roadmap documents the verified state of the ClickDungeon Android project (J
 2. **Inventory & economy UX polish.** The inventory change log now appears in the dialog/activity, but it lacks richer formatting and filtering. Expand item tooltips, add clearer sell/buyback confirmations in the merchant flow, and consider a dedicated inventory change log panel for long sessions. Shop prices/stock already come from `GameBalance` + `shop_items.json`; the debug-only reload helper exists but needs a release-safe workflow for live tuning.
 3. **Testing gaps.** Coverage exists for abilities, grid animation throttling, and audio diagnostics; remaining gaps are merchant buyback edge cases, premium store delivery regressions, and instrumentation tests for sound/animation on-device.
 4. **Persistence/security follow-ups.** Schema/checksum validation, backup recovery, schema-mismatch review prompts, encrypted-prefs failure policy, key rotation, and restore/mismatch telemetry hooks are implemented. Remaining work is deciding if/when to migrate to Room as the data model expands beyond SharedPreferences.
-5. **Build/test friction.** CI runs `./gradlew test` on JDK 17, but local developer setup still needs clear Windows console/JDK 17 guidance and a lightweight profile for faster smoke runs.
+5. **Build/test friction.** CI runs `./gradlew test` on JDK 17, and the repo now includes clearer Windows guidance plus `scripts/run_online_tests.ps1`. Remaining work is triaging real online-backlog failures and deciding whether a dedicated `testOnlineDebugUnitTest` task is still needed.
 6. **Premium currency roadmap.** Platinum now powers a placeholder premium store (no IAP); define the future loop for real purchases, premium-only items, and balancing between gold/platinum.
 
 ### Audio coverage checklist (keep updated)
@@ -115,8 +116,8 @@ This roadmap documents the verified state of the ClickDungeon Android project (J
 - [ ] Add conflict resolution and last-known-good recovery.
 
 ## Known Risks & Code-Quality Notes
-- **Sound asset resilience:** `SoundManager.register()` guards against missing `.ogg` files but silently skips cues; logging is in place, but QA should monitor for missing keys.
-- **Handler lifecycle:** `GameActivity` and `CombatDialogFragment` stop their animation handlers on pause/destroy and only iterate active tiles; monitor for churn if the animated set grows beyond 5x5.
-- **SharedPreferences storage:** Encrypted prefs are used on API 23+ with fallback; integrity checks and backup restore are in place. Consider user-facing reset/migration prompts for tamper detection.
+- **Sound asset resilience:** `SoundManager.register()` guards against missing `.ogg` files but still relies on QA to monitor missing-key logs.
+- **Handler lifecycle:** `GameActivity` and `CombatDialogFragment` stop their animation handlers on pause/destroy and only iterate active tiles; keep an eye on churn if the animated set grows beyond 5x5.
+- **SharedPreferences storage:** Encrypted prefs are used on API 23+ with fallback; integrity checks and backup restore are already in place. Consider adding clearer reset or migration prompts for tamper detection.
 
 _Next audit:_ after integrating inventory UI improvements and additional test coverage (target early 2026 or once the above Near-Term actions are complete).

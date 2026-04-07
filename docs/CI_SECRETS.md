@@ -1,6 +1,6 @@
-CI Secrets & local dev guidelines
+# CI Secrets and Local Development Guidelines
 
-This document explains how to store and inject `google-services.json` and Play service account keys into CI without committing secrets.
+This document explains how to store and inject `google-services.json` and Play service-account keys in CI without committing secrets.
 
 1) Encode secrets for GitHub Actions
 

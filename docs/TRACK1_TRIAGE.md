@@ -1,6 +1,6 @@
 # Track 1 — Test Harness Stabilization: Triage Checklist
 
-Purpose: provide a reproducible triage flow for the online test backlog and a set of commands to collect test failures and diagnostics.
+Purpose: provide a repeatable triage flow for the online test backlog and a small set of commands for collecting failures and diagnostics.
 
 1) Verify test wiring
    - Ensure `app/src/online/java` exists and contains online-only tests.
@@ -26,9 +26,9 @@ Purpose: provide a reproducible triage flow for the online test backlog and a se
    - Combat formatting: assertion/formatting differences in combat logs.
    - Gameplay/activity state: lifecycle/state mismatch failures.
 
-5) Fix & re-run
-   - For classpath/Robolectric issues: confirm `testOptions.unitTests.isIncludeAndroidResources = true` and Robolectric SDK pinned in `app/build.gradle.kts`.
-   - For view-binding issues: add lightweight Robolectric-compatible mocks or move problematic online-only tests behind an integration tag until harness is stable.
+5) Fix and re-run
+   - For classpath or Robolectric issues: confirm `testOptions.unitTests.isIncludeAndroidResources = true` and that the Robolectric SDK is pinned in `app/build.gradle.kts`.
+   - For view-binding issues: add lightweight Robolectric-compatible mocks or temporarily isolate the affected tests until the harness is stable.
 
 6) Promote tests
    - Move verified online tests into `app/src/online/java` (this repo now compiles that directory automatically).
@@ -39,4 +39,5 @@ Exit criteria
    - Focused online backend tests execute under Gradle and are moved into `app/src/online`.
 
 Notes
-   - If you want a dedicated Gradle task for online tests only, add a custom task that filters by package or test pattern. This repo currently compiles `app/src/online` as part of `test` source set so `:app:testDebugUnitTest` runs them together.
+   - The repo currently compiles `app/src/online` as part of the standard `test` source set, so `:app:testDebugUnitTest` runs them together.
+   - For backward compatibility, `:app:testOnlineDebugUnitTest` is available as an alias to the same task.

@@ -16,6 +16,8 @@ import android.text.TextUtils;
 import android.util.LruCache;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.Button;
 import android.widget.GridLayout;
 import android.widget.ImageView;
@@ -301,6 +303,19 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         // Bind UI references.
         gameRootLayout = findViewById(R.id.layoutGameRoot);
         gridLayout = findViewById(R.id.gridDungeon);
+        gridLayout.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                gridLayout.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                int width = gridLayout.getWidth();
+                int height = gridLayout.getHeight();
+                if (height > width) {
+                    ViewGroup.LayoutParams params = gridLayout.getLayoutParams();
+                    params.height = width;
+                    gridLayout.setLayoutParams(params);
+                }
+            }
+        });
         goldCounterText = findViewById(R.id.textGoldCounter);
         platinumCounterText = findViewById(R.id.textPlatinumCounter);
         hpCounterText = findViewById(R.id.textHpCounter);

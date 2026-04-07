@@ -560,7 +560,7 @@ Fired when frame rate drops or animation jank detected.
 
 ---
 
-### 9. BACKEND SYNC EVENTS (Online Flavor Only)
+### 9. BACKEND SYNC EVENTS (Connected Services / Remote Backend Only)
 
 #### `cloud_sync_attempted`
 Fired when cloud sync begins.
@@ -624,7 +624,7 @@ Events are queued in memory and periodically written to SharedPreferences:
 
 **Cleanup**: Events older than 90 days are pruned annually.
 
-### Backend Storage (Online Flavor)
+### Backend Storage (Connected Services)
 
 Events are sent to Firebase via:
 - **Firestore collection**: `users/{user_id}/events/{event_id}`

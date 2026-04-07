@@ -4,7 +4,8 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="8dp"
+    android:padding="4dp"
+    android:fitsSystemWindows="true"
     android:background="@drawable/bg_screen_dungeon">
 
     <!-- Top bar for currency and floor -->
@@ -58,16 +59,22 @@
         android:paddingTop="6dp" />
 
     <!-- Dungeon grid -->
-    <GridLayout
-        android:id="@+id/gridDungeon"
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
-        android:columnCount="5"
-        android:rowCount="5"
-        android:alignmentMode="alignMargins"
-        android:useDefaultMargins="true"
-        android:paddingTop="8dp" />
+        android:layout_weight="1">
+
+        <GridLayout
+            android:id="@+id/gridDungeon"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:columnCount="5"
+            android:rowCount="5"
+            android:alignmentMode="alignMargins"
+            android:useDefaultMargins="true"
+            android:paddingTop="8dp" />
+    </FrameLayout>
 
     <!-- Bottom HUD: name/level, XP+MP stack, and centered class icon with HP bar -->
     <LinearLayout

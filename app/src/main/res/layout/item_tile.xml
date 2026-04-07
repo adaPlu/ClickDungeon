@@ -6,6 +6,8 @@
     android:layout_columnWeight="1"
     android:layout_rowWeight="1"
     android:layout_margin="2dp"
+    android:minWidth="64dp"
+    android:minHeight="64dp"
     android:background="@drawable/tile_bg">
 
     <!-- Enemy sprite or tile -->
