@@ -69,6 +69,7 @@ public final class SecurePreferences {
         }
     }
 
+    @SuppressWarnings("deprecation")
     private static Aead getAead(Context context) throws GeneralSecurityException, IOException {
         if (aead == null) {
             synchronized (SecurePreferences.class) {
