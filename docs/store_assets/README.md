@@ -1,28 +1,29 @@
-﻿*** Begin Patch
-*** Add File: docs/store_assets/README.md
-+# Store Assets — placement and naming
-+
-+Drop artwork here before creating PR A. This directory documents the
-+assets needed for the Play Store submission and the expected file names.
-+
-+Required files (examples):
-+- ic_launcher_foreground.png — foreground layer (1024×1024 recommended)
-+- ic_launcher_background.png — background layer (1024×1024 recommended)
-+- eature_graphic.png — feature graphic (1024×500)
-+- screenshots/screenshot_1.png — phone screenshot (1080×1920)
-+- screenshots/screenshot_2.png
-+
-+Per-density launcher files (optional if using adaptive icon):
-+- mipmap-mdpi/ic_launcher.png (48×48)
-+- mipmap-hdpi/ic_launcher.png (72×72)
-+- mipmap-xhdpi/ic_launcher.png (96×96)
-+- mipmap-xxhdpi/ic_launcher.png (144×144)
-+- mipmap-xxxhdpi/ic_launcher.png (192×192)
-+
-+Notes:
-+- Prefer adaptive icon layers (ic_launcher_foreground + ic_launcher_background).
-+- Keep originals in a separate design/ folder (not committed) for source PSD/AI files.
-+- Use consistent naming and include a short README in the PR describing who provided the assets.
-+
-*** End Patch
+# Store Assets
 
+This folder documents the expected asset names for Play Store submission work.
+It is a staging area for release-prep assets, not a source-art archive.
+
+## Expected Files
+- `ic_launcher_foreground.png`
+- `ic_launcher_background.png`
+- `feature_graphic.png`
+- `screenshots/screenshot_1.png`
+- `screenshots/screenshot_2.png`
+
+## Recommended Sizes
+- `ic_launcher_foreground.png`: 1024x1024
+- `ic_launcher_background.png`: 1024x1024
+- `feature_graphic.png`: 1024x500
+- screenshots: phone portrait captures sized for Play Console upload
+
+## Optional Density Exports
+- `mipmap-mdpi/ic_launcher.png`
+- `mipmap-hdpi/ic_launcher.png`
+- `mipmap-xhdpi/ic_launcher.png`
+- `mipmap-xxhdpi/ic_launcher.png`
+- `mipmap-xxxhdpi/ic_launcher.png`
+
+## Notes
+- Prefer adaptive launcher icon layers when possible.
+- Keep editable PSD/AI/source files outside the repo.
+- Final asset review should confirm filenames, dimensions, and export quality.

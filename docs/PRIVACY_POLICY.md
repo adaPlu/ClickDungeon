@@ -1,45 +1,45 @@
-﻿*** Begin Patch
-*** Add File: docs/PRIVACY_POLICY.md
-+# Privacy Policy — ClickDungeon (draft)
-+
-+Effective date: 2026-04-07
-+
-+Summary
-+ClickDungeon is an offline-first mobile game. We do not collect personal
-+information from players by default. Local save data is stored on-device
-+and protected using encryption and integrity checks.
-+
-+Data We Collect
-+- Local save data: encrypted game save slots (no external transfer by default).
-+- Analytics & crash reports: optional Crashlytics/Analytics may be enabled
-+  to help diagnose crashes. These services may collect device identifiers
-+  and non-personal diagnostic data.
-+
-+How We Use Data
-+- Saves: stored locally to persist player progress.
-+- Crash reports: used to improve app stability. No PII is intentionally
-+  collected or transmitted.
-+
-+Third-Party Services
-+- Firebase Crashlytics and Firebase Analytics may be used for crash
-+  reporting and aggregated usage statistics. See their privacy policies
-+  for details.
-+
-+Security
-+Local save data is encrypted (Tink + Android Keystore) and protected with
-+an HMAC. Keys are stored in platform-provided secure storage where available.
-+
-+Children
-+This app is not directed to children under 13. If you believe your child has
-+provided personal information, please contact us.
-+
-+Contact
-+For privacy questions contact: privacy@yourdomain.example
-+
-+Hosting the policy
-+- To host this policy on GitHub Pages, create docs/PRIVACY_POLICY.md and
-+  enable GitHub Pages to serve the docs/ folder. Use the resulting URL
-+  in the Play Console.
-+
-*** End Patch
+# Privacy Policy for ClickDungeon
 
+Draft date: 2026-04-09
+
+## Summary
+ClickDungeon is an offline-first mobile game. By default, the game stores save
+data locally on the device and does not require account creation.
+
+## Data We Store
+- Local save data for game progress
+- Local settings such as audio, difficulty, and accessibility preferences
+- Local inventory, achievements, and progression metadata
+
+## Crash and Analytics Data
+Crash-reporting and analytics services are not currently active in the shipped
+app build. If Firebase Crashlytics or Analytics are enabled in a future build,
+this policy must be updated before release and the Play Console listing must
+link to the hosted policy URL.
+
+## How Data Is Used
+- To persist game progress between sessions
+- To store gameplay settings selected by the player
+- To maintain inventory, achievements, and progression state
+
+## Security
+ClickDungeon stores save data locally and protects sensitive preference data
+with encryption and integrity checks where supported by the device platform.
+
+## Third-Party Services
+The current codebase does not enable Firebase or Play billing services in the
+app build. Future connected-service releases may introduce third-party
+services, at which point this policy must be revised accordingly.
+
+## Children
+ClickDungeon is not intended to collect personal information from children.
+
+## Contact
+Contact details and a production privacy-policy URL must be added before public
+release.
+
+## Release Checklist
+- Replace this draft with approved legal/privacy text
+- Add a real contact address
+- Host the final policy at a stable public URL
+- Add that URL to the Google Play Console
