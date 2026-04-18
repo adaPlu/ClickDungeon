@@ -5,6 +5,7 @@ import android.app.Application;
 import android.os.Bundle;
 
 import com.adaplu.clickdungeon.util.SoundManager;
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 /**
  * ClickDungeonApp is the main application class for the ClickDungeon game.
@@ -24,8 +25,8 @@ public class ClickDungeonApp extends Application {
         SoundManager.syncMuteFromSettings(this);
         // Register lifecycle callbacks to handle sound pausing/resuming globally.
         registerActivityLifecycleCallbacks(audioLifecycleCallbacks);
-        // Gate 6: uncomment after adding app/google-services.json and enabling Firebase deps:
-        // FirebaseCrashlytics.getInstance().setCrashlyticsCollectionEnabled(!BuildConfig.DEBUG);
+        FirebaseCrashlytics.getInstance()
+                .setCrashlyticsCollectionEnabled(!BuildConfig.DEBUG);
     }
 
     @Override
