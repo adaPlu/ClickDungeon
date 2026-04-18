@@ -67,6 +67,7 @@ import com.adaplu.clickdungeon.util.OnboardingManager;
 import com.adaplu.clickdungeon.util.SaveManager;
 import com.adaplu.clickdungeon.util.SettingsManager;
 import com.adaplu.clickdungeon.util.SoundManager;
+import com.adaplu.clickdungeon.util.TelemetryManager;
 import com.google.gson.Gson;
 
 import java.util.ArrayList;
@@ -317,6 +318,12 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
             }
             ensureAnimatedPlayer();
             startNewRunForActiveSlot();
+            if (profile != null && profile.getPlayerClass() != null) {
+                TelemetryManager.logRunStart(
+                        profile.getPlayerClass().name(),
+                        difficultyMode != null ? difficultyMode.name() : "NORMAL",
+                        activeSlotIndex);
+            }
         } else {
             SaveManager.GameState gameState = saveManager.loadGame(activeSlotIndex);
             if (gameState != null) {
@@ -2651,6 +2658,11 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
 
     private void handleGameOver() {
         if (profile != null) {
+            TelemetryManager.logRunFailed(
+                    currentFloor,
+                    profile.getPlayerClass() != null ? profile.getPlayerClass().name() : "UNKNOWN",
+                    profile.getLevel(),
+                    currentGold);
             profile.setCurrentHP(profile.getMaxHP());
         }
         clearPersistedState();
@@ -3089,6 +3101,13 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
     private void checkVictoryCondition() {
         if (revealedSafeTiles >= safeTilesToReveal) {
             awardFloorClearXp(currentFloor);
+            if (profile != null) {
+                TelemetryManager.logRunCompleted(
+                        currentFloor,
+                        profile.getPlayerClass() != null ? profile.getPlayerClass().name() : "UNKNOWN",
+                        profile.getLevel(),
+                        currentGold);
+            }
             showVictoryDialog();
             unlockAchievement(R.string.achievement_victory_title);
         }
@@ -3292,6 +3311,7 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
     @Override
     /** Applies rewards, clears the tile, and persists state after a combat win. */
     public void onCombatVictory(@NonNull Monster monster) {
+        TelemetryManager.logCombatEnded("VICTORY", monster.getMonsterType(), currentFloor);
         boolean convertedEnemy = activeCombatTile != null && activeCombatTile.getType() == TileType.ENEMY;
         if (activeCombatTile != null) {
             activeCombatTile.setMonster(null);
@@ -3339,6 +3359,10 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
     @Override
     /** Handles combat loss feedback and triggers the game over flow. */
     public void onCombatDefeat() {
+        TelemetryManager.logCombatEnded("DEFEAT",
+                activeCombatTile != null && activeCombatTile.getMonster() != null
+                        ? activeCombatTile.getMonster().getMonsterType() : "UNKNOWN",
+                currentFloor);
         FeedbackManager.playSound(this, FeedbackManager.SoundEffect.COMBAT_DEFEAT);
         FeedbackManager.vibrate(this, FeedbackManager.VibrationPattern.HEAVY);
         clearCombatTracking();
@@ -3348,6 +3372,10 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
     @Override
     /** Applies the flee penalty and cleans up the combat session. */
     public void onCombatFled(int penaltyDamage) {
+        TelemetryManager.logCombatEnded("FLED",
+                activeCombatTile != null && activeCombatTile.getMonster() != null
+                        ? activeCombatTile.getMonster().getMonsterType() : "UNKNOWN",
+                currentFloor);
         if (penaltyDamage > 0) {
             takeDamage(penaltyDamage);
             FeedbackManager.vibrate(this, FeedbackManager.VibrationPattern.MEDIUM);
