@@ -115,6 +115,7 @@
 <string name="shop_section_buyback">Buyback</string>
 
 <!-- Game -->
+<string name="blocked_by_monster">A nearby monster blocks the way.</string>
 <string name="hp_display_dynamic">HP: %1$d/%2$d</string>
 <string name="mp_display_dynamic">MP: %1$d/%2$d</string>
 <string name="xp_display_dynamic">XP: %1$d/%2$d</string>
@@ -148,6 +149,8 @@
 <string name="slot_display_label">Slot: %1$d</string>
 <string name="game_over_title">Game Over</string>
 <string name="game_over_message">You have been defeated. Would you like to restart or return to the main menu?</string>
+<string name="fell_to_floor">You fell to Floor %1$d!</string>
+<string name="trap_disarmed">Trap disarmed!</string>
 
 <!-- Character Selection -->
 <string name="enter_name">Enter character name</string>

@@ -3,7 +3,7 @@
 _Audit date: 2026-02-23_  
 _Last doc sync: 2026-03-30 (Track 1 verified locally; Track 2 scaffolding added)_
 
-This roadmap documents the verified state of the ClickDungeon Android project (Java sources under `app/src/main/java/com/example/clickdungeon`). Each assertion is tied to concrete files so future planning stays grounded in the current codebase.
+This roadmap documents the verified state of the ClickDungeon Android project (Java sources under `app/src/main/java/com/adaplu/clickdungeon`). Each assertion is tied to concrete files so future planning stays grounded in the current codebase.
 
 ## Documentation update note
 - Updated `README.md`, `docs/INDEX.md`, `docs/DEVELOPER_SETUP.md`, and `docs/FIREBASE_SETUP.md` to match the current repository state.
@@ -24,7 +24,7 @@ This roadmap documents the verified state of the ClickDungeon Android project (J
 1. **Dungeon exploration & status effects**
    - `GameActivity.java:323-1180` + `DungeonGenerator.java:21-102` implement 5x5 floors with fire/poison/acid/freeze/pitfall traps, random loot/enemy layouts, stair up/down/locked variations, key placement/consumption, and poison/freeze timers that persist between turns.
    - Grid tiles are reusable view holders with sprite+HP overlays (see `item_tile.xml`, `GameActivity.bindTileView`); `renderGrid` only rebinds dirty tiles, and a handler tick updates animated frames for active tiles (player + revealed enemies).
-   - Terrain assignment per floor and monster family/affinity weighting now influence encounter selection and apply additional poison/freeze hazard hooks during combat turns (`app/src/main/java/com/example/clickdungeon/GameActivity.java:716`, `app/src/main/java/com/example/clickdungeon/GameActivity.java:771`, `app/src/main/java/com/example/clickdungeon/GameActivity.java:2559`, `app/src/main/java/com/example/clickdungeon/model/TerrainType.java:3`, `app/src/main/java/com/example/clickdungeon/model/MonsterFamily.java:3`, `app/src/main/java/com/example/clickdungeon/model/MonsterAffinity.java:3`).
+   - Terrain assignment per floor and monster family/affinity weighting now influence encounter selection and apply additional poison/freeze hazard hooks during combat turns (`app/src/main/java/com/adaplu/clickdungeon/GameActivity.java:716`, `app/src/main/java/com/adaplu/clickdungeon/GameActivity.java:771`, `app/src/main/java/com/adaplu/clickdungeon/GameActivity.java:2559`, `app/src/main/java/com/adaplu/clickdungeon/model/TerrainType.java:3`, `app/src/main/java/com/adaplu/clickdungeon/model/MonsterFamily.java:3`, `app/src/main/java/com/adaplu/clickdungeon/model/MonsterAffinity.java:3`).
    - Terrain visuals are now wired to gameplay progression in `GameActivity`: floor terrain selection updates the game-root background using terrain images (drawable-nodpi), and covered-tile interaction re-applies the current terrain backdrop.
 
 2. **Combat loop & class abilities**

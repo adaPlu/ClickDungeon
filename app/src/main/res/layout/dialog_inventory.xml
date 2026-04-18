@@ -116,7 +116,9 @@
                 android:minWidth="0dp"
                 android:minHeight="0dp"
                 android:text="@string/stat_add_button"
-                android:contentDescription="@string/stat_add_strength_desc" />
+                android:contentDescription="@string/stat_add_strength_desc"
+                android:background="@drawable/menu_button_bg"
+                android:textColor="#FFF3D5" />
         </LinearLayout>
 
         <LinearLayout
@@ -139,7 +141,9 @@
                 android:minWidth="0dp"
                 android:minHeight="0dp"
                 android:text="@string/stat_add_button"
-                android:contentDescription="@string/stat_add_dexterity_desc" />
+                android:contentDescription="@string/stat_add_dexterity_desc"
+                android:background="@drawable/menu_button_bg"
+                android:textColor="#FFF3D5" />
         </LinearLayout>
 
         <LinearLayout
@@ -162,7 +166,9 @@
                 android:minWidth="0dp"
                 android:minHeight="0dp"
                 android:text="@string/stat_add_button"
-                android:contentDescription="@string/stat_add_constitution_desc" />
+                android:contentDescription="@string/stat_add_constitution_desc"
+                android:background="@drawable/menu_button_bg"
+                android:textColor="#FFF3D5" />
         </LinearLayout>
 
         <LinearLayout
@@ -185,7 +191,9 @@
                 android:minWidth="0dp"
                 android:minHeight="0dp"
                 android:text="@string/stat_add_button"
-                android:contentDescription="@string/stat_add_intelligence_desc" />
+                android:contentDescription="@string/stat_add_intelligence_desc"
+                android:background="@drawable/menu_button_bg"
+                android:textColor="#FFF3D5" />
         </LinearLayout>
     </LinearLayout>
 

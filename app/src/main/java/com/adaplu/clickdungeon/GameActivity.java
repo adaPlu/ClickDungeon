@@ -53,6 +53,8 @@ import com.adaplu.clickdungeon.adapter.InventoryAdapter;
 import com.adaplu.clickdungeon.ui.CombatDialogFragment;
 import com.adaplu.clickdungeon.util.AchievementManager;
 import com.adaplu.clickdungeon.util.BossCatalog;
+import com.adaplu.clickdungeon.util.MonsterCatalog;
+import com.adaplu.clickdungeon.util.MonsterCatalog.MonsterTemplate;
 import com.adaplu.clickdungeon.util.DungeonGenerator;
 import com.adaplu.clickdungeon.util.FeedbackManager;
 import com.adaplu.clickdungeon.util.GameBalance;
@@ -65,6 +67,7 @@ import com.adaplu.clickdungeon.util.OnboardingManager;
 import com.adaplu.clickdungeon.util.SaveManager;
 import com.adaplu.clickdungeon.util.SettingsManager;
 import com.adaplu.clickdungeon.util.SoundManager;
+import com.adaplu.clickdungeon.util.TelemetryManager;
 import com.google.gson.Gson;
 
 import java.util.ArrayList;
@@ -199,54 +202,6 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
     private TileType placedLockedStair = null;
     private final Random random = new Random();
 
-    // --- Monster templates per floor ---
-    private final MonsterTemplate slime = new MonsterTemplate("Slime", "S", 3, 1, 0,
-            MonsterFamily.ELEMENTAL, MonsterAffinity.POISON);
-    private final MonsterTemplate goblin = new MonsterTemplate("Goblin", "G", 4, 2, 1,
-            MonsterFamily.HUMANOID, MonsterAffinity.NONE);
-    private final MonsterTemplate skeleton = new MonsterTemplate("Skeleton", "K", 5, 2, 2,
-            MonsterFamily.UNDEAD, MonsterAffinity.SHADOW);
-    private final MonsterTemplate orc = new MonsterTemplate("Orc", "O", 6, 3, 2,
-            MonsterFamily.HUMANOID, MonsterAffinity.NONE);
-    private final MonsterTemplate troll = new MonsterTemplate("Troll", "T", 7, 3, 3,
-            MonsterFamily.BEAST, MonsterAffinity.NONE);
-    private final MonsterTemplate witch = new MonsterTemplate("Witch", "W", 6, 4, 2,
-            MonsterFamily.ARCANE, MonsterAffinity.ARCANE);
-    private final MonsterTemplate vampire = new MonsterTemplate("Vampire", "V", 6, 4, 3,
-            MonsterFamily.UNDEAD, MonsterAffinity.SHADOW);
-    private final MonsterTemplate demon = new MonsterTemplate("Demon", "D", 8, 5, 3,
-            MonsterFamily.DEMONIC, MonsterAffinity.FIRE);
-    private final MonsterTemplate dragon = new MonsterTemplate("Dragon", "R", 10, 6, 4,
-            MonsterFamily.DRACONIC, MonsterAffinity.FIRE);
-    private final MonsterTemplate rat = new MonsterTemplate("Rat", "r", 3, 1, 0,
-            MonsterFamily.BEAST, MonsterAffinity.NONE);
-    private final MonsterTemplate bat = new MonsterTemplate("Bat", "b", 3, 2, 0,
-            MonsterFamily.BEAST, MonsterAffinity.NONE);
-    private final MonsterTemplate spider = new MonsterTemplate("Spider", "s", 4, 2, 1,
-            MonsterFamily.BEAST, MonsterAffinity.POISON);
-    private final MonsterTemplate wolf = new MonsterTemplate("Wolf", "w", 5, 3, 1,
-            MonsterFamily.BEAST, MonsterAffinity.NONE);
-    private final MonsterTemplate bandit = new MonsterTemplate("Bandit", "B", 6, 3, 2,
-            MonsterFamily.HUMANOID, MonsterAffinity.NONE);
-    private final MonsterTemplate cultist = new MonsterTemplate("Cultist", "C", 6, 3, 2,
-            MonsterFamily.HUMANOID, MonsterAffinity.ARCANE);
-    private final MonsterTemplate warlock = new MonsterTemplate("Warlock", "L", 6, 4, 2,
-            MonsterFamily.ARCANE, MonsterAffinity.ARCANE);
-    private final MonsterTemplate wraith = new MonsterTemplate("Wraith", "H", 7, 4, 3,
-            MonsterFamily.UNDEAD, MonsterAffinity.SHADOW);
-    private final MonsterTemplate golem = new MonsterTemplate("Golem", "M", 8, 4, 4,
-            MonsterFamily.CONSTRUCT, MonsterAffinity.NONE);
-    private final MonsterTemplate lich = new MonsterTemplate("Lich", "I", 9, 5, 4,
-            MonsterFamily.UNDEAD, MonsterAffinity.ARCANE);
-    private final MonsterTemplate hellhound = new MonsterTemplate("Hellhound", "h", 9, 6, 3,
-            MonsterFamily.DEMONIC, MonsterAffinity.FIRE);
-    private final MonsterTemplate revenant = new MonsterTemplate("Revenant", "N", 8, 5, 3,
-            MonsterFamily.UNDEAD, MonsterAffinity.SHADOW);
-    private final MonsterTemplate archdemon = new MonsterTemplate("Archdemon", "A", 11, 7, 5,
-            MonsterFamily.DEMONIC, MonsterAffinity.FIRE);
-    private final MonsterTemplate ancientWyrm = new MonsterTemplate("Ancient Wyrm", "Y", 12, 7, 5,
-            MonsterFamily.DRACONIC, MonsterAffinity.FIRE);
-
     // --- Services + managers ---
     private SaveManager saveManager;
     private SettingsManager.Difficulty difficultyMode;
@@ -272,6 +227,7 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
     private final Map<String, View> activeAnimatedTiles = new HashMap<>();
     private final Handler gridAnimationHandler = new Handler(Looper.getMainLooper());
     private final Handler saveHandler = new Handler(Looper.getMainLooper());
+    private final Handler statusEffectHandler = new Handler(Looper.getMainLooper());
     private final Object saveQueueLock = new Object();
     private Executor saveExecutor = Executors.newSingleThreadExecutor();
     private SaveManager.SaveSnapshot pendingSaveSnapshot;
@@ -362,6 +318,12 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
             }
             ensureAnimatedPlayer();
             startNewRunForActiveSlot();
+            if (profile != null && profile.getPlayerClass() != null) {
+                TelemetryManager.logRunStart(
+                        profile.getPlayerClass().name(),
+                        difficultyMode != null ? difficultyMode.name() : "NORMAL",
+                        activeSlotIndex);
+            }
         } else {
             SaveManager.GameState gameState = saveManager.loadGame(activeSlotIndex);
             if (gameState != null) {
@@ -500,7 +462,7 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         updateAbilityButtonState();
         requestSave(SaveReason.FLOOR_TRANSITION);
         maybeShowMerchant();
-        Toast.makeText(this, "You fell to Floor " + currentFloor + "!", Toast.LENGTH_LONG).show();
+        Toast.makeText(this, getString(R.string.fell_to_floor, currentFloor), Toast.LENGTH_LONG).show();
     }
 
     // --- HUD buttons and ability flow ---
@@ -827,37 +789,37 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
     private MonsterTemplate[] getMonsterPoolForFloor(int floor) {
         switch (floor) {
             case 1:
-                return new MonsterTemplate[] { slime, goblin, rat };
+                return new MonsterTemplate[] { MonsterCatalog.SLIME, MonsterCatalog.GOBLIN, MonsterCatalog.RAT };
             case 2:
-                return new MonsterTemplate[] { slime, goblin, bat };
+                return new MonsterTemplate[] { MonsterCatalog.SLIME, MonsterCatalog.GOBLIN, MonsterCatalog.BAT };
             case 3:
-                return new MonsterTemplate[] { goblin, skeleton, spider };
+                return new MonsterTemplate[] { MonsterCatalog.GOBLIN, MonsterCatalog.SKELETON, MonsterCatalog.SPIDER };
             case 4:
-                return new MonsterTemplate[] { skeleton, orc, wolf };
+                return new MonsterTemplate[] { MonsterCatalog.SKELETON, MonsterCatalog.ORC, MonsterCatalog.WOLF };
             case 5:
-                return new MonsterTemplate[] { orc, troll, bandit };
+                return new MonsterTemplate[] { MonsterCatalog.ORC, MonsterCatalog.TROLL, MonsterCatalog.BANDIT };
             case 6:
-                return new MonsterTemplate[] { troll, witch, cultist };
+                return new MonsterTemplate[] { MonsterCatalog.TROLL, MonsterCatalog.WITCH, MonsterCatalog.CULTIST };
             case 7:
-                return new MonsterTemplate[] { witch, vampire, warlock };
+                return new MonsterTemplate[] { MonsterCatalog.WITCH, MonsterCatalog.VAMPIRE, MonsterCatalog.WARLOCK };
             case 8:
-                return new MonsterTemplate[] { vampire, demon, wraith };
+                return new MonsterTemplate[] { MonsterCatalog.VAMPIRE, MonsterCatalog.DEMON, MonsterCatalog.WRAITH };
             case 9:
-                return new MonsterTemplate[] { demon, dragon, golem };
+                return new MonsterTemplate[] { MonsterCatalog.DEMON, MonsterCatalog.DRAGON, MonsterCatalog.GOLEM };
             case 10:
-                return new MonsterTemplate[] { dragon, lich, hellhound };
+                return new MonsterTemplate[] { MonsterCatalog.DRAGON, MonsterCatalog.LICH, MonsterCatalog.HELLHOUND };
             case 11:
-                return new MonsterTemplate[] { dragon, lich, revenant };
+                return new MonsterTemplate[] { MonsterCatalog.DRAGON, MonsterCatalog.LICH, MonsterCatalog.REVENANT };
             case 12:
-                return new MonsterTemplate[] { lich, demon, wraith };
+                return new MonsterTemplate[] { MonsterCatalog.LICH, MonsterCatalog.DEMON, MonsterCatalog.WRAITH };
             case 13:
-                return new MonsterTemplate[] { dragon, lich, demon };
+                return new MonsterTemplate[] { MonsterCatalog.DRAGON, MonsterCatalog.LICH, MonsterCatalog.DEMON };
             case 14:
-                return new MonsterTemplate[] { dragon, lich, archdemon };
+                return new MonsterTemplate[] { MonsterCatalog.DRAGON, MonsterCatalog.LICH, MonsterCatalog.ARCHDEMON };
             case 15:
-                return new MonsterTemplate[] { dragon, archdemon, ancientWyrm };
+                return new MonsterTemplate[] { MonsterCatalog.DRAGON, MonsterCatalog.ARCHDEMON, MonsterCatalog.ANCIENT_WYRM };
             default:
-                return new MonsterTemplate[] { slime, goblin, skeleton };
+                return new MonsterTemplate[] { MonsterCatalog.SLIME, MonsterCatalog.GOBLIN, MonsterCatalog.SKELETON };
         }
     }
 
@@ -879,7 +841,7 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
 
     private MonsterTemplate pickTerrainWeightedMonster(MonsterTemplate[] basePool) {
         if (basePool == null || basePool.length == 0) {
-            return slime;
+            return MonsterCatalog.SLIME;
         }
         List<MonsterTemplate> weighted = new ArrayList<>();
         for (MonsterTemplate template : basePool) {
@@ -1382,9 +1344,78 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         }
     }
 
+    private int getBoardTileImageResource(@Nullable Tile tile) {
+        if (tile == null) {
+            return 0;
+        }
+        switch (tile.getType()) {
+            case EMPTY:
+                return R.drawable.ic_tile_empty_128x128;
+            case GOLD:
+                return R.drawable.ic_tile_gold_128x128;
+            case STAIR_DOWN:
+                return R.drawable.ic_stairs_down_128x128;
+            case STAIR_DOWN_LOCKED:
+                return R.drawable.ic_stairs_locked_128x128;
+            case STAIR_UP:
+                return R.drawable.ic_stairs_up_128x128;
+            case SMALL_KEY:
+                return colorBlindModeEnabled
+                        ? R.drawable.ic_small_key_cb_128x128
+                        : R.drawable.ic_small_key_128x128;
+            case BIG_KEY:
+                return colorBlindModeEnabled
+                        ? R.drawable.ic_big_key_cb_128x128
+                        : R.drawable.ic_big_key_128x128;
+            case CHEST:
+                return R.drawable.ic_chest_closed_128x128;
+            case TRAP_FIRE:
+                return colorBlindModeEnabled
+                        ? R.drawable.ic_trap_fire_cb_128x128
+                        : R.drawable.ic_trap_fire_128x128;
+            case TRAP_POISON:
+                return colorBlindModeEnabled
+                        ? R.drawable.ic_trap_poison_cb_128x128
+                        : R.drawable.ic_trap_poison_128x128;
+            case TRAP_ACID:
+                return colorBlindModeEnabled
+                        ? R.drawable.ic_trap_acid_cb_128x128
+                        : R.drawable.ic_trap_acid_128x128;
+            case TRAP_FREEZE:
+                return colorBlindModeEnabled
+                        ? R.drawable.ic_trap_freeze_cb_128x128
+                        : R.drawable.ic_trap_freeze_128x128;
+            case TRAP_PITFALL:
+                return colorBlindModeEnabled
+                        ? R.drawable.ic_trap_pitfall_cb_128x128
+                        : R.drawable.ic_trap_pitfall_128x128;
+            default:
+                return 0;
+        }
+    }
+
     private void updateTileTextDisplay(TextView tileText, Tile tile) {
         if (tileText != null) {
-            tileText.setText(getTileDisplay(tile));
+            ImageView tileImage = null;
+            View parent = (View) tileText.getParent();
+            if (parent != null) {
+                tileImage = parent.findViewById(R.id.imageTile);
+            }
+
+            int imageRes = getBoardTileImageResource(tile);
+            if (tileImage != null && imageRes != 0) {
+                tileImage.setVisibility(View.VISIBLE);
+                tileImage.setScaleType(ImageView.ScaleType.FIT_CENTER);
+                tileImage.setImageResource(imageRes);
+                tileText.setVisibility(View.GONE);
+            } else {
+                if (tileImage != null) {
+                    tileImage.setVisibility(View.GONE);
+                    tileImage.setImageDrawable(null);
+                }
+                tileText.setVisibility(View.VISIBLE);
+                tileText.setText(getTileDisplay(tile));
+            }
             tileText.setContentDescription(getTileContentDescription(tile));
         }
     }
@@ -1446,8 +1477,7 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
                     tile.getMonster().getMaxHP());
         } else {
             gridMonsterAnimations.remove(coordKey);
-            tileText.setVisibility(View.VISIBLE);
-            tileText.setText(getTileDisplay(tile));
+            updateTileTextDisplay(tileText, tile);
             description = getTileContentDescription(tile);
         }
 
@@ -1754,7 +1784,16 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
             return;
         }
         Tile clickedTile = dungeonGrid[row][col];
+        if (clickedTile.isRevealed() && clickedTile.getType() == TileType.ENEMY
+                && clickedTile.hasMonster() && clickedTile.getMonster().getCurrentHP() > 0) {
+            executeInlineCombatRound(row, col, clickedTile, tileView);
+            return;
+        }
         if (!clickedTile.isRevealed()) {
+            if (isBlockedByMonster(row, col)) {
+                Toast.makeText(this, R.string.blocked_by_monster, Toast.LENGTH_SHORT).show();
+                return;
+            }
             // Covered tiles use the current cover image; clicking one applies the floor terrain backdrop.
             applyTerrainBackgroundForCurrentTerrain();
             clickedTile.reveal();
@@ -1766,8 +1805,8 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
             if (clickedTile.getType() != TileType.ENEMY) {
                 revealedSafeTiles++;
                 recordSafeTileReveal();
+                updatePlayerPosition(row, col);
             }
-            updatePlayerPosition(row, col);
             refreshTile(row, col);
             requestSave(SaveReason.TILE_REVEAL);
             checkVictoryCondition();
@@ -1781,6 +1820,108 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         playerRow = clampedRow;
         playerCol = clampedCol;
         verifyShieldAnchor();
+    }
+
+    private boolean isBlockedByMonster(int row, int col) {
+        int[][] offsets = { {0, 0}, {-1, 0}, {1, 0}, {0, -1}, {0, 1} };
+        for (int[] offset : offsets) {
+            int r = row + offset[0];
+            int c = col + offset[1];
+            if (!isValidGridPosition(r, c)) {
+                continue;
+            }
+            Tile t = dungeonGrid[r][c];
+            if (t != null && t.isRevealed() && t.getType() == TileType.ENEMY
+                    && t.hasMonster() && t.getMonster().getCurrentHP() > 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void executeInlineCombatRound(int row, int col, Tile tile, View tileView) {
+        if (profile == null || !tile.hasMonster()) {
+            return;
+        }
+        Monster monster = tile.getMonster();
+        int playerDamage = Math.max(1, profile.getTotalAttack() - monster.getDefense());
+        monster.takeDamage(playerDamage);
+        showFloatingDamage(tileView, "+" + playerDamage, 0xFFFFD700);
+        if (monster.getCurrentHP() <= 0) {
+            handleInlineCombatVictory(row, col, tile, tileView, monster);
+            return;
+        }
+        int monsterDamage = Math.max(1, monster.getAttack() - profile.getTotalDefense());
+        takeDamage(monsterDamage);
+        showFloatingDamage(tileView, "-" + monsterDamage, 0xFFE53935);
+        if (profile.isDead()) {
+            return;
+        }
+        updateHpCounter();
+        refreshTile(row, col);
+    }
+
+    private void handleInlineCombatVictory(int row, int col, Tile tile, View tileView, Monster monster) {
+        boolean convertedEnemy = tile.getType() == TileType.ENEMY;
+        tile.setMonster(null);
+        tile.setType(TileType.EMPTY);
+        int xpReward = pendingCombatXpReward > 0
+                ? pendingCombatXpReward
+                : GameBalance.calculateXpReward(monster, currentFloor, difficultyMode, random);
+        awardExperience(xpReward);
+        int goldReward = pendingCombatGoldReward > 0
+                ? pendingCombatGoldReward
+                : GameBalance.calculateGoldReward(monster, currentFloor, difficultyMode, random);
+        currentGold += goldReward;
+        InventoryManager.syncGoldWithCurrentRun(this, currentGold);
+        updatePlatinumCounter();
+        updateGoldCounter();
+        updateHpCounter();
+        recordGoldEarned(goldReward);
+        applyMonsterLoot(monster);
+        recordEnemyDefeat();
+        if (monster.isBoss()) {
+            unlockAchievement(R.string.achievement_boss_slayer_title);
+        }
+        FeedbackManager.playSound(this, FeedbackManager.SoundEffect.COMBAT_VICTORY);
+        FeedbackManager.vibrate(this, FeedbackManager.VibrationPattern.MEDIUM);
+        String goldFragment = getResources().getQuantityString(
+                R.plurals.combat_gold_reward, goldReward, goldReward);
+        Toast.makeText(this,
+                getString(R.string.combat_result_victory, monster.getMonsterType(), xpReward, goldFragment),
+                Toast.LENGTH_SHORT).show();
+        if (convertedEnemy) {
+            safeTilesToReveal++;
+            revealedSafeTiles++;
+        }
+        updatePlayerPosition(row, col);
+        refreshTile(row, col);
+        clearCombatTracking();
+        requestSave(SaveReason.COMBAT_VICTORY);
+        if (convertedEnemy) {
+            checkVictoryCondition();
+        }
+    }
+
+    private void showFloatingDamage(View tileView, String text, int color) {
+        if (tileView == null) {
+            return;
+        }
+        TextView floater = tileView.findViewById(R.id.textFloatingDamage);
+        if (floater == null) {
+            return;
+        }
+        floater.setText(text);
+        floater.setTextColor(color);
+        floater.setVisibility(View.VISIBLE);
+        floater.setAlpha(1f);
+        floater.setTranslationY(0f);
+        floater.animate()
+                .translationY(-getResources().getDimension(R.dimen.floating_damage_offset))
+                .alpha(0f)
+                .setDuration(800)
+                .withEndAction(() -> floater.setVisibility(View.GONE))
+                .start();
     }
 
     private int clampGridIndex(int value) {
@@ -2160,7 +2301,7 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
             return true;
         }
         View tileView = getTileViewAt(row, col);
-        startCombat(tile, tileView);
+        executeInlineCombatRound(row, col, tile, tileView);
         Toast.makeText(this, R.string.ambush_engage, Toast.LENGTH_SHORT).show();
         return true;
     }
@@ -2224,9 +2365,8 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
             return false;
         }
         tile.reveal();
-        View tileView = getTileViewAt(row, col);
-        startCombat(tile, tileView);
         playCueWithFallback(SoundManager.KEY_EFFECT_POSITIVE, FeedbackManager.SoundEffect.POSITIVE);
+        refreshTile(row, col);
         Toast.makeText(this, R.string.taunt_engage, Toast.LENGTH_SHORT).show();
         return true;
     }
@@ -2247,7 +2387,7 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
             return true;
         }
         View tileView = getTileViewAt(row, col);
-        startCombat(tile, tileView);
+        executeInlineCombatRound(row, col, tile, tileView);
         Toast.makeText(this, R.string.valiant_engage, Toast.LENGTH_SHORT).show();
         return true;
     }
@@ -2518,14 +2658,19 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
 
     private void handleGameOver() {
         if (profile != null) {
+            TelemetryManager.logRunFailed(
+                    currentFloor,
+                    profile.getPlayerClass() != null ? profile.getPlayerClass().name() : "UNKNOWN",
+                    profile.getLevel(),
+                    currentGold);
             profile.setCurrentHP(profile.getMaxHP());
         }
         clearPersistedState();
         new AlertDialog.Builder(this)
-                .setTitle("Game Over")
-                .setMessage("You have been defeated. Would you like to restart or return to the main menu?")
-                .setPositiveButton("Restart", (dialog, which) -> restartGame())
-                .setNegativeButton("Main Menu", (dialog, which) -> goToMainMenu())
+                .setTitle(R.string.game_over_title)
+                .setMessage(R.string.game_over_message)
+                .setPositiveButton(R.string.restart, (dialog, which) -> restartGame())
+                .setNegativeButton(R.string.main_menu, (dialog, which) -> goToMainMenu())
                 .setCancelable(false)
                 .show();
     }
@@ -2600,7 +2745,7 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
 
             case ENEMY:
                 if (tile.hasMonster()) {
-                    startCombat(tile, tileView);
+                    playCueWithFallback(SoundManager.KEY_EFFECT_POSITIVE, FeedbackManager.SoundEffect.POSITIVE);
                 }
                 break;
 
@@ -2822,7 +2967,7 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
             return;
         }
         if (InventoryManager.getItemQuantity(this, "Trap Disarm Kit") > 0) {
-            Toast.makeText(this, "Trap disarmed!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.trap_disarmed, Toast.LENGTH_SHORT).show();
             InventoryManager.adjustItemQuantity(this, "Trap Disarm Kit", -1);
             addInventoryChange("Trap Disarm Kit", false);
             awardTrapDisabledXp();
@@ -2873,7 +3018,7 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
             applyTrapDamage();
             FeedbackManager.vibrate(this, FeedbackManager.VibrationPattern.LIGHT);
             updateStatusText();
-            new Handler(Looper.getMainLooper()).postDelayed(this::poisonTick, 1500);
+            statusEffectHandler.postDelayed(this::poisonTick, 1500);
         }
     }
 
@@ -2956,6 +3101,13 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
     private void checkVictoryCondition() {
         if (revealedSafeTiles >= safeTilesToReveal) {
             awardFloorClearXp(currentFloor);
+            if (profile != null) {
+                TelemetryManager.logRunCompleted(
+                        currentFloor,
+                        profile.getPlayerClass() != null ? profile.getPlayerClass().name() : "UNKNOWN",
+                        profile.getLevel(),
+                        currentGold);
+            }
             showVictoryDialog();
             unlockAchievement(R.string.achievement_victory_title);
         }
@@ -3159,6 +3311,7 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
     @Override
     /** Applies rewards, clears the tile, and persists state after a combat win. */
     public void onCombatVictory(@NonNull Monster monster) {
+        TelemetryManager.logCombatEnded("VICTORY", monster.getMonsterType(), currentFloor);
         boolean convertedEnemy = activeCombatTile != null && activeCombatTile.getType() == TileType.ENEMY;
         if (activeCombatTile != null) {
             activeCombatTile.setMonster(null);
@@ -3206,6 +3359,10 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
     @Override
     /** Handles combat loss feedback and triggers the game over flow. */
     public void onCombatDefeat() {
+        TelemetryManager.logCombatEnded("DEFEAT",
+                activeCombatTile != null && activeCombatTile.getMonster() != null
+                        ? activeCombatTile.getMonster().getMonsterType() : "UNKNOWN",
+                currentFloor);
         FeedbackManager.playSound(this, FeedbackManager.SoundEffect.COMBAT_DEFEAT);
         FeedbackManager.vibrate(this, FeedbackManager.VibrationPattern.HEAVY);
         clearCombatTracking();
@@ -3215,6 +3372,10 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
     @Override
     /** Applies the flee penalty and cleans up the combat session. */
     public void onCombatFled(int penaltyDamage) {
+        TelemetryManager.logCombatEnded("FLED",
+                activeCombatTile != null && activeCombatTile.getMonster() != null
+                        ? activeCombatTile.getMonster().getMonsterType() : "UNKNOWN",
+                currentFloor);
         if (penaltyDamage > 0) {
             takeDamage(penaltyDamage);
             FeedbackManager.vibrate(this, FeedbackManager.VibrationPattern.MEDIUM);
@@ -3594,67 +3755,5 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         outState.putInt(EXTRA_SLOT_INDEX, activeSlotIndex);
     }
 
-    // --- Monster template helper ---
-    /**
-     * Immutable template that scales base stats per floor and difficulty.
-     */
-    private static class MonsterTemplate {
-        private final String name;
-        private final String emoji;
-        private final int baseHp;
-        private final int baseAttack;
-        private final int baseDefense;
-        private final MonsterFamily family;
-        private final MonsterAffinity affinity;
-
-        MonsterTemplate(String name,
-                        String emoji,
-                        int baseHp,
-                        int baseAttack,
-                        int baseDefense,
-                        MonsterFamily family,
-                        MonsterAffinity affinity) {
-            this.name = name;
-            this.emoji = emoji;
-            this.baseHp = baseHp;
-            this.baseAttack = baseAttack;
-            this.baseDefense = baseDefense;
-            this.family = family != null ? family : MonsterFamily.UNKNOWN;
-            this.affinity = affinity != null ? affinity : MonsterAffinity.NONE;
-        }
-
-        /** Builds a Monster instance using per-floor scaling and difficulty multipliers. */
-        Monster spawnForFloor(Random random, int floor, SettingsManager.Difficulty difficulty) {
-            int scaling = Math.max(0, floor - 1);
-
-            int hpBonus = scaling;
-            int attackBonus = Math.max(0, (scaling + 1) / 2);
-            int defenseBonus = Math.max(0, scaling / 3);
-
-            if (scaling > 0) {
-                hpBonus += random.nextInt(scaling + 1);
-                attackBonus += random.nextInt(Math.max(1, (scaling / 2) + 1));
-                defenseBonus += random.nextInt(Math.max(1, (scaling / 3) + 1));
-            }
-
-            int maxHp = Math.max(1, baseHp + hpBonus);
-            int attack = Math.max(1, baseAttack + attackBonus);
-            int defense = Math.max(0, baseDefense + defenseBonus);
-
-            float scale = GameBalance.getFloorDifficultyScale(floor);
-            maxHp = Math.max(1, Math.round(maxHp * scale));
-            attack = Math.max(1, Math.round(attack * scale));
-            defense = Math.max(0, Math.round(defense * scale));
-
-            if (difficulty != null) {
-                maxHp = difficulty.scaleMonsterHealth(maxHp);
-                attack = difficulty.scaleMonsterAttack(attack);
-                defense = difficulty.scaleMonsterDefense(defense);
-            }
-
-            return new Monster(name, maxHp, attack, defense, emoji, family, affinity);
-        }
-    }
 }
-
 

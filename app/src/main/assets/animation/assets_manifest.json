@@ -1,0 +1,231 @@
+{
+  "pack_name": "ClickDungeon Tile Assets Production Pack",
+  "version": "v2",
+  "output_format": "PNG RGBA",
+  "base_path": "drawable-nodpi/",
+  "json_base_path": "assets/animation/",
+  "assets": [
+    {
+      "name": "ic_tile_gold",
+      "type": "static",
+      "frame_count": 1,
+      "sizes": ["128x128", "512x512"]
+    },
+    {
+      "name": "anim_gold",
+      "type": "animation",
+      "frame_count": 4,
+      "sizes": ["128x128", "512x512"],
+      "frame_duration_ms": 100
+    },
+    {
+      "name": "ic_tile_empty",
+      "type": "static",
+      "frame_count": 1,
+      "sizes": ["128x128", "512x512"]
+    },
+    {
+      "name": "ic_tile_enemy",
+      "type": "static",
+      "frame_count": 1,
+      "sizes": ["128x128", "512x512"]
+    },
+    {
+      "name": "ic_enemy_placeholder",
+      "type": "static",
+      "frame_count": 1,
+      "sizes": ["128x128", "512x512"]
+    },
+    {
+      "name": "anim_enemy_idle",
+      "type": "animation",
+      "frame_count": 6,
+      "sizes": ["128x128", "512x512"],
+      "frame_duration_ms": 100
+    },
+    {
+      "name": "ic_stairs_down",
+      "type": "static",
+      "frame_count": 1,
+      "sizes": ["128x128", "512x512"]
+    },
+    {
+      "name": "ic_stairs_up",
+      "type": "static",
+      "frame_count": 1,
+      "sizes": ["128x128", "512x512"]
+    },
+    {
+      "name": "ic_stairs_locked",
+      "type": "static",
+      "frame_count": 1,
+      "sizes": ["128x128", "512x512"]
+    },
+    {
+      "name": "anim_stairs",
+      "type": "animation",
+      "frame_count": 3,
+      "sizes": ["128x128", "512x512"],
+      "frame_duration_ms": 140
+    },
+    {
+      "name": "anim_stairs_locked",
+      "type": "animation",
+      "frame_count": 3,
+      "sizes": ["128x128", "512x512"],
+      "frame_duration_ms": 140
+    },
+    {
+      "name": "ic_small_key",
+      "type": "static",
+      "frame_count": 1,
+      "sizes": ["128x128", "512x512"]
+    },
+    {
+      "name": "ic_small_key_cb",
+      "type": "static",
+      "frame_count": 1,
+      "sizes": ["128x128", "512x512"]
+    },
+    {
+      "name": "anim_small_key",
+      "type": "animation",
+      "frame_count": 3,
+      "sizes": ["128x128", "512x512"],
+      "frame_duration_ms": 120
+    },
+    {
+      "name": "ic_big_key",
+      "type": "static",
+      "frame_count": 1,
+      "sizes": ["128x128", "512x512"]
+    },
+    {
+      "name": "ic_big_key_cb",
+      "type": "static",
+      "frame_count": 1,
+      "sizes": ["128x128", "512x512"]
+    },
+    {
+      "name": "anim_big_key",
+      "type": "animation",
+      "frame_count": 3,
+      "sizes": ["128x128", "512x512"],
+      "frame_duration_ms": 120
+    },
+    {
+      "name": "ic_chest_closed",
+      "type": "static",
+      "frame_count": 1,
+      "sizes": ["128x128", "512x512"]
+    },
+    {
+      "name": "ic_chest_open",
+      "type": "static",
+      "frame_count": 1,
+      "sizes": ["128x128", "512x512"]
+    },
+    {
+      "name": "anim_chest_open",
+      "type": "animation",
+      "frame_count": 4,
+      "sizes": ["128x128", "512x512"],
+      "frame_duration_ms": 100
+    },
+    {
+      "name": "ic_trap_fire",
+      "type": "static",
+      "frame_count": 1,
+      "sizes": ["128x128", "512x512"]
+    },
+    {
+      "name": "ic_trap_fire_cb",
+      "type": "static",
+      "frame_count": 1,
+      "sizes": ["128x128", "512x512"]
+    },
+    {
+      "name": "anim_trap_fire",
+      "type": "animation",
+      "frame_count": 6,
+      "sizes": ["128x128", "512x512"],
+      "frame_duration_ms": 90
+    },
+    {
+      "name": "ic_trap_poison",
+      "type": "static",
+      "frame_count": 1,
+      "sizes": ["128x128", "512x512"]
+    },
+    {
+      "name": "ic_trap_poison_cb",
+      "type": "static",
+      "frame_count": 1,
+      "sizes": ["128x128", "512x512"]
+    },
+    {
+      "name": "anim_trap_poison",
+      "type": "animation",
+      "frame_count": 6,
+      "sizes": ["128x128", "512x512"],
+      "frame_duration_ms": 100
+    },
+    {
+      "name": "ic_trap_acid",
+      "type": "static",
+      "frame_count": 1,
+      "sizes": ["128x128", "512x512"]
+    },
+    {
+      "name": "ic_trap_acid_cb",
+      "type": "static",
+      "frame_count": 1,
+      "sizes": ["128x128", "512x512"]
+    },
+    {
+      "name": "anim_trap_acid",
+      "type": "animation",
+      "frame_count": 6,
+      "sizes": ["128x128", "512x512"],
+      "frame_duration_ms": 100
+    },
+    {
+      "name": "ic_trap_freeze",
+      "type": "static",
+      "frame_count": 1,
+      "sizes": ["128x128", "512x512"]
+    },
+    {
+      "name": "ic_trap_freeze_cb",
+      "type": "static",
+      "frame_count": 1,
+      "sizes": ["128x128", "512x512"]
+    },
+    {
+      "name": "anim_trap_freeze",
+      "type": "animation",
+      "frame_count": 6,
+      "sizes": ["128x128", "512x512"],
+      "frame_duration_ms": 100
+    },
+    {
+      "name": "ic_trap_pitfall",
+      "type": "static",
+      "frame_count": 1,
+      "sizes": ["128x128", "512x512"]
+    },
+    {
+      "name": "ic_trap_pitfall_cb",
+      "type": "static",
+      "frame_count": 1,
+      "sizes": ["128x128", "512x512"]
+    },
+    {
+      "name": "anim_trap_pitfall",
+      "type": "animation",
+      "frame_count": 6,
+      "sizes": ["128x128", "512x512"],
+      "frame_duration_ms": 100
+    }
+  ]
+}

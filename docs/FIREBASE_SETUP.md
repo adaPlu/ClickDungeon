@@ -1,15 +1,16 @@
 # Firebase / Connected Services Setup - ClickDungeon
 
-This guide reflects the **current repository state as of 2026-03-30**. Connected-services work is underway, but Firebase and Play Console provisioning are still part of **Track 2 rollout preparation** rather than a fully enabled shipping path.
+This guide reflects the **current repository state as of 2026-04-08**. Firebase/Crashlytics is fully wired in Gradle and initialized in code. The only remaining step is provisioning the Firebase project and placing `google-services.json` locally.
 
 ---
 
 ## Current repo state
 
-- The project currently builds as a **single Android app module** with the normal `debug` / `release` variants.
-- There is **no separate Gradle-defined `online` or `offline` app flavor** in `app/build.gradle.kts` yet.
-- `app/src/online/java` is currently used for **online-only test and service scaffolding** and is compiled into `:app:testDebugUnitTest`.
-- Firebase SDK/plugin enablement and real backend credentials are still gated on external provisioning.
+- The project builds as a **single Android app module** with `debug` / `release` variants.
+- `app/src/online/java` is used for **online-only test and service scaffolding** and is compiled into `:app:testDebugUnitTest`.
+- **Firebase plugins and dependencies are already enabled** in `app/build.gradle.kts` — see below.
+- `FirebaseCrashlytics` is initialized in `ClickDungeonApp.java` with collection disabled in debug and enabled in release.
+- `google-services.json` is gitignored and must be placed locally before a release build will succeed.
 
 ---
 
@@ -27,7 +28,7 @@ This guide reflects the **current repository state as of 2026-03-30**. Connected
 
 1. Open [Firebase Console](https://console.firebase.google.com/).
 2. Create or select the `ClickDungeon` project.
-3. Register the Android app with package name `com.example.clickdungeon`.
+3. Register the Android app with package name `com.adaplu.clickdungeon`.
 4. Download `google-services.json`.
 
 For local-only testing, place the file at:
@@ -59,27 +60,35 @@ Recommended secret names:
 
 ---
 
-## Step 3: Enable Firebase/Play integration when owners are ready
+## Step 3: Firebase is already wired — no Gradle changes needed
 
-The repository does **not** yet enable the Google Services plugin by default. When Track 2 moves from provisioning to active integration, add the required plugins/dependencies in `app/build.gradle.kts`.
+The following are **already in place** as of 2026-04-08:
 
-Typical additions will include:
-
+**Root `build.gradle.kts`:**
 ```kotlin
-plugins {
-    id("com.google.gms.google-services") version "4.4.0" apply false
-}
+alias(libs.plugins.google.services) apply false
+alias(libs.plugins.firebase.crashlytics.plugin) apply false
 ```
 
-and in `app/build.gradle.kts` when the app is ready to consume Firebase SDKs:
-
+**`app/build.gradle.kts` plugins block:**
 ```kotlin
-plugins {
-    id("com.google.gms.google-services")
-}
-
-implementation(platform("com.google.firebase:firebase-bom:<version>"))
+alias(libs.plugins.google.services)
+alias(libs.plugins.firebase.crashlytics.plugin)
 ```
+
+**`app/build.gradle.kts` dependencies:**
+```kotlin
+implementation(platform(libs.firebase.bom))
+implementation(libs.firebase.crashlytics)
+implementation(libs.firebase.analytics)
+```
+
+**`ClickDungeonApp.java`:**
+```java
+FirebaseCrashlytics.getInstance().setCrashlyticsCollectionEnabled(!BuildConfig.DEBUG);
+```
+
+Once `google-services.json` is placed at `app/google-services.json`, the build will connect to Firebase automatically.
 
 ---
 

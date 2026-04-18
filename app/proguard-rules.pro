@@ -34,8 +34,10 @@
 -keep class com.adaplu.clickdungeon.model.MonsterFamily { *; }
 -keep class com.adaplu.clickdungeon.model.MonsterAffinity { *; }
 
-# SaveManager internal blob (private static inner class used with Gson)
+# SaveManager inner classes serialized/deserialized via Gson
 -keep class com.adaplu.clickdungeon.util.SaveManager$SaveBlob { *; }
+-keep class com.adaplu.clickdungeon.util.SaveManager$SaveSnapshot { *; }
+-keep class com.adaplu.clickdungeon.util.SaveManager$RunMetadata { *; }
 
 # Generic Gson rules: keep field names on any class annotated with
 # @SerializedName, and preserve the Gson runtime itself.

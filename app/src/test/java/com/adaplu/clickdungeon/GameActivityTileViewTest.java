@@ -124,6 +124,50 @@ public class GameActivityTileViewTest {
     }
 
     @Test
+    public void bindTileView_revealedGoldTile_showsBoardImage() {
+        GameActivity activity = buildActivity();
+        View tileView = LayoutInflater.from(activity).inflate(R.layout.item_tile, null, false);
+        Tile tile = new Tile(TileType.GOLD);
+        tile.reveal();
+
+        callBindTileView(activity, tileView, tile, 1, 1);
+
+        TextView textTile = tileView.findViewById(R.id.textTile);
+        ImageView imageTile = tileView.findViewById(R.id.imageTile);
+
+        assertEquals(View.GONE, textTile.getVisibility());
+        assertEquals(View.VISIBLE, imageTile.getVisibility());
+        assertEquals(ImageView.ScaleType.FIT_CENTER, imageTile.getScaleType());
+
+        Drawable expected = activity.getDrawable(R.drawable.ic_tile_gold_128x128);
+        assertNotNull(expected);
+        assertNotNull(imageTile.getDrawable());
+        assertEquals(expected.getConstantState(), imageTile.getDrawable().getConstantState());
+    }
+
+    @Test
+    public void bindTileView_colorBlindTrapTile_usesColorBlindIcon() {
+        GameActivity activity = buildActivity();
+        ReflectionHelpers.setField(activity, "colorBlindModeEnabled", true);
+        View tileView = LayoutInflater.from(activity).inflate(R.layout.item_tile, null, false);
+        Tile tile = new Tile(TileType.TRAP_FIRE);
+        tile.reveal();
+
+        callBindTileView(activity, tileView, tile, 1, 1);
+
+        TextView textTile = tileView.findViewById(R.id.textTile);
+        ImageView imageTile = tileView.findViewById(R.id.imageTile);
+
+        assertEquals(View.GONE, textTile.getVisibility());
+        assertEquals(View.VISIBLE, imageTile.getVisibility());
+
+        Drawable expected = activity.getDrawable(R.drawable.ic_trap_fire_cb_128x128);
+        assertNotNull(expected);
+        assertNotNull(imageTile.getDrawable());
+        assertEquals(expected.getConstantState(), imageTile.getDrawable().getConstantState());
+    }
+
+    @Test
     public void getMonsterSpriteResource_mapsKnownTypesToSpriteSheets() {
         GameActivity activity = buildActivity();
 

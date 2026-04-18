@@ -55,7 +55,6 @@ public class CharacterProfile {
     
     // Non-persistent controller for player sprite animations.
     private transient AnimatedPlayer animatedPlayer;
-    private boolean usesMp;
 
     /**
      * Initializes a new character with base stats defined by their class.
@@ -377,7 +376,7 @@ public class CharacterProfile {
 
     /** Returns whether this class uses MP at all. */
     public boolean usesMp() {
-        return usesMp;
+        return playerClass != null && playerClass.usesMp();
     }
 
     /** Returns the attribute used for base attack power calculation. */
@@ -415,14 +414,12 @@ public class CharacterProfile {
     private void applyBaseStatsForClass(PlayerClass playerClass) {
         if (playerClass == null) {
             strength = 1; dexterity = 1; constitution = 1; intelligence = 1;
-            usesMp = false;
             return;
         }
         strength = playerClass.getBaseStrength();
         dexterity = playerClass.getBaseDexterity();
         constitution = playerClass.getBaseConstitution();
         intelligence = playerClass.getBaseIntelligence();
-        usesMp = playerClass.usesMp();
     }
 
     /**
@@ -431,7 +428,7 @@ public class CharacterProfile {
      */
     private void recalculateDerivedStats(boolean refillVitals) {
         int newMaxHp = Math.max(1, (constitution * HP_PER_CON) + (level * HP_PER_LEVEL));
-        int newMaxMp = usesMp
+        int newMaxMp = usesMp()
                 ? Math.max(0, (intelligence * MP_PER_INT) + (level * MP_PER_LEVEL))
                 : 0;
         maxHP = newMaxHp;

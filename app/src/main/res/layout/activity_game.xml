@@ -188,7 +188,9 @@
                     android:paddingEnd="8dp"
                     android:text="@string/use_ability"
                     android:contentDescription="@string/use_ability_desc"
-                    android:textSize="11sp" />
+                    android:textSize="11sp"
+                    android:background="@drawable/menu_button_bg"
+                    android:textColor="#FFF3D5" />
 
                 <Button
                     android:id="@+id/btnInventory"
@@ -201,7 +203,9 @@
                     android:paddingEnd="8dp"
                     android:text="@string/open_inventory"
                     android:contentDescription="@string/open_inventory_desc"
-                    android:textSize="11sp" />
+                    android:textSize="11sp"
+                    android:background="@drawable/menu_button_bg"
+                    android:textColor="#FFF3D5" />
             </LinearLayout>
         </LinearLayout>
     </LinearLayout>
@@ -212,6 +216,8 @@
         android:layout_height="wrap_content"
         android:text="@string/level_up"
         android:layout_marginTop="6dp"
+        android:background="@drawable/menu_button_bg"
+        android:textColor="#FFF3D5"
         android:visibility="gone" />
 
 </LinearLayout>

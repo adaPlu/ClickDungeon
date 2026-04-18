@@ -1,0 +1,69 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "create-gates4-6-todos",
+			"type": "shell",
+			"command": "echo Creating TODOs for Gates 4-6",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "update-todo-list-gates4-6",
+			"type": "shell",
+			"command": "powershell -Command \"Write-Output 'update todos'\"",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "scaffold-pr-a-store-assets",
+			"type": "shell",
+			"command": "echo Scaffolding PR A files",
+			"args": [],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "open-docs-folder",
+			"type": "shell",
+			"command": "powershell -Command \"if (!(Test-Path docs)) { New-Item -ItemType Directory -Path docs } ; if (!(Test-Path docs\\store_assets)) { New-Item -ItemType Directory -Path docs\\store_assets } ; Write-Output 'Docs folders ready'\"",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "apply-scaffold-files",
+			"type": "shell",
+			"command": "echo ready",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "create-store-docs",
+			"type": "shell",
+			"command": "echo creating files",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "apply-patch-create-store-files",
+			"type": "shell",
+			"command": "echo applying patch",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "apply_patch_files",
+			"type": "shell",
+			"command": "echo about to apply files",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "ready-to-apply-patch",
+			"type": "shell",
+			"command": "echo ready-to-apply-patch",
+			"isBackground": false,
+			"problemMatcher": []
+		}
+	]
+}

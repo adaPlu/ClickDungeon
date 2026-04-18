@@ -503,7 +503,7 @@ Fired when app crash is detected on next launch.
   "payload": {
     "exception_type": "NullPointerException",
     "exception_message": "Monster list null at floor 5",
-    "stack_trace": "com.example.clickdungeon.GameActivity.spawnMonster(GameActivity.java:2559)",
+    "stack_trace": "com.adaplu.clickdungeon.GameActivity.spawnMonster(GameActivity.java:2559)",
     "save_state_recoverable": true,  // Was corrupted save involved?
     "last_known_screen": "GameActivity"
   }

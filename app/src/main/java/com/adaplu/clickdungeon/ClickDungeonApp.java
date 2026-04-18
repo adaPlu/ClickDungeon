@@ -5,6 +5,8 @@ import android.app.Application;
 import android.os.Bundle;
 
 import com.adaplu.clickdungeon.util.SoundManager;
+import com.adaplu.clickdungeon.util.TelemetryManager;
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 /**
  * ClickDungeonApp is the main application class for the ClickDungeon game.
@@ -18,12 +20,17 @@ public class ClickDungeonApp extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+        // Initialize telemetry (Firebase Analytics wrapper) before any events fire.
+        TelemetryManager.init(this);
+        TelemetryManager.logSessionStart();
         // Initialize the sound manager at app startup to ensure assets are ready.
         SoundManager.init(this);
         // Ensure the initial mute state respects user preferences.
         SoundManager.syncMuteFromSettings(this);
         // Register lifecycle callbacks to handle sound pausing/resuming globally.
         registerActivityLifecycleCallbacks(audioLifecycleCallbacks);
+        FirebaseCrashlytics.getInstance()
+                .setCrashlyticsCollectionEnabled(!BuildConfig.DEBUG);
     }
 
     @Override

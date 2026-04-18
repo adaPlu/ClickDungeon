@@ -128,34 +128,36 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="end"
-        android:orientation="horizontal"
-        style="?android:attr/buttonBarStyle">
+        android:orientation="horizontal">
 
         <Button
             android:id="@+id/buttonAttack"
-            style="?android:attr/buttonBarButtonStyle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="@string/combat_action_attack" />
+            android:text="@string/combat_action_attack"
+            android:background="@drawable/menu_button_bg"
+            android:textColor="#FFF3D5" />
 
         <Button
             android:id="@+id/buttonUsePotion"
-            style="?android:attr/buttonBarButtonStyle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:layout_marginStart="8dp"
-            android:text="@string/combat_action_use_potion" />
+            android:text="@string/combat_action_use_potion"
+            android:background="@drawable/menu_button_bg"
+            android:textColor="#FFF3D5" />
 
         <Button
             android:id="@+id/buttonFlee"
-            style="?android:attr/buttonBarButtonStyle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:layout_marginStart="8dp"
-            android:text="@string/combat_action_flee" />
+            android:text="@string/combat_action_flee"
+            android:background="@drawable/menu_button_bg"
+            android:textColor="#FFF3D5" />
     </LinearLayout>
 
     <Button
@@ -164,6 +166,8 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
         android:text="@string/combat_summary_button_continue"
+        android:background="@drawable/menu_button_bg"
+        android:textColor="#FFF3D5"
         android:visibility="gone" />
 
     </LinearLayout>
