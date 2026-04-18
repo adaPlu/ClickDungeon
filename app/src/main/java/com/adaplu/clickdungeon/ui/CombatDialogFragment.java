@@ -66,7 +66,7 @@ public class CombatDialogFragment extends DialogFragment {
     private static final String ARG_XP_REWARD = "arg_xp_reward";
     private static final String ARG_GOLD_REWARD = "arg_gold_reward";
 
-    private static final int HEALING_POTION_STRENGTH = 6;
+    public static final int HEALING_POTION_STRENGTH = 6;
     private static final long ANIMATION_FRAME_DELAY_MS = 80L;
     private static final int PLAYER_FRAME_WIDTH = 64;
     private static final int PLAYER_FRAME_HEIGHT = 64;

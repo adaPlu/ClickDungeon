@@ -184,6 +184,7 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
     private Button classAbilityButton;
     private Button levelUpButton;
     private Button inventoryButton;
+    private Button usePotionButton;
 
     // --- Run state ---
     private Tile[][] dungeonGrid;
@@ -288,6 +289,7 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         classAbilityButton = findViewById(R.id.btnClassAbility);
         levelUpButton = findViewById(R.id.btnLevelUp);
         inventoryButton = findViewById(R.id.btnInventory);
+        usePotionButton = findViewById(R.id.btnUsePotion);
         AchievementManager.loadAchievements(this);
         initBitmapCache();
 
@@ -487,6 +489,25 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
     private void setupInventoryButton() {
         if (inventoryButton != null) {
             inventoryButton.setOnClickListener(v -> showInventoryDialog());
+        }
+        if (usePotionButton != null) {
+            usePotionButton.setOnClickListener(v -> useHealingPotionFromHud());
+        }
+    }
+
+    private void useHealingPotionFromHud() {
+        if (profile == null) return;
+        if (profile.getCurrentHP() >= profile.getMaxHP()) {
+            Toast.makeText(this, R.string.potion_hp_full, Toast.LENGTH_SHORT).show();
+            return;
+        }
+        int before = profile.getCurrentHP();
+        boolean used = onUseHealingPotionRequested(CombatDialogFragment.HEALING_POTION_STRENGTH);
+        if (used) {
+            int healed = profile.getCurrentHP() - before;
+            Toast.makeText(this, getString(R.string.potion_used, healed), Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(this, R.string.potion_none_available, Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -3534,8 +3555,27 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
 
         recycler.setLayoutManager(new LinearLayoutManager(this));
         java.util.List<com.adaplu.clickdungeon.model.InventoryItem> items = InventoryManager.loadInventory(this);
+        final android.app.Dialog[] dialogRef = {null};
         InventoryAdapter adapter = new InventoryAdapter(items, item -> {
-            if (profile == null) {
+            if (profile == null) return;
+            ItemDefinition def = ItemCatalog.getItemDefinition(item.getName());
+            if (def != null && def.getType() == ItemDefinition.ItemType.CONSUMABLE) {
+                // Consumables are used, not equipped.
+                if ("Healing Potion".equals(item.getName())) {
+                    if (profile.getCurrentHP() >= profile.getMaxHP()) {
+                        Toast.makeText(this, R.string.potion_hp_full, Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    int before = profile.getCurrentHP();
+                    boolean used = onUseHealingPotionRequested(CombatDialogFragment.HEALING_POTION_STRENGTH);
+                    if (used) {
+                        int healed = profile.getCurrentHP() - before;
+                        Toast.makeText(this, getString(R.string.potion_used, healed), Toast.LENGTH_SHORT).show();
+                        if (dialogRef[0] != null) dialogRef[0].dismiss();
+                    } else {
+                        Toast.makeText(this, R.string.potion_none_available, Toast.LENGTH_SHORT).show();
+                    }
+                }
                 return;
             }
             if (!toggleEquip(profile, item.getName())) {
@@ -3579,7 +3619,7 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         bindChangeLogViews(changeLogTitle, changeLogView,
                 InventoryManager.getInventoryChangeLog(this));
 
-        new AlertDialog.Builder(this)
+        dialogRef[0] = new AlertDialog.Builder(this)
                 .setTitle(R.string.inventory_title)
                 .setView(dialogView)
                 .setPositiveButton(android.R.string.ok, null)

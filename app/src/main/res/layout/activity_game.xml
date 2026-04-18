@@ -206,6 +206,21 @@
                     android:textSize="11sp"
                     android:background="@drawable/menu_button_bg"
                     android:textColor="#FFF3D5" />
+
+                <Button
+                    android:id="@+id/btnUsePotion"
+                    android:layout_width="wrap_content"
+                    android:layout_height="48dp"
+                    android:layout_marginTop="6dp"
+                    android:minHeight="48dp"
+                    android:minWidth="0dp"
+                    android:paddingStart="8dp"
+                    android:paddingEnd="8dp"
+                    android:text="@string/use_potion"
+                    android:contentDescription="@string/use_potion_desc"
+                    android:textSize="11sp"
+                    android:background="@drawable/menu_button_bg"
+                    android:textColor="#FFF3D5" />
             </LinearLayout>
         </LinearLayout>
     </LinearLayout>

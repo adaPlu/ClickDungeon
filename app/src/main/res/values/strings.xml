@@ -143,6 +143,11 @@
     <string name="open_inventory">Open Inventory</string>
     <string name="use_ability_desc">Use your class ability in combat</string>
     <string name="open_inventory_desc">Open inventory during combat</string>
+    <string name="use_potion">Potion</string>
+    <string name="use_potion_desc">Use a healing potion to restore HP</string>
+    <string name="potion_used">Healed %d HP from potion</string>
+    <string name="potion_hp_full">HP is already full</string>
+    <string name="potion_none_available">No potions available</string>
     <string name="inventory_item_count">Items: %1$d</string>
     <string name="inventory_recent_changes">Recent changes</string>
     <string name="inventory_no_changes">No recent inventory changes.</string>
