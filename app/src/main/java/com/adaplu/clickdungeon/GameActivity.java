@@ -413,6 +413,9 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
     }
 
     private void startNewRunForActiveSlot() {
+        // Reset all transient run state first so nothing bleeds in from a previous run.
+        resetRunState();
+
         currentFloor = 1;
         currentTerrain = selectTerrainForFloor(currentFloor);
         currentGold = GameBalance.STARTING_GOLD;
@@ -424,8 +427,6 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         }
         generateDungeon();
         resetPlayerPositionToCenter();
-        clearKnightShield(0);
-        pendingAbilityTargetMode = AbilityTargetMode.NONE;
         nextAbilityAvailableFloor = currentFloor;
         smokeVeilCharges = 0;
         int potionCount = 3;
@@ -436,7 +437,25 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         InventoryManager.adjustItemQuantity(this, "Trap Disarm Kit", 1, INVENTORY_STACK_LIMIT);
         InventoryManager.syncGoldWithCurrentRun(this, currentGold);
         InventoryManager.syncPlatinumWithCurrentRun(this, currentPlatinum);
+
+        // Re-render grid and refresh all HUD elements so in-place restarts are fully clean.
+        renderGrid();
+        updateGoldCounter();
+        updatePlatinumCounter();
+        updateHpCounter();
+        updateXpCounter();
+        updateMpCounter();
+        updatePlayerIdentityHud();
+        updatePlayerHudIcon();
+        updateStatusText();
+        updateFloorDisplay();
+        applyTerrainBackgroundForCurrentTerrain();
         updateAbilityButtonState();
+        setupClassAbilityButton();
+
+        // Restart the grid animation loop after clearing it in resetRunState.
+        startGridAnimationLoop();
+
         requestSave(SaveReason.START_NEW_RUN);
     }
 
@@ -2419,6 +2438,32 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         updateStatusText();
     }
 
+    /**
+     * Fully resets all transient run state before starting a new game or restarting.
+     * Safe to call on both in-place restarts (same Activity) and before finish().
+     */
+    private void resetRunState() {
+        // Cancel any pending poison tick — it self-schedules and will survive across restarts
+        // if not explicitly removed.
+        statusEffectHandler.removeCallbacksAndMessages(null);
+        frozenTurnsLeft = 0;
+        poisonTurnsLeft = 0;
+
+        // Clear animation tracking so stale entries from the previous dungeon don't bleed in.
+        stopGridAnimationLoop();
+        gridMonsterAnimations.clear();
+        activeAnimatedTiles.clear();
+
+        // Clear any in-flight combat state.
+        clearCombatTracking();
+
+        // Reset ability targeting mode.
+        pendingAbilityTargetMode = AbilityTargetMode.NONE;
+
+        // Knight shield must be off at the start of every run.
+        clearKnightShield(0);
+    }
+
     private void healPlayer(int amount) {
         if (profile != null) {
             profile.setCurrentHP(Math.min(profile.getMaxHP(), profile.getCurrentHP() + amount));
@@ -2719,6 +2764,8 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
 
     @Override
     protected void onDestroy() {
+        // Cancel poison tick and any other delayed status-effect callbacks.
+        statusEffectHandler.removeCallbacksAndMessages(null);
         stopGridAnimationLoop();
         // Clean up save scheduling/executor to avoid background work after destroy.
         saveHandler.removeCallbacks(debouncedSaveRunnable);
@@ -3500,19 +3547,8 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
                 .setTitle(R.string.victory_title)
                 .setMessage(R.string.victory_message)
                 .setCancelable(false)
-                .setPositiveButton(R.string.play_again, (dialog, which) -> {
-                    dungeonGrid = new Tile[GRID_SIZE][GRID_SIZE];
-                    currentGold = GameBalance.STARTING_GOLD;
-                    currentPlatinum = GameBalance.STARTING_PLATINUM;
-                    lastFloorClearAwarded = -1;
-                    profile.setCurrentHP(profile.getMaxHP());
-                    generateDungeon();
-                    renderGrid();
-                    updateGoldCounter();
-                    updatePlatinumCounter();
-                    updateHpCounter();
-                    requestSave(SaveReason.START_NEW_RUN);
-                })
+                .setPositiveButton(R.string.play_again, (dialog, which) ->
+                    startNewRunForActiveSlot())
                 .setNegativeButton(R.string.main_menu, (dialog, which) -> goToMainMenu())
                 .show();
     }
