@@ -3825,6 +3825,47 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         requestSave(SaveReason.PAUSE);
     }
 
+    /**
+     * Force-saves synchronously when the OS signals the process is critically low on memory
+     * or is about to be killed. The normal save path enqueues work on a background executor,
+     * which may not finish if the OS terminates the process immediately after onPause() returns.
+     * A direct synchronous write here ensures progress is not lost.
+     *
+     * Triggered at TRIM_MEMORY_RUNNING_CRITICAL (device critically low, app still running)
+     * and TRIM_MEMORY_COMPLETE (app is first candidate for process death).
+     */
+    @Override
+    public void onTrimMemory(int level) {
+        super.onTrimMemory(level);
+        if (level >= TRIM_MEMORY_RUNNING_CRITICAL) {
+            forceSaveNow();
+        }
+    }
+
+    /**
+     * Writes the current game state synchronously on the calling thread.
+     * Cancels any pending debounced save first so we don't double-write.
+     * Safe to call from onTrimMemory or any lifecycle callback.
+     */
+    private void forceSaveNow() {
+        if (dungeonGrid == null || profile == null || saveManager == null) {
+            return;
+        }
+        // Cancel any pending debounced save — we're about to write directly.
+        saveHandler.removeCallbacks(debouncedSaveRunnable);
+
+        int slot = activeSlotIndex >= 0 ? activeSlotIndex : DEFAULT_SLOT_INDEX;
+        SaveManager.SaveSnapshot snapshot = saveManager.buildSnapshot(
+                profile,
+                currentFloor,
+                currentGold,
+                currentPlatinum,
+                dungeonGrid,
+                buildRunMetadata());
+        // Write synchronously — blocks briefly but prevents data loss on process death.
+        saveManager.saveSnapshot(slot, snapshot);
+    }
+
     @Override
     protected void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
