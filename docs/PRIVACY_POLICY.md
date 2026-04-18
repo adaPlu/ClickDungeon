@@ -12,10 +12,10 @@ data locally on the device and does not require account creation.
 - Local inventory, achievements, and progression metadata
 
 ## Crash and Analytics Data
-Crash-reporting and analytics services are not currently active in the shipped
-app build. If Firebase Crashlytics or Analytics are enabled in a future build,
-this policy must be updated before release and the Play Console listing must
-link to the hosted policy URL.
+The release build of ClickDungeon uses Firebase Crashlytics and Firebase Analytics
+to collect anonymous crash reports and basic usage events. No personally
+identifiable information is collected. Data is processed by Google LLC under
+their Privacy Policy. Crash reporting is disabled in debug builds.
 
 ## How Data Is Used
 - To persist game progress between sessions
@@ -27,9 +27,9 @@ ClickDungeon stores save data locally and protects sensitive preference data
 with encryption and integrity checks where supported by the device platform.
 
 ## Third-Party Services
-The current codebase does not enable Firebase or Play billing services in the
-app build. Future connected-service releases may introduce third-party
-services, at which point this policy must be revised accordingly.
+The release build uses Firebase Crashlytics and Firebase Analytics, provided
+by Google LLC. Play billing is not active in v1.0. Future releases may add
+additional third-party services, at which point this policy will be revised.
 
 ## Children
 ClickDungeon is not intended to collect personal information from children.

@@ -29,12 +29,12 @@
 - Keystore-based signing scaffold present in Gradle config
 
 ### Still Open Before Release
-1. Store/legal assets are only partially scaffolded; launcher icons,
-   screenshots, feature graphic, and hosted privacy-policy URL are still
-   missing.
-2. Firebase/Crashlytics is still not wired in code. There is no
-   `google-services.json`, no Google Services plugin, and no Firebase
-   dependency setup in the app module.
+1. Store/legal assets are only partially scaffolded; screenshots, feature
+   graphic, and hosted privacy-policy URL are still missing. Launcher icons
+   are already in place.
+2. Firebase/Crashlytics is wired in code (plugins, dependencies, and
+   initialization in ClickDungeonApp are all done). Only `google-services.json`
+   provisioning from the Firebase Console is pending.
 3. Play Console setup and internal testing are not yet complete.
 4. Localization scaffolding is still absent.
 5. Ranger remains intentionally incomplete and must stay unreachable until it is
@@ -81,13 +81,14 @@ In repo:
 - Privacy policy draft exists
 - Store asset naming README exists
 - Store-asset validation script exists
+- Custom launcher icons already present in all mipmap densities
 
 Still required:
-- Replace default launcher icons in mipmap resources
-- Produce final screenshots
-- Produce final feature graphic
-- Replace draft privacy policy with approved final text
+- Produce final screenshots (minimum 2 phone)
+- Produce feature graphic (1024×500)
+- Replace draft privacy policy with approved final text and real contact address
 - Host privacy policy at a stable public URL
+- Add hosted URL to Play Console listing
 
 ### Gate 5 - Google Play Console
 Status: not started in repo-verifiable work
@@ -99,15 +100,18 @@ Required:
 - Complete content rating and store listing metadata
 
 ### Gate 6 - Firebase Baseline
-Status: not started in code
+Status: mostly complete in code — provisioning pending
 
-Required:
-- Create Firebase project for `com.adaplu.clickdungeon`
-- Add local `app/google-services.json` for testing only
-- Wire Google Services plugin in Gradle
-- Add Crashlytics and Analytics dependencies
-- Initialize connected-service collection policy in app startup
-- Verify a non-fatal event in Firebase console
+Done in code:
+- Google Services and Crashlytics plugins wired in `build.gradle.kts` (root and app module)
+- `firebase-bom`, `firebase-crashlytics`, `firebase-analytics` dependencies in `app/build.gradle.kts`
+- `FirebaseCrashlytics` initialized in `ClickDungeonApp.java` (disabled in debug, enabled in release)
+- `google-services.json` added to `.gitignore`
+
+Remaining:
+- Create Firebase project for `com.adaplu.clickdungeon` in Firebase Console
+- Download and place `google-services.json` at `app/google-services.json` (local only, never commit)
+- Run release build and verify a non-fatal event appears in Firebase console
 
 ---
 
@@ -164,10 +168,12 @@ Gate 4 - Store assets and legal
 [x] Draft privacy policy added
 [x] Store asset README added
 [x] Store asset validation script added
-[ ] Launcher icons replaced
-[ ] Screenshots added
-[ ] Feature graphic added
-[ ] Final privacy policy hosted publicly
+[x] Custom launcher icons present in all mipmap densities
+[ ] Screenshots produced (minimum 2 phone)
+[ ] Feature graphic produced (1024x500)
+[ ] Final privacy policy text approved and contact address added
+[ ] Privacy policy hosted at stable public URL
+[ ] URL added to Play Console listing
 
 Gate 5 - Play Console
 [ ] App created
@@ -178,8 +184,9 @@ Gate 5 - Play Console
 Gate 6 - Firebase baseline
 [ ] Firebase project created
 [ ] google-services.json added locally only
-[ ] Google Services plugin wired
-[ ] Crashlytics + Analytics dependencies wired
+[x] Google Services plugin wired
+[x] Crashlytics + Analytics dependencies wired
+[x] FirebaseCrashlytics initialized in ClickDungeonApp (release-only collection)
 [ ] Firebase event verified
 ```
 

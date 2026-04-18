@@ -2,4 +2,5 @@
 <resources>
     <dimen name="combat_anim_height">120dp</dimen>
     <dimen name="grid_tile_min_size">56dp</dimen>
+    <dimen name="floating_damage_offset">40dp</dimen>
 </resources>

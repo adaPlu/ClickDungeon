@@ -24,6 +24,8 @@ public class ClickDungeonApp extends Application {
         SoundManager.syncMuteFromSettings(this);
         // Register lifecycle callbacks to handle sound pausing/resuming globally.
         registerActivityLifecycleCallbacks(audioLifecycleCallbacks);
+        // Gate 6: uncomment after adding app/google-services.json and enabling Firebase deps:
+        // FirebaseCrashlytics.getInstance().setCrashlyticsCollectionEnabled(!BuildConfig.DEBUG);
     }
 
     @Override
