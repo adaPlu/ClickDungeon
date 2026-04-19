@@ -1,225 +1,222 @@
 package com.adaplu.clickdungeon.model;
 
 /**
- * Defines player classes, base stats, and ability progression rules.
+ * Defines player classes, their starting HP, and their ability unlock/recharge rules.
  */
 public enum PlayerClass {
-    KNIGHT(2, 2, 4, 1, false,
-            "Shield Wall",
-            "Deploy a shield that absorbs damage while you hold position."),
-    RANGER(1, 3, 2, 1, false,
-            "Piercing Shot",
-            "Fire a ranged shot that bypasses enemy defenses."),
-    THIEF(1, 4, 2, 1, false,
-            "Trap Scan",
-            "Reveal nearby traps within range."),
-    WIZARD(1, 1, 1, 3, true,
-            "Fireball",
-            "Launch a ranged attack at a target tile.");
+    KNIGHT(18, buildKnightAbilities()),
+    RANGER(14, buildRangerAbilities()),
+    THIEF(13, buildThiefAbilities()),
+    WIZARD(12, buildWizardAbilities());
 
-    /** Knight ability identifiers. */
     public static final String ABILITY_KNIGHT_SHIELD_WALL = "Shield Wall";
     public static final String ABILITY_KNIGHT_TAUNT = "Taunt";
     public static final String ABILITY_KNIGHT_FORTIFY = "Fortify";
     public static final String ABILITY_KNIGHT_VALIANT_STRIKE = "Valiant Strike";
     public static final String ABILITY_KNIGHT_GUARDIANS_OATH = "Guardian's Oath";
 
-    /** Thief ability identifiers. */
+    public static final String ABILITY_RANGER_PIERCING_SHOT = "Piercing Shot";
+    public static final String ABILITY_RANGER_RAPID_VOLLEY = "Rapid Volley";
+    public static final String ABILITY_RANGER_CAMOUFLAGE = "Camouflage";
+    public static final String ABILITY_RANGER_NET_TRAP = "Net Trap";
+    public static final String ABILITY_RANGER_EAGLE_EYE = "Eagle Eye";
+
     public static final String ABILITY_THIEF_TRAP_SCAN = "Trap Scan";
     public static final String ABILITY_THIEF_SHADOWSTEP = "Shadowstep";
     public static final String ABILITY_THIEF_DISARM_EXPERT = "Disarm Expert";
     public static final String ABILITY_THIEF_AMBUSH = "Ambush";
     public static final String ABILITY_THIEF_VEIL_OF_SMOKE = "Veil of Smoke";
 
-    /** Wizard ability identifiers. */
     public static final String ABILITY_WIZARD_FIREBALL = "Fireball";
     public static final String ABILITY_WIZARD_FROST_NOVA = "Frost Nova";
     public static final String ABILITY_WIZARD_CHAIN_LIGHTNING = "Chain Lightning";
     public static final String ABILITY_WIZARD_ARCANE_SHIELD = "Arcane Shield";
     public static final String ABILITY_WIZARD_METEOR = "Meteor";
 
-    /** Base STR for the class at level 1. */
-    private final int baseStrength;
-    /** Base DEX for the class at level 1. */
-    private final int baseDexterity;
-    /** Base CON for the class at level 1. */
-    private final int baseConstitution;
-    /** Base INT for the class at level 1. */
-    private final int baseIntelligence;
-    /** Whether the class uses MP for abilities. */
-    private final boolean usesMp;
-    /** Name of the starting ability. */
-    private final String baseAbilityName;
-    /** Description of the starting ability. */
-    private final String baseAbilityDescription;
-    /** Ordered list of ability unlocks by level. */
-    private final AbilityDefinition[] levelAbilities;
+    private final int startingHealth;
+    private final AbilityDefinition[] abilities;
 
-    /**
-     * Creates a class definition with base stats and initial ability metadata.
-     */
-    PlayerClass(int baseStrength,
-                int baseDexterity,
-                int baseConstitution,
-                int baseIntelligence,
-                boolean usesMp,
-                String baseAbilityName,
-                String baseAbilityDescription) {
-        this.baseStrength = baseStrength;
-        this.baseDexterity = baseDexterity;
-        this.baseConstitution = baseConstitution;
-        this.baseIntelligence = baseIntelligence;
-        this.usesMp = usesMp;
-        this.baseAbilityName = baseAbilityName;
-        this.baseAbilityDescription = baseAbilityDescription;
-        this.levelAbilities = buildAbilityProgression(this.name());
+    PlayerClass(int startingHealth, AbilityDefinition[] abilities) {
+        this.startingHealth = startingHealth;
+        this.abilities = abilities;
     }
 
-    /** Returns base STR for this class. */
+    public int getStartingHealth() {
+        return startingHealth;
+    }
+
     public int getBaseStrength() {
-        return baseStrength;
+        switch (this) {
+            case KNIGHT: return 2;
+            case RANGER: return 1;
+            case THIEF: return 1;
+            case WIZARD:
+            default: return 1;
+        }
     }
 
-    /** Returns base DEX for this class. */
     public int getBaseDexterity() {
-        return baseDexterity;
+        switch (this) {
+            case KNIGHT: return 2;
+            case RANGER: return 3;
+            case THIEF: return 4;
+            case WIZARD:
+            default: return 1;
+        }
     }
 
-    /** Returns base CON for this class. */
     public int getBaseConstitution() {
-        return baseConstitution;
+        switch (this) {
+            case KNIGHT: return 4;
+            case RANGER: return 2;
+            case THIEF: return 2;
+            case WIZARD:
+            default: return 1;
+        }
     }
 
-    /** Returns base INT for this class. */
     public int getBaseIntelligence() {
-        return baseIntelligence;
+        switch (this) {
+            case KNIGHT: return 1;
+            case RANGER: return 1;
+            case THIEF: return 1;
+            case WIZARD:
+            default: return 3;
+        }
     }
 
-    /** Returns whether the class uses MP. */
-    public boolean usesMp() {
-        return usesMp;
-    }
-
-    /** Returns the name of the starting ability. */
     public String getBaseAbilityName() {
-        return baseAbilityName;
+        return getStarterAbility().getName();
     }
 
-    /** Returns the description for the starting ability. */
     public String getBaseAbilityDescription() {
-        return baseAbilityDescription;
+        return getStarterAbility().getDescription();
     }
 
-    /** Returns the full ability progression list. */
+    public AbilityDefinition getStarterAbility() {
+        return abilities[0];
+    }
+
     public AbilityDefinition[] getAbilityProgression() {
-        return levelAbilities.clone();
+        return abilities.clone();
     }
 
-    /** Returns the subset of abilities unlocked at the given level. */
     public AbilityDefinition[] getAbilitiesUpToLevel(int level) {
-        int count = 0;
-        for (AbilityDefinition ability : levelAbilities) {
-            if (ability.unlockLevel <= level) {
-                count++;
-            }
-        }
-        AbilityDefinition[] unlocked = new AbilityDefinition[count];
-        int index = 0;
-        for (AbilityDefinition ability : levelAbilities) {
-            if (ability.unlockLevel <= level) {
-                unlocked[index++] = ability;
-            }
-        }
+        AbilityDefinition[] unlocked = new AbilityDefinition[Math.max(1, Math.min(abilities.length, level >= 20 ? 5 : level >= 15 ? 4 : level >= 10 ? 3 : level >= 5 ? 2 : 1))];
+        System.arraycopy(abilities, 0, unlocked, 0, unlocked.length);
         return unlocked;
     }
 
-    /**
-     * Builds the ordered ability unlock list for the class name.
-     */
-    private static AbilityDefinition[] buildAbilityProgression(String className) {
-        if ("KNIGHT".equals(className)) {
-                return new AbilityDefinition[] {
-                        new AbilityDefinition(1, ABILITY_KNIGHT_SHIELD_WALL,
-                                "Deploy a shield that absorbs damage while you hold position."),
-                        new AbilityDefinition(5, ABILITY_KNIGHT_TAUNT,
-                                "Force a nearby enemy to engage you."),
-                        new AbilityDefinition(10, ABILITY_KNIGHT_FORTIFY,
-                                "Cleanse status effects and restore some health."),
-                        new AbilityDefinition(15, ABILITY_KNIGHT_VALIANT_STRIKE,
-                                "Deliver a crushing blow to a target enemy."),
-                        new AbilityDefinition(20, ABILITY_KNIGHT_GUARDIANS_OATH,
-                                "Channel a protective vow that reinforces your defenses.")
-                };
+    public AbilityDefinition findAbility(String abilityName) {
+        if (abilityName == null) {
+            return null;
         }
-        if ("RANGER".equals(className)) {
-                return new AbilityDefinition[] {
-                        new AbilityDefinition(1, "Piercing Shot",
-                                "Fire a ranged shot that bypasses enemy defenses."),
-                        new AbilityDefinition(5, "Rapid Volley",
-                                "Shoot multiple arrows quickly at nearby enemies."),
-                        new AbilityDefinition(10, "Camouflage",
-                                "Increase evasion and reduce aggro from enemies."),
-                        new AbilityDefinition(15, "Net Trap",
-                                "Slow down an enemy and reduce its damage output."),
-                        new AbilityDefinition(20, "Eagle Eye",
-                                "Critically hit due to enhanced accuracy.")
-                };
+        for (AbilityDefinition ability : abilities) {
+            if (ability.getName().equals(abilityName)) {
+                return ability;
+            }
         }
-        if ("THIEF".equals(className)) {
-                return new AbilityDefinition[] {
-                        new AbilityDefinition(1, ABILITY_THIEF_TRAP_SCAN,
-                                "Reveal traps within range."),
-                        new AbilityDefinition(5, ABILITY_THIEF_SHADOWSTEP,
-                                "Blink to a nearby safe tile."),
-                        new AbilityDefinition(10, ABILITY_THIEF_DISARM_EXPERT,
-                                "Clear traps in a small area, consuming a kit."),
-                        new AbilityDefinition(15, ABILITY_THIEF_AMBUSH,
-                                "Strike first when engaging an enemy."),
-                        new AbilityDefinition(20, ABILITY_THIEF_VEIL_OF_SMOKE,
-                                "Reveal nearby tiles and evade the next trap.")
-                };
-        }
+        return null;
+    }
+
+    public boolean usesMp() {
+        return false;
+    }
+
+    private static AbilityDefinition[] buildKnightAbilities() {
         return new AbilityDefinition[] {
-                new AbilityDefinition(1, ABILITY_WIZARD_FIREBALL,
-                        "Blast a target tile with arcane fire."),
-                new AbilityDefinition(5, ABILITY_WIZARD_FROST_NOVA,
-                        "Reveal and chill threats in a small area."),
-                new AbilityDefinition(10, ABILITY_WIZARD_CHAIN_LIGHTNING,
-                        "Zap enemies that cluster together."),
-                new AbilityDefinition(15, ABILITY_WIZARD_ARCANE_SHIELD,
-                        "Restore mana and stabilize your defenses."),
-                new AbilityDefinition(20, ABILITY_WIZARD_METEOR,
-                        "Call down a devastating strike.")
+                new AbilityDefinition(0, ABILITY_KNIGHT_SHIELD_WALL,
+                        "Deploy a shield that absorbs damage while you hold position.", 35000L),
+                new AbilityDefinition(24, ABILITY_KNIGHT_TAUNT,
+                        "Force a nearby enemy to engage you.", 45000L),
+                new AbilityDefinition(56, ABILITY_KNIGHT_FORTIFY,
+                        "Cleanse status effects and restore health.", 65000L),
+                new AbilityDefinition(96, ABILITY_KNIGHT_VALIANT_STRIKE,
+                        "Deliver a crushing blow to a target enemy.", 80000L),
+                new AbilityDefinition(150, ABILITY_KNIGHT_GUARDIANS_OATH,
+                        "Channel a vow that reinforces your defenses.", 95000L)
         };
     }
 
-    /**
-     * Immutable descriptor for a class ability unlock milestone.
-     */
+    private static AbilityDefinition[] buildRangerAbilities() {
+        return new AbilityDefinition[] {
+                new AbilityDefinition(0, ABILITY_RANGER_PIERCING_SHOT,
+                        "Fire a ranged shot that bypasses enemy defenses.", 30000L),
+                new AbilityDefinition(24, ABILITY_RANGER_RAPID_VOLLEY,
+                        "Shoot multiple arrows quickly at nearby enemies.", 45000L),
+                new AbilityDefinition(56, ABILITY_RANGER_CAMOUFLAGE,
+                        "Recover health and scout the space around you.", 60000L),
+                new AbilityDefinition(96, ABILITY_RANGER_NET_TRAP,
+                        "Snare an enemy and weaken it.", 75000L),
+                new AbilityDefinition(150, ABILITY_RANGER_EAGLE_EYE,
+                        "Critically hit with enhanced accuracy.", 90000L)
+        };
+    }
+
+    private static AbilityDefinition[] buildThiefAbilities() {
+        return new AbilityDefinition[] {
+                new AbilityDefinition(0, ABILITY_THIEF_TRAP_SCAN,
+                        "Reveal traps within range.", 25000L),
+                new AbilityDefinition(24, ABILITY_THIEF_SHADOWSTEP,
+                        "Blink to a nearby safe tile.", 40000L),
+                new AbilityDefinition(56, ABILITY_THIEF_DISARM_EXPERT,
+                        "Clear traps in a small area, consuming a kit if present.", 55000L),
+                new AbilityDefinition(96, ABILITY_THIEF_AMBUSH,
+                        "Strike first when engaging an enemy.", 70000L),
+                new AbilityDefinition(150, ABILITY_THIEF_VEIL_OF_SMOKE,
+                        "Reveal nearby tiles and evade the next trap.", 85000L)
+        };
+    }
+
+    private static AbilityDefinition[] buildWizardAbilities() {
+        return new AbilityDefinition[] {
+                new AbilityDefinition(0, ABILITY_WIZARD_FIREBALL,
+                        "Blast a target tile with arcane fire.", 30000L),
+                new AbilityDefinition(24, ABILITY_WIZARD_FROST_NOVA,
+                        "Reveal and chill threats in a small area.", 45000L),
+                new AbilityDefinition(56, ABILITY_WIZARD_CHAIN_LIGHTNING,
+                        "Zap enemies that cluster together.", 60000L),
+                new AbilityDefinition(96, ABILITY_WIZARD_ARCANE_SHIELD,
+                        "Stabilize yourself and recover health.", 75000L),
+                new AbilityDefinition(150, ABILITY_WIZARD_METEOR,
+                        "Call down a devastating strike.", 100000L)
+        };
+    }
+
     public static final class AbilityDefinition {
-        private final int unlockLevel;
+        private final int unlockXpCost;
         private final String name;
         private final String description;
+        private final long rechargeDurationMillis;
 
-        AbilityDefinition(int unlockLevel, String name, String description) {
-            this.unlockLevel = unlockLevel;
+        AbilityDefinition(int unlockXpCost,
+                          String name,
+                          String description,
+                          long rechargeDurationMillis) {
+            this.unlockXpCost = unlockXpCost;
             this.name = name;
             this.description = description;
+            this.rechargeDurationMillis = rechargeDurationMillis;
         }
 
-        /** Returns the level at which this ability unlocks. */
+        public int getUnlockXpCost() {
+            return unlockXpCost;
+        }
+
         public int getUnlockLevel() {
-            return unlockLevel;
+            return unlockXpCost;
         }
 
-        /** Returns the ability display name. */
         public String getName() {
             return name;
         }
 
-        /** Returns the ability description text. */
         public String getDescription() {
             return description;
+        }
+
+        public long getRechargeDurationMillis() {
+            return rechargeDurationMillis;
         }
     }
 }

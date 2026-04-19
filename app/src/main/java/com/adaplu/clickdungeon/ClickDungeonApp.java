@@ -21,16 +21,21 @@ public class ClickDungeonApp extends Application {
     public void onCreate() {
         super.onCreate();
         // Initialize telemetry (Firebase Analytics wrapper) before any events fire.
-        TelemetryManager.init(this);
-        TelemetryManager.logSessionStart();
+        // Guarded so Robolectric unit tests can run without a live Firebase project.
+        try {
+            TelemetryManager.init(this);
+            TelemetryManager.logSessionStart();
+        } catch (Exception ignored) {}
         // Initialize the sound manager at app startup to ensure assets are ready.
         SoundManager.init(this);
         // Ensure the initial mute state respects user preferences.
         SoundManager.syncMuteFromSettings(this);
         // Register lifecycle callbacks to handle sound pausing/resuming globally.
         registerActivityLifecycleCallbacks(audioLifecycleCallbacks);
-        FirebaseCrashlytics.getInstance()
-                .setCrashlyticsCollectionEnabled(!BuildConfig.DEBUG);
+        try {
+            FirebaseCrashlytics.getInstance()
+                    .setCrashlyticsCollectionEnabled(!BuildConfig.DEBUG);
+        } catch (Exception ignored) {}
     }
 
     @Override

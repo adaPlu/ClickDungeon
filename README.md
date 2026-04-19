@@ -19,17 +19,18 @@
 ## Key Features
 
 1. **Grid-Based Dungeon Exploration**
-   - 5x5 dungeon grid with hidden tiles and multiple floor levels.
+   - 5x5 dungeon grid with hidden tiles, one health/attack/defense boost tile per floor, and a 99-floor campaign.
    - Traps, enemies, and treasure are shuffled each time, creating replay value.
    - Grid rendering updates only dirty tiles, and animation ticks focus on active tiles (player/revealed enemies) to reduce UI overhead.
 
 2. **Class Selection & Abilities**
-   - **Knight** (L1/5/10/15/20): Shield Wall, Taunt, Fortify, Valiant Strike, Guardian's Oath.
-   - **Thief** (L1/5/10/15/20): Trap Scan, Shadowstep, Disarm Expert, Ambush, Veil of Smoke.
-   - **Wizard** (L1/5/10/15/20): Fireball, Frost Nova, Chain Lightning, Arcane Shield, Meteor.
-   - Ability effects currently map to legacy gameplay hooks (trap reveals/clears, ambush/taunt combat hooks, smoke veil trap avoidance) while unique per-ability behavior is phased in.
-   - Abilities share a two-floor cooldown and a three-tile targeting radius when applicable.
-   - Wizard abilities consume MP (costs vary by spell).
+   - **Knight**: Shield Wall, Taunt, Fortify, Valiant Strike, Guardian's Oath.
+   - **Ranger**: Piercing Shot, Rapid Volley, Camouflage, Net Trap, Eagle Eye.
+   - **Thief**: Trap Scan, Shadowstep, Disarm Expert, Ambush, Veil of Smoke.
+   - **Wizard**: Fireball, Frost Nova, Chain Lightning, Arcane Shield, Meteor.
+   - Ability effects map to class-specific gameplay hooks, and the class menu spends class XP to unlock better abilities.
+   - Abilities use regenerating charges instead of floor cooldowns, with targeting limits only where the ability needs them.
+   - Wizard abilities now use the shared charge-based class system rather than MP.
 
 3. **Traps & Status Effects**
    - Fire, acid, poison, freeze, and pitfall traps.
@@ -53,13 +54,13 @@
    - Persistent gold, platinum, and inventory stored via SharedPreferences.
    - New runs start with 100 platinum and 50 gold; gold is earned in the dungeon.
    - Platinum is a premium placeholder currency with a shell store (spendable, no real IAP yet).
-   - Stat point allocation is available from the inventory screen and the in-run inventory dialog; a **Level Up** button appears when points are available. MP is shown in the HUD for MP-using classes.
+   - Player combat stats are HP, ATK, and DEF. Class XP is tracked per class and spent in the class menu to unlock abilities, while boost tiles permanently raise stats during a run.
    - Items like **Trap Disarm Kits** prevent trap damage.
    - Player can acquire items through the **Shop**. A merchant can appear every three floors (50% chance) with sell and buyback lists; all prices use gold.
 
 6. **Multiple Floors**
    - Pitfall traps and stairs cause you to advance downward.
-   - Survive deeper floors with increased challenge and better rewards.
+   - Survive deeper floors with steadily rising challenge and better rewards across the 1-99 campaign.
 
 7. **Achievements & Progress**
    - Collect multiple achievements (e.g., First Blood, Low HP Survivor).
@@ -75,7 +76,7 @@
     - Turn-based combat dialog with attack, potion, and flee options.
     - Enemies telegraph upcoming attacks with animated intent bars and contextual combat summaries that call out turns, damage dealt/taken, and potion usage on victory, retreat, or defeat.
     - Monsters scale per floor, drawing from a template pool with unique emoji and damage variance.
-    - Boss floors (5/10/15) spawn a boss with phased intent scaling and bonus rewards.
+    - Boss floors recur across the campaign and spawn a boss with phased intent scaling and bonus rewards.
     - Animated combatants use `AnimatedPlayer`/`AnimatedMonster` sprite sheets with class/monster audio cues.
 
 10. **Modular Architecture**
@@ -87,7 +88,7 @@
 11. **Customizable Experience**
     - Settings screen controls audio, vibration, and dungeon difficulty; vibration uses VibrationEffect on API 26+ with a legacy fallback.
     - Tone and haptic feedback respect player preferences through a shared manager.
-    - Difficulty tuning scales monster stats and trap lethality across floors.
+    - Difficulty tuning scales monster stats and trap lethality across floors without relying on a player level system.
    - Main menu uses the `dungeon_door` background and Continue/slot selection uses `dungeon_door_open`.
    - In `GameActivity`, terrain backgrounds are applied dynamically per floor/terrain and can be re-applied when interacting with covered tiles.
    - Audio diagnostics toggle in Settings can surface missing cue keys in a diagnostics screen.
@@ -98,7 +99,7 @@
 
 13. **Automated Verification**
     - Robolectric suites cover settings UI, inventory, achievements, save slots, balance, onboarding, feedback, and combat flows.
-    - Expanded unit tests now cover model classes, adapters, shop flows, animation helpers, terrain/affinity helpers, item catalog/merchant/loot roll helpers, persistence store/security helpers, class ability behaviors (range/cooldown/effects), and save snapshot/coalesced persistence behavior.
+     - Expanded unit tests now cover model classes, adapters, shop flows, animation helpers, terrain/affinity helpers, item catalog/merchant/loot roll helpers, persistence store/security helpers, class ability behaviors (charge regeneration/targeting/effects), and save snapshot/coalesced persistence behavior.
     - SoundManager smoke tests ensure all registered audio keys are exercised in unit tests (Robolectric SDK 34 via `robolectric.properties`).
 
 ---
@@ -120,12 +121,12 @@ ClickDungeon/
 +-- app/
 |   +-- java/com/example/clickdungeon/
 |   |   +-- MainMenuActivity.java       # Main menu & navigation
-|   |   +-- ClassSelectionActivity.java # Choose class (Knight, Thief, Wizard)
+|   |   +-- ClassSelectionActivity.java # Choose class (Knight, Ranger, Thief, Wizard)
 |   |   +-- GameActivity.java           # Core dungeon gameplay with multi-floor logic
 |   |   +-- ShopActivity.java           # Purchasing items & managing currencies
 |   |   +-- AchievementsActivity.java   # Viewing unlocked achievements
 |   |   +-- SettingsActivity.java       # Basic settings screen
-|   |   +-- InventoryActivity.java      # Inventory, equipment, and stat allocation
+|   |   +-- InventoryActivity.java      # Inventory, equipment, and stat summaries
 |   |   +-- model/
 |   |   |   +-- CharacterProfile.java
 |   |   |   +-- InventoryItem.java
@@ -184,6 +185,7 @@ ClickDungeon/
 ## Progress Checklist & Implementation Phases
 
 ### Implementation Phases (summary)
+_Legacy milestone history below is preserved for context only. The live progression model is class XP plus boost tiles, not level-based stat allocation._
 - [x] Phase 1 - Class reset + level cap (20-level cap and base class ability kits).
 - [x] Phase 2 - Stat system foundation (STR/INT/CON/DEX; HP/MP derived; ATK/DEF derived).
 - [x] Phase 3 - Base class kits (base stats and base abilities per class).
@@ -199,8 +201,8 @@ ClickDungeon/
 - [ ] Phase 13 - UX polish + additional audio/animation states (remaining polish and accessibility tuning).
 
 ### Feature Checklist
-- [x] Multi-floor dungeon with pitfall traps and stairs.
-- [x] Class selection (Knight, Thief, Wizard) with base kits and stat progression.
+- [x] Multi-floor dungeon with boost tiles, pitfall traps, and stairs.
+- [x] Class selection (Knight, Ranger, Thief, Wizard) with base kits and class XP unlocks.
 - [x] Traps & status effects (freeze, poison).
 - [x] Terrain-based encounter weighting and status hooks.
 - [x] Trap Disarm Kit item integration.
@@ -238,6 +240,6 @@ This project is licensed for commercial use. Redistribution, sublicensing, or mo
 - If running in a restricted network environment, pre-seed the Gradle wrapper and Android SDK offline to avoid proxy download failures during CI.
 
 ### Test scaffolding guidelines
-- Add unit tests for new abilities in both targeting (range/cooldown) and effect execution (damage/heal/status).
+- Add unit tests for new abilities in both targeting and effect execution, including charge regeneration, damage, heal, and status effects.
 - When changing inventory or shop UX, include a Robolectric test that asserts labels, counts, and any change-log entries.
 - For new animations or grid effects, extend `GameActivityGridAnimationThrottleTest` to confirm active tiles are tracked and updated correctly.

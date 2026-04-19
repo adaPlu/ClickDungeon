@@ -125,6 +125,42 @@
     </FrameLayout>
 
     <FrameLayout
+        android:id="@+id/btnClasses"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:minHeight="48dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:layout_marginTop="6dp"
+        android:background="@drawable/menu_button_bg">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp">
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@android:drawable/ic_menu_sort_by_size"
+                android:contentDescription="@null"
+                android:importantForAccessibility="no"
+                android:layout_marginEnd="8dp" />
+
+            <TextView
+                android:id="@+id/btnClasses_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/classes"
+                android:textColor="#FFF3D5" />
+
+        </LinearLayout>
+    </FrameLayout>
+
+    <FrameLayout
         android:id="@+id/btnShop"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

@@ -22,7 +22,7 @@ import java.util.Locale;
 
 /**
  * ClassSelectionActivity is the character creation screen.
- * It allows the player to enter a name and select a hero class (Knight, Thief, or Wizard)
+ * It allows the player to enter a name and select a hero class (Knight, Ranger, Thief, or Wizard)
  * before starting a new dungeon run in a specific save slot.
  */
 public class ClassSelectionActivity extends AppCompatActivity {
@@ -32,6 +32,7 @@ public class ClassSelectionActivity extends AppCompatActivity {
 
     private EditText editName;
     private Button btnKnight;
+    private Button btnRanger;
     private Button btnThief;
     private Button btnWizard;
     private ImageView classPreview;
@@ -46,6 +47,7 @@ public class ClassSelectionActivity extends AppCompatActivity {
         // Bind UI components.
         editName = findViewById(R.id.editName);
         btnKnight = findViewById(R.id.btnKnight);
+        btnRanger = findViewById(R.id.btnRanger);
         btnThief = findViewById(R.id.btnThief);
         btnWizard = findViewById(R.id.btnWizard);
         Button btnStartGame = findViewById(R.id.btnStart);
@@ -62,6 +64,7 @@ public class ClassSelectionActivity extends AppCompatActivity {
 
         // Set up class selection handlers.
         btnKnight.setOnClickListener(v -> selectClass(PlayerClass.KNIGHT));
+        btnRanger.setOnClickListener(v -> selectClass(PlayerClass.RANGER));
         btnThief.setOnClickListener(v -> selectClass(PlayerClass.THIEF));
         btnWizard.setOnClickListener(v -> selectClass(PlayerClass.WIZARD));
 
@@ -138,6 +141,7 @@ public class ClassSelectionActivity extends AppCompatActivity {
      */
     private void highlightSelection(PlayerClass playerClass) {
         btnKnight.setEnabled(playerClass != PlayerClass.KNIGHT);
+        btnRanger.setEnabled(playerClass != PlayerClass.RANGER);
         btnThief.setEnabled(playerClass != PlayerClass.THIEF);
         btnWizard.setEnabled(playerClass != PlayerClass.WIZARD);
     }

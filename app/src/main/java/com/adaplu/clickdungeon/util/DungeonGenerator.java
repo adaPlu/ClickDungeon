@@ -31,10 +31,15 @@ public final class DungeonGenerator {
                                        @NonNull MonsterFactory monsterFactory) {
         List<Tile> pool = new ArrayList<>();
 
-        for (int i = 0; i < 5; i++) {
+        // Keep the 5x5 campaign readable: one floor is a compact mix of loot,
+        // combat, boosts, and hazards rather than a full board of every tile type.
+        for (int i = 0; i < 4; i++) {
             pool.add(new Tile(TileType.GOLD));
         }
-        for (int i = 0; i < 5; i++) {
+        pool.add(new Tile(TileType.BOOST_HEALTH));
+        pool.add(new Tile(TileType.BOOST_ATTACK));
+        pool.add(new Tile(TileType.BOOST_DEFENSE));
+        for (int i = 0; i < 4; i++) {
             pool.add(new Tile(TileType.ENEMY, monsterFactory.create()));
         }
         for (int i = 0; i < 2; i++) {
@@ -44,8 +49,6 @@ public final class DungeonGenerator {
             pool.add(new Tile(TileType.SMALL_KEY));
         }
         pool.add(new Tile(TileType.TRAP_FIRE));
-        pool.add(new Tile(TileType.TRAP_FIRE));
-        pool.add(new Tile(TileType.TRAP_POISON));
         pool.add(new Tile(TileType.TRAP_POISON));
         pool.add(new Tile(TileType.TRAP_ACID));
         pool.add(new Tile(TileType.TRAP_FREEZE));

@@ -130,41 +130,39 @@ public class InventoryActivityTest {
     }
 
     @Test
-    public void updateStatViews_rendersAllStatLabelsFromProfile() {
+    public void statSummary_rendersSimplifiedLabelsFromProfile() {
         InventoryActivity activity = Robolectric.buildActivity(InventoryActivity.class).setup().get();
         CharacterProfile profile = new CharacterProfile("Stats", PlayerClass.WIZARD);
-        profile.setAvailableStatPoints(4);
-        profile.increaseStrength(1);
-        profile.increaseDexterity(1);
-        profile.increaseConstitution(1);
-        profile.increaseIntelligence(1);
+        profile.addExperience(120);
+        profile.addAttackBoost(2);
+        profile.addDefenseBoost(1);
+        profile.addHealthBoost(4);
 
-        TextView pointsView = activity.findViewById(R.id.textStatPoints);
-        TextView strengthView = activity.findViewById(R.id.textStatStrength);
-        TextView dexterityView = activity.findViewById(R.id.textStatDexterity);
-        TextView constitutionView = activity.findViewById(R.id.textStatConstitution);
-        TextView intelligenceView = activity.findViewById(R.id.textStatIntelligence);
+        TextView classXpView = activity.findViewById(R.id.textCurrentClassXp);
+        TextView healthView = activity.findViewById(R.id.textStatHealth);
+        TextView attackView = activity.findViewById(R.id.textStatAttack);
+        TextView defenseView = activity.findViewById(R.id.textStatDefense);
 
         org.robolectric.util.ReflectionHelpers.callInstanceMethod(
                 activity,
-                "updateStatViews",
+                "updateStatSummary",
                 org.robolectric.util.ReflectionHelpers.ClassParameter.from(CharacterProfile.class, profile),
-                org.robolectric.util.ReflectionHelpers.ClassParameter.from(TextView.class, pointsView),
-                org.robolectric.util.ReflectionHelpers.ClassParameter.from(TextView.class, strengthView),
-                org.robolectric.util.ReflectionHelpers.ClassParameter.from(TextView.class, dexterityView),
-                org.robolectric.util.ReflectionHelpers.ClassParameter.from(TextView.class, constitutionView),
-                org.robolectric.util.ReflectionHelpers.ClassParameter.from(TextView.class, intelligenceView));
+                org.robolectric.util.ReflectionHelpers.ClassParameter.from(TextView.class, classXpView),
+                org.robolectric.util.ReflectionHelpers.ClassParameter.from(TextView.class, healthView),
+                org.robolectric.util.ReflectionHelpers.ClassParameter.from(TextView.class, attackView),
+                org.robolectric.util.ReflectionHelpers.ClassParameter.from(TextView.class, defenseView));
 
-        assertEquals(activity.getString(R.string.stat_points_available, profile.getAvailableStatPoints()),
-                pointsView.getText().toString());
-        assertEquals(activity.getString(R.string.stat_label_strength, profile.getStrength()),
-                strengthView.getText().toString());
-        assertEquals(activity.getString(R.string.stat_label_dexterity, profile.getDexterity()),
-                dexterityView.getText().toString());
-        assertEquals(activity.getString(R.string.stat_label_constitution, profile.getConstitution()),
-                constitutionView.getText().toString());
-        assertEquals(activity.getString(R.string.stat_label_intelligence, profile.getIntelligence()),
-                intelligenceView.getText().toString());
+        assertEquals(activity.getString(R.string.class_xp_available, profile.getCurrentClassXp()),
+                classXpView.getText().toString());
+        assertEquals(activity.getString(R.string.stat_label_health,
+                        profile.getCurrentHP(), profile.getMaxHP(), profile.getHealthBoost()),
+                healthView.getText().toString());
+        assertEquals(activity.getString(R.string.stat_label_attack,
+                        profile.getBaseAttack(), profile.getAttackBoost()),
+                attackView.getText().toString());
+        assertEquals(activity.getString(R.string.stat_label_defense,
+                        profile.getBaseDefense(), profile.getDefenseBoost()),
+                defenseView.getText().toString());
     }
 
     @SuppressWarnings("unchecked")

@@ -11,8 +11,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.adaplu.clickdungeon.adapter.InventoryAdapter;
-import com.adaplu.clickdungeon.model.InventoryItem;
 import com.adaplu.clickdungeon.model.CharacterProfile;
+import com.adaplu.clickdungeon.model.InventoryItem;
 import com.adaplu.clickdungeon.model.ItemDefinition;
 import com.adaplu.clickdungeon.util.FeedbackManager;
 import com.adaplu.clickdungeon.util.InventoryManager;
@@ -23,9 +23,7 @@ import com.google.gson.Gson;
 import java.util.List;
 
 /**
- * InventoryActivity displays the player's collected items and allows equipping gear
- * or allocating earned stat points. It provides a detailed view of the character's 
- * current strength, health, and equipment bonuses.
+ * InventoryActivity displays collected items, equipment, and the simplified three-stat summary.
  */
 public class InventoryActivity extends AppCompatActivity {
 
@@ -33,14 +31,11 @@ public class InventoryActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setTitle(R.string.inventory_title);
-        // Use the shared inventory dialog layout for the full activity view.
         setContentView(R.layout.dialog_inventory);
 
-        // Bind UI components.
         RecyclerView recycler = findViewById(R.id.recyclerInventory);
         TextView goldView = findViewById(R.id.textInventoryGold);
         TextView platinumView = findViewById(R.id.textInventoryPlatinum);
-        TextView mpView = findViewById(R.id.textInventoryMp);
         TextView countView = findViewById(R.id.textInventoryCount);
         TextView weaponView = findViewById(R.id.textEquippedWeapon);
         TextView armorView = findViewById(R.id.textEquippedArmor);
@@ -48,25 +43,16 @@ public class InventoryActivity extends AppCompatActivity {
         TextView emptyView = findViewById(R.id.textEmptyInventory);
         TextView changeLogTitle = findViewById(R.id.textInventoryChangeLogTitle);
         TextView changeLogView = findViewById(R.id.textInventoryChangeLog);
-        
-        View statAllocation = findViewById(R.id.layoutStatAllocation);
-        TextView statPointsView = findViewById(R.id.textStatPoints);
-        TextView statStrengthView = findViewById(R.id.textStatStrength);
-        TextView statDexterityView = findViewById(R.id.textStatDexterity);
-        TextView statConstitutionView = findViewById(R.id.textStatConstitution);
-        TextView statIntelligenceView = findViewById(R.id.textStatIntelligence);
-        View statStrengthButton = findViewById(R.id.buttonStatStrength);
-        View statDexterityButton = findViewById(R.id.buttonStatDexterity);
-        View statConstitutionButton = findViewById(R.id.buttonStatConstitution);
-        View statIntelligenceButton = findViewById(R.id.buttonStatIntelligence);
+        TextView classXpView = findViewById(R.id.textCurrentClassXp);
+        TextView healthView = findViewById(R.id.textStatHealth);
+        TextView attackView = findViewById(R.id.textStatAttack);
+        TextView defenseView = findViewById(R.id.textStatDefense);
 
         recycler.setLayoutManager(new LinearLayoutManager(this));
-        
-        // Load the persistent inventory and profile data.
+
         List<InventoryItem> items = InventoryManager.loadInventory(this);
         CharacterProfile profile = loadProfile();
-        
-        // Initialize the inventory list adapter with equip logic.
+
         InventoryAdapter adapter = new InventoryAdapter(items, item -> {
             if (profile == null) {
                 return;
@@ -77,10 +63,10 @@ public class InventoryActivity extends AppCompatActivity {
             }
             saveProfile(profile);
             updateEquippedSummary(profile, weaponView, armorView, statView);
+            updateStatSummary(profile, classXpView, healthView, attackView, defenseView);
         });
         recycler.setAdapter(adapter);
-        
-        // Update currency displays.
+
         goldView.setText(getString(R.string.gold_display_dynamic, InventoryManager.getGold(this)));
         platinumView.setText(getString(R.string.platinum_display_dynamic, InventoryManager.getPlatinum(this)));
         if (countView != null) {
@@ -90,61 +76,28 @@ public class InventoryActivity extends AppCompatActivity {
             }
             countView.setText(getString(R.string.inventory_item_count, totalCount));
         }
-        
-        // Show empty state if no items exist.
         emptyView.setVisibility(items.isEmpty() ? View.VISIBLE : View.GONE);
-        
+
         if (profile != null) {
             updateEquippedSummary(profile, weaponView, armorView, statView);
-            mpView.setText(getString(R.string.mp_display_dynamic, profile.getCurrentMP(), profile.getMaxMP()));
-            
-            // Wire up the interactive stat point allocation buttons.
-            bindStatAllocation(profile,
-                    statAllocation,
-                    statPointsView,
-                    statStrengthView,
-                    statDexterityView,
-                    statConstitutionView,
-                    statIntelligenceView,
-                    statStrengthButton,
-                    statDexterityButton,
-                    statConstitutionButton,
-                    statIntelligenceButton,
-                    weaponView,
-                    armorView,
-                    statView,
-                    mpView);
-        } else if (statAllocation != null) {
-            statAllocation.setVisibility(View.GONE);
-            mpView.setText(getString(R.string.mp_display_dynamic, 0, 0));
+            updateStatSummary(profile, classXpView, healthView, attackView, defenseView);
         }
 
-        bindChangeLog(changeLogTitle, changeLogView,
-                InventoryManager.getInventoryChangeLog(this));
+        bindChangeLog(changeLogTitle, changeLogView, InventoryManager.getInventoryChangeLog(this));
     }
 
-    /**
-     * Loads the character profile from shared preferences.
-     */
     private CharacterProfile loadProfile() {
         String json = SecurePreferences.get(this, "player_profile").getString("profile", null);
         return json != null ? new Gson().fromJson(json, CharacterProfile.class) : null;
     }
 
-    /**
-     * Persists character profile changes.
-     */
     private void saveProfile(CharacterProfile profile) {
         SecurePreferences.get(this, "player_profile")
-            .edit()
-            .putString("profile", new Gson().toJson(profile))
-            .apply();
+                .edit()
+                .putString("profile", new Gson().toJson(profile))
+                .apply();
     }
 
-    /**
-     * Toggles an item between equipped and unequipped states.
-     * @return true if the item was eligible for equipping.
-     */
     private boolean toggleEquip(CharacterProfile profile, String itemName) {
         ItemDefinition definition = ItemCatalog.getItemDefinition(itemName);
         if (definition == null || definition.getEquipSlot() == ItemDefinition.EquipSlot.NONE) {
@@ -176,9 +129,6 @@ public class InventoryActivity extends AppCompatActivity {
         }
     }
 
-    /**
-     * Updates the text labels summarizing current equipment and total stats.
-     */
     private void updateEquippedSummary(CharacterProfile profile,
                                        TextView weaponView,
                                        TextView armorView,
@@ -194,77 +144,22 @@ public class InventoryActivity extends AppCompatActivity {
                 profile.getDefenseBonus()));
     }
 
-    /**
-     * Sets up click listeners for the stat increment buttons.
-     */
-    private void bindStatAllocation(CharacterProfile profile,
-                                    View allocationView,
-                                    TextView pointsView,
-                                    TextView strengthView,
-                                    TextView dexterityView,
-                                    TextView constitutionView,
-                                    TextView intelligenceView,
-                                    View strengthButton,
-                                    View dexterityButton,
-                                    View constitutionButton,
-                                    View intelligenceButton,
-                                    TextView weaponView,
-                                    TextView armorView,
-                                    TextView statView,
-                                    TextView mpView) {
-        if (allocationView == null) {
-            return;
-        }
-        allocationView.setVisibility(View.VISIBLE);
-        Runnable refresh = () -> {
-            updateStatViews(profile, pointsView, strengthView,
-                    dexterityView, constitutionView, intelligenceView);
-            mpView.setText(getString(R.string.mp_display_dynamic, profile.getCurrentMP(), profile.getMaxMP()));
-        };
-        refresh.run();
-
-        strengthButton.setOnClickListener(v -> {
-            if (profile.increaseStrength(1)) {
-                saveProfile(profile);
-                refresh.run();
-                updateEquippedSummary(profile, weaponView, armorView, statView);
-            }
-        });
-        dexterityButton.setOnClickListener(v -> {
-            if (profile.increaseDexterity(1)) {
-                saveProfile(profile);
-                refresh.run();
-                updateEquippedSummary(profile, weaponView, armorView, statView);
-            }
-        });
-        constitutionButton.setOnClickListener(v -> {
-            if (profile.increaseConstitution(1)) {
-                saveProfile(profile);
-                refresh.run();
-            }
-        });
-        intelligenceButton.setOnClickListener(v -> {
-            if (profile.increaseIntelligence(1)) {
-                saveProfile(profile);
-                refresh.run();
-            }
-        });
-    }
-
-    /**
-     * Refreshes the text displays for the character's base stats.
-     */
-    private void updateStatViews(CharacterProfile profile,
-                                 TextView pointsView,
-                                 TextView strengthView,
-                                 TextView dexterityView,
-                                 TextView constitutionView,
-                                 TextView intelligenceView) {
-        pointsView.setText(getString(R.string.stat_points_available, profile.getAvailableStatPoints()));
-        strengthView.setText(getString(R.string.stat_label_strength, profile.getStrength()));
-        dexterityView.setText(getString(R.string.stat_label_dexterity, profile.getDexterity()));
-        constitutionView.setText(getString(R.string.stat_label_constitution, profile.getConstitution()));
-        intelligenceView.setText(getString(R.string.stat_label_intelligence, profile.getIntelligence()));
+    private void updateStatSummary(CharacterProfile profile,
+                                   TextView classXpView,
+                                   TextView healthView,
+                                   TextView attackView,
+                                   TextView defenseView) {
+        classXpView.setText(getString(R.string.class_xp_available, profile.getCurrentClassXp()));
+        healthView.setText(getString(R.string.stat_label_health,
+                profile.getCurrentHP(),
+                profile.getMaxHP(),
+                profile.getHealthBoost()));
+        attackView.setText(getString(R.string.stat_label_attack,
+                profile.getBaseAttack(),
+                profile.getAttackBoost()));
+        defenseView.setText(getString(R.string.stat_label_defense,
+                profile.getBaseDefense(),
+                profile.getDefenseBoost()));
     }
 
     private void bindChangeLog(TextView titleView, TextView logView, List<String> entries) {
@@ -288,12 +183,10 @@ public class InventoryActivity extends AppCompatActivity {
         logView.setText(builder.toString());
     }
 
-    /** Helper to show short informational toasts. */
     private void showToast(int messageResId, String itemName) {
         android.widget.Toast.makeText(this, getString(messageResId, itemName), android.widget.Toast.LENGTH_SHORT).show();
     }
 
-    /** Triggers audio and haptic feedback when gear is changed. */
     private void playEquipFeedback() {
         SoundManager.syncMuteFromSettings(this);
         boolean played = SoundManager.playAndReport(SoundManager.KEY_EFFECT_EQUIP);

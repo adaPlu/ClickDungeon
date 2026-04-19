@@ -41,9 +41,10 @@ public class GameActivityStatAllocationDialogTest {
     }
 
     @Test
-    public void inventoryDialogAllowsStatAllocation() throws Exception {
+    public void inventoryDialogShowsSimplifiedStatSummary() throws Exception {
         CharacterProfile profile = new CharacterProfile("Hero", PlayerClass.KNIGHT);
         profile.addExperience(120);
+        profile.addDefenseBoost(2);
         context.getSharedPreferences("player_profile", Context.MODE_PRIVATE)
                 .edit()
                 .putString("profile", new Gson().toJson(profile))
@@ -64,17 +65,11 @@ public class GameActivityStatAllocationDialogTest {
         android.app.Dialog dialog = ShadowDialog.getLatestDialog();
         assertNotNull(dialog);
 
-        TextView pointsView = dialog.findViewById(R.id.textStatPoints);
-        TextView strengthView = dialog.findViewById(R.id.textStatStrength);
-        android.view.View strengthButton = dialog.findViewById(R.id.buttonStatStrength);
-
-        assertTrue(pointsView.getText().toString().contains("2"));
-        assertTrue(strengthView.getText().toString().contains("2"));
-
-        strengthButton.performClick();
-        ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
-
-        assertTrue(pointsView.getText().toString().contains("1"));
-        assertTrue(strengthView.getText().toString().contains("3"));
+        TextView classXpView = dialog.findViewById(R.id.textCurrentClassXp);
+        TextView defenseView = dialog.findViewById(R.id.textStatDefense);
+        assertNotNull(classXpView);
+        assertNotNull(defenseView);
+        assertTrue(classXpView.getText().toString().contains("120"));
+        assertTrue(defenseView.getText().toString().contains("DEF:"));
     }
 }

@@ -91,23 +91,23 @@ public final class MonsterCatalog {
 
         /** Builds a Monster instance using per-floor scaling and difficulty multipliers. */
         public Monster spawnForFloor(Random random, int floor, SettingsManager.Difficulty difficulty) {
-            int scaling = Math.max(0, floor - 1);
+            int scaling = Math.max(0, Math.min(GameBalance.FINAL_FLOOR, floor) - 1);
 
-            int hpBonus = scaling;
-            int attackBonus = Math.max(0, (scaling + 1) / 2);
-            int defenseBonus = Math.max(0, scaling / 3);
+            int hpBonus = scaling / 8;
+            int attackBonus = scaling / 16;
+            int defenseBonus = scaling / 22;
 
             if (scaling > 0) {
-                hpBonus += random.nextInt(scaling + 1);
-                attackBonus += random.nextInt(Math.max(1, (scaling / 2) + 1));
-                defenseBonus += random.nextInt(Math.max(1, (scaling / 3) + 1));
+                hpBonus += random.nextInt(Math.max(1, (scaling / 14) + 1));
+                attackBonus += random.nextInt(Math.max(1, (scaling / 24) + 1));
+                defenseBonus += random.nextInt(Math.max(1, (scaling / 30) + 1));
             }
 
             int maxHp = Math.max(1, baseHp + hpBonus);
             int attack = Math.max(1, baseAttack + attackBonus);
             int defense = Math.max(0, baseDefense + defenseBonus);
 
-            float scale = GameBalance.getFloorDifficultyScale(floor);
+            float scale = GameBalance.getMonsterDifficultyScale(floor);
             maxHp = Math.max(1, Math.round(maxHp * scale));
             attack = Math.max(1, Math.round(attack * scale));
             defense = Math.max(0, Math.round(defense * scale));

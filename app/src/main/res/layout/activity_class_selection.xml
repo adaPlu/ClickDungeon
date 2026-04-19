@@ -89,9 +89,9 @@
                 android:background="@drawable/menu_button_bg"
                 android:textColor="#FFF3D5"
                 android:textSize="13sp"
-                android:drawableStart="@drawable/icon_thief"
+                android:drawableStart="@drawable/icon_ranger"
                 android:drawablePadding="6dp"
-                android:visibility="gone" />
+                android:visibility="visible" />
         </TableRow>
 
         <TableRow>

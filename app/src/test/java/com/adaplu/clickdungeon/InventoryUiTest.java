@@ -57,9 +57,10 @@ public class InventoryUiTest {
     }
 
     @Test
-    public void inventoryActivityAllowsStatAllocation() {
+    public void inventoryActivityShowsSimplifiedStatSummary() {
         CharacterProfile profile = new CharacterProfile("Tuning", PlayerClass.KNIGHT);
         profile.addExperience(120);
+        profile.addAttackBoost(1);
         context.getSharedPreferences("player_profile", Context.MODE_PRIVATE)
                 .edit()
                 .putString("profile", new Gson().toJson(profile))
@@ -68,16 +69,11 @@ public class InventoryUiTest {
         ActivityController<InventoryActivity> controller = Robolectric.buildActivity(InventoryActivity.class);
         InventoryActivity activity = controller.setup().get();
 
-        TextView pointsView = activity.findViewById(R.id.textStatPoints);
-        TextView strengthView = activity.findViewById(R.id.textStatStrength);
-        View strengthButton = activity.findViewById(R.id.buttonStatStrength);
+        TextView classXpView = activity.findViewById(R.id.textCurrentClassXp);
+        TextView attackView = activity.findViewById(R.id.textStatAttack);
 
-        assertTrue(pointsView.getText().toString().contains("2"));
-        assertTrue(strengthView.getText().toString().contains("2"));
-
-        strengthButton.performClick();
-
-        assertTrue(pointsView.getText().toString().contains("1"));
-        assertTrue(strengthView.getText().toString().contains("3"));
+        assertTrue(classXpView.getText().toString().contains("120"));
+        assertTrue(attackView.getText().toString().contains("ATK:"));
+        assertTrue(attackView.getText().toString().contains("(+1)"));
     }
 }

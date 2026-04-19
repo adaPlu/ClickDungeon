@@ -1,10 +1,12 @@
 package com.adaplu.clickdungeon;
 
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import android.content.Context;
 import android.view.View;
+import android.widget.ListView;
 
 import androidx.test.core.app.ApplicationProvider;
 
@@ -19,6 +21,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.shadows.ShadowAlertDialog;
+import org.robolectric.shadows.ShadowLooper;
 import com.adaplu.clickdungeon.util.SecurePreferences;
 
 @RunWith(RobolectricTestRunner.class)
@@ -35,6 +39,10 @@ public class MainMenuActivityTest {
                     .clear()
                     .commit();
         }
+        SecurePreferences.get(context, "player_profile")
+                .edit()
+                .clear()
+                .commit();
     }
 
     @Test
@@ -56,5 +64,75 @@ public class MainMenuActivityTest {
 
         View continueButton = activity.findViewById(R.id.btnContinue);
         assertTrue(continueButton.isEnabled());
+    }
+
+    @Test
+    public void classesButtonShowsUpgradeDetailsForChosenClass() {
+        CharacterProfile profile = new CharacterProfile("Hero", PlayerClass.RANGER);
+        profile.addClassXp(PlayerClass.RANGER, 56);
+        SecurePreferences.get(context, "player_profile")
+                .edit()
+                .putString("profile", new com.google.gson.Gson().toJson(profile))
+                .commit();
+
+        MainMenuActivity activity = Robolectric.buildActivity(MainMenuActivity.class).setup().get();
+        activity.findViewById(R.id.btnClasses).performClick();
+
+        android.app.AlertDialog picker = ShadowAlertDialog.getLatestAlertDialog();
+        assertNotNull(picker);
+        ListView classList = picker.getListView();
+        assertNotNull(classList);
+        classList.performItemClick(
+                classList.getAdapter().getView(1, null, classList),
+                1,
+                classList.getAdapter().getItemId(1));
+        ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
+
+        android.app.AlertDialog detailDialog = ShadowAlertDialog.getLatestAlertDialog();
+        assertNotNull(detailDialog);
+        assertNotNull(detailDialog.getListView());
+
+        String detail = activity.buildClassUpgradeDetailMessage(PlayerClass.RANGER, profile);
+        assertTrue(detail.contains("Current XP: 56"));
+        assertTrue(detail.contains("Tap an affordable ability"));
+        assertTrue(detail.contains("Affordable - tap to unlock"));
+    }
+
+    @Test
+    public void classesButtonUnlocksAffordableAbility() {
+        CharacterProfile profile = new CharacterProfile("Hero", PlayerClass.RANGER);
+        profile.addClassXp(PlayerClass.RANGER, 56);
+        SecurePreferences.get(context, "player_profile")
+                .edit()
+                .putString("profile", new com.google.gson.Gson().toJson(profile))
+                .commit();
+
+        MainMenuActivity activity = Robolectric.buildActivity(MainMenuActivity.class).setup().get();
+
+        activity.findViewById(R.id.btnClasses).performClick();
+
+        android.app.AlertDialog picker = ShadowAlertDialog.getLatestAlertDialog();
+        assertNotNull(picker);
+        ListView classList = picker.getListView();
+        assertNotNull(classList);
+        classList.performItemClick(
+                classList.getAdapter().getView(1, null, classList),
+                1,
+                classList.getAdapter().getItemId(1));
+        ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
+
+        android.app.AlertDialog detailDialog = ShadowAlertDialog.getLatestAlertDialog();
+        assertNotNull(detailDialog);
+        ListView abilityList = detailDialog.getListView();
+        assertNotNull(abilityList);
+        abilityList.performItemClick(
+                abilityList.getAdapter().getView(1, null, abilityList),
+                1,
+                abilityList.getAdapter().getItemId(1));
+        ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
+
+        String json = SecurePreferences.get(context, "player_profile").getString("profile", null);
+        CharacterProfile updated = new com.google.gson.Gson().fromJson(json, CharacterProfile.class);
+        assertTrue(updated.isAbilityUnlocked(PlayerClass.RANGER, PlayerClass.ABILITY_RANGER_RAPID_VOLLEY));
     }
 }

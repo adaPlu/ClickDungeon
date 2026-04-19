@@ -800,6 +800,7 @@ public class CombatDialogFragment extends DialogFragment {
         }
         switch (playerClass) {
             case WIZARD: return R.drawable.wizard_sprite_sheet;
+            case RANGER: return R.drawable.knight_sprite_sheet;
             case THIEF: return R.drawable.thief_sprite_sheet;
             case KNIGHT:
             default: return R.drawable.knight_sprite_sheet;

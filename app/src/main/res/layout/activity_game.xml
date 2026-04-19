@@ -76,7 +76,7 @@
             android:paddingTop="8dp" />
     </FrameLayout>
 
-    <!-- Bottom HUD: name/level, XP+MP stack, and centered class icon with HP bar -->
+    <!-- Bottom HUD: name, class XP, and quick actions -->
     <LinearLayout
         android:id="@+id/layoutPlayerHud"
         android:layout_width="match_parent"
@@ -95,7 +95,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerHorizontal="true"
-                android:text="@string/player_hud_name_level_placeholder"
+                android:text="@string/player_hud_name_class_placeholder"
                 android:textStyle="bold"
                 android:textSize="16sp" />
 
@@ -158,17 +158,6 @@
                     android:textStyle="bold"
                     android:textSize="14sp" />
 
-                <ProgressBar
-                    android:id="@+id/progressMpCounter"
-                    style="?android:attr/progressBarStyleHorizontal"
-                    android:layout_width="match_parent"
-                    android:layout_height="8dp"
-                    android:layout_marginTop="4dp"
-                    android:max="100"
-                    android:progress="0"
-                    android:progressTint="#2196F3"
-                    android:background="#33000000"
-                    android:visibility="gone" />
             </LinearLayout>
 
             <LinearLayout
@@ -188,6 +177,21 @@
                     android:paddingEnd="8dp"
                     android:text="@string/use_ability"
                     android:contentDescription="@string/use_ability_desc"
+                    android:textSize="11sp"
+                    android:background="@drawable/menu_button_bg"
+                    android:textColor="#FFF3D5" />
+
+                <Button
+                    android:id="@+id/btnClassMenu"
+                    android:layout_width="wrap_content"
+                    android:layout_height="48dp"
+                    android:layout_marginTop="6dp"
+                    android:minHeight="48dp"
+                    android:minWidth="0dp"
+                    android:paddingStart="8dp"
+                    android:paddingEnd="8dp"
+                    android:text="@string/open_class_menu"
+                    android:contentDescription="@string/open_class_menu_desc"
                     android:textSize="11sp"
                     android:background="@drawable/menu_button_bg"
                     android:textColor="#FFF3D5" />
@@ -224,15 +228,5 @@
             </LinearLayout>
         </LinearLayout>
     </LinearLayout>
-
-    <Button
-        android:id="@+id/btnLevelUp"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/level_up"
-        android:layout_marginTop="6dp"
-        android:background="@drawable/menu_button_bg"
-        android:textColor="#FFF3D5"
-        android:visibility="gone" />
 
 </LinearLayout>

@@ -19,11 +19,12 @@ public class BossCatalogTest {
 
     @Test
     public void isBossFloorRecognizesConfiguredAndNonConfiguredFloors() {
-        assertTrue(BossCatalog.isBossFloor(5));
-        assertTrue(BossCatalog.isBossFloor(10));
-        assertTrue(BossCatalog.isBossFloor(15));
+        assertTrue(BossCatalog.isBossFloor(11));
+        assertTrue(BossCatalog.isBossFloor(22));
+        assertTrue(BossCatalog.isBossFloor(99));
         assertFalse(BossCatalog.isBossFloor(1));
-        assertFalse(BossCatalog.isBossFloor(16));
+        assertFalse(BossCatalog.isBossFloor(12));
+        assertFalse(BossCatalog.isBossFloor(100));
     }
 
     @Test
@@ -33,7 +34,7 @@ public class BossCatalogTest {
 
     @Test
     public void createBossForFloorBuildsExpectedBossMetadata() {
-        Monster lich = BossCatalog.createBossForFloor(5);
+        Monster lich = BossCatalog.createBossForFloor(11);
         assertNotNull(lich);
         assertEquals("Lich", lich.getMonsterType());
         assertEquals(14, lich.getMaxHP());
@@ -43,5 +44,18 @@ public class BossCatalogTest {
         assertEquals(2, lich.getBossPhaseCount());
         assertEquals(MonsterFamily.UNDEAD, lich.getFamily());
         assertEquals(MonsterAffinity.ARCANE, lich.getAffinity());
+    }
+
+    @Test
+    public void lateGameBossesScaleBeyondTheOpeningBoss() {
+        Monster openingBoss = BossCatalog.createBossForFloor(11);
+        Monster lateBoss = BossCatalog.createBossForFloor(99);
+
+        assertNotNull(openingBoss);
+        assertNotNull(lateBoss);
+        assertTrue(lateBoss.getMaxHP() > openingBoss.getMaxHP());
+        assertTrue(lateBoss.getAttack() >= openingBoss.getAttack());
+        assertTrue(lateBoss.getDefense() >= openingBoss.getDefense());
+        assertEquals(5, lateBoss.getBossPhaseCount());
     }
 }

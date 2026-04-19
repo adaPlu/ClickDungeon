@@ -30,15 +30,6 @@
         android:layout_marginTop="4dp" />
 
     <TextView
-        android:id="@+id/textInventoryMp"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textStyle="bold"
-        android:textSize="16sp"
-        android:text="@string/mp_display_dynamic"
-        android:layout_marginTop="4dp" />
-
-    <TextView
         android:id="@+id/textInventoryCount"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -74,127 +65,48 @@
         android:text="@string/equipped_stat_delta" />
 
     <LinearLayout
-        android:id="@+id/layoutStatAllocation"
+        android:id="@+id/layoutStatSummary"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:layout_marginTop="10dp">
 
         <TextView
-            android:id="@+id/textStatAllocationTitle"
+            android:id="@+id/textStatsTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textStyle="bold"
             android:textSize="15sp"
-            android:text="@string/stat_allocate_title" />
+            android:text="@string/stat_summary_title" />
 
         <TextView
-            android:id="@+id/textStatPoints"
+            android:id="@+id/textCurrentClassXp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textSize="14sp"
             android:layout_marginTop="2dp"
-            android:text="@string/stat_points_available" />
+            android:text="@string/class_xp_available" />
 
-        <LinearLayout
+        <TextView
+            android:id="@+id/textStatHealth"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginTop="6dp">
+            android:layout_marginTop="6dp"
+            android:text="@string/stat_label_health" />
 
-            <TextView
-                android:id="@+id/textStatStrength"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/stat_label_strength" />
-
-            <Button
-                android:id="@+id/buttonStatStrength"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:minWidth="0dp"
-                android:minHeight="0dp"
-                android:text="@string/stat_add_button"
-                android:contentDescription="@string/stat_add_strength_desc"
-                android:background="@drawable/menu_button_bg"
-                android:textColor="#FFF3D5" />
-        </LinearLayout>
-
-        <LinearLayout
+        <TextView
+            android:id="@+id/textStatAttack"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginTop="4dp">
+            android:layout_marginTop="4dp"
+            android:text="@string/stat_label_attack" />
 
-            <TextView
-                android:id="@+id/textStatDexterity"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/stat_label_dexterity" />
-
-            <Button
-                android:id="@+id/buttonStatDexterity"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:minWidth="0dp"
-                android:minHeight="0dp"
-                android:text="@string/stat_add_button"
-                android:contentDescription="@string/stat_add_dexterity_desc"
-                android:background="@drawable/menu_button_bg"
-                android:textColor="#FFF3D5" />
-        </LinearLayout>
-
-        <LinearLayout
+        <TextView
+            android:id="@+id/textStatDefense"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginTop="4dp">
-
-            <TextView
-                android:id="@+id/textStatConstitution"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/stat_label_constitution" />
-
-            <Button
-                android:id="@+id/buttonStatConstitution"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:minWidth="0dp"
-                android:minHeight="0dp"
-                android:text="@string/stat_add_button"
-                android:contentDescription="@string/stat_add_constitution_desc"
-                android:background="@drawable/menu_button_bg"
-                android:textColor="#FFF3D5" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginTop="4dp">
-
-            <TextView
-                android:id="@+id/textStatIntelligence"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/stat_label_intelligence" />
-
-            <Button
-                android:id="@+id/buttonStatIntelligence"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:minWidth="0dp"
-                android:minHeight="0dp"
-                android:text="@string/stat_add_button"
-                android:contentDescription="@string/stat_add_intelligence_desc"
-                android:background="@drawable/menu_button_bg"
-                android:textColor="#FFF3D5" />
-        </LinearLayout>
+            android:layout_marginTop="4dp"
+            android:text="@string/stat_label_defense" />
     </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView

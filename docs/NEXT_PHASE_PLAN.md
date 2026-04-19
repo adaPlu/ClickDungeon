@@ -1,6 +1,6 @@
 # Next Phase Plan
 
-Last updated: 2026-03-30
+Last updated: 2026-04-18
 
 ## Objective
 Move ClickDungeon from its current hardening state to a release-ready state for connected services and late-game UX. The next phase is organized as a multi-track stabilization effort.
@@ -36,9 +36,10 @@ Move ClickDungeon from its current hardening state to a release-ready state for 
 - Capture results in the device matrix and rollout docs.
 
 ## Track 3 - UX Polish and Content Completion
+- **Status update (2026-04-18):** Ranger class enablement is now live in the app with gameplay support. The current icon/sprite fallback is acceptable for launch; dedicated Ranger art is a post-launch polish item.
 - Finish the documented but still-open UX/content items:
   - extended animation states
-  - Ranger asset delivery/import
+  - Ranger icon + sprite-sheet replacement
   - localization QA pass
   - tablet/readability cleanup
   - audio cue coverage follow-up

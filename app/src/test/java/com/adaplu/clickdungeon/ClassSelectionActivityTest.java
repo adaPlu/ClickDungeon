@@ -76,11 +76,15 @@ public class ClassSelectionActivityTest {
 
         ImageView preview = activity.findViewById(R.id.imageClassPreview);
         Button knight = activity.findViewById(R.id.btnKnight);
+        Button ranger = activity.findViewById(R.id.btnRanger);
         Button thief = activity.findViewById(R.id.btnThief);
         Button wizard = activity.findViewById(R.id.btnWizard);
 
         knight.performClick();
         assertDrawable(preview.getDrawable(), activity.getDrawable(R.drawable.icon_knight));
+
+        ranger.performClick();
+        assertDrawable(preview.getDrawable(), activity.getDrawable(R.drawable.icon_ranger));
 
         thief.performClick();
         assertDrawable(preview.getDrawable(), activity.getDrawable(R.drawable.icon_thief));

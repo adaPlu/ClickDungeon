@@ -14,7 +14,7 @@ touch devices without demanding long play sessions.
 
 Highlights:
 - Tile-based dungeon exploration with traps, keys, treasure, and boss floors
-- Three playable classes: Knight, Thief, and Wizard
+- Four playable classes: Knight, Ranger, Thief, and Wizard
 - Combat with telegraphed enemy actions and animated battle panels
 - Shop, buyback economy, achievements, and offline encrypted save slots
 - Accessibility-focused options including color-blind mode

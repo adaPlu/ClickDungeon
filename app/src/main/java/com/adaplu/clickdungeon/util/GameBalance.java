@@ -31,6 +31,8 @@ public final class GameBalance {
     public static final int STARTING_GOLD = 50;
     /** Starting premium currency for a new run. */
     public static final int STARTING_PLATINUM = 100;
+    /** Long-form campaign floor cap used for progression scaling. */
+    public static final int FINAL_FLOOR = 99;
     /** MP cost for the Wizard's Meteor ability. */
     public static final int WIZARD_MP_COST_METEOR = 7;
     /** MP cost for the Wizard's Chain Lightning ability. */
@@ -41,12 +43,18 @@ public final class GameBalance {
     public static final int WIZARD_MP_COST_ARCANE_SHIELD = 4;
     /** Default MP cost for unrecognized Wizard abilities. */
     public static final int WIZARD_MP_COST_DEFAULT = 3;
+    /** Permanent HP granted by a health shrine tile. */
+    public static final int BOOST_HEALTH_GAIN = 2;
+    /** Permanent ATK granted by an attack shrine tile. */
+    public static final int BOOST_ATTACK_GAIN = 1;
+    /** Permanent DEF granted by a defense shrine tile. */
+    public static final int BOOST_DEFENSE_GAIN = 1;
     /** Base XP for clearing a floor before scaling. */
-    private static final int BASE_FLOOR_CLEAR_XP = 6;
+    private static final int BASE_FLOOR_CLEAR_XP = 14;
     /** Base XP for finding items before scaling. */
-    private static final int BASE_ITEM_FOUND_XP = 2;
+    private static final int BASE_ITEM_FOUND_XP = 4;
     /** Base XP for disabling traps before scaling. */
-    private static final int BASE_TRAP_DISABLED_XP = 3;
+    private static final int BASE_TRAP_DISABLED_XP = 5;
     /** Random variance for gold rewards. */
     private static final int GOLD_VARIANCE_BOUND = 3;
     /** Random variance for XP rewards. */
@@ -94,9 +102,10 @@ public final class GameBalance {
                                         int floor,
                                         SettingsManager.Difficulty difficulty,
                                         Random random) {
-        int base = Math.max(1, (monster.getMaxHP() / 2) + (floor / 2));
+        int base = Math.max(2, (monster.getMaxHP() / 2) + (floor / 3) + 2);
         base += random.nextInt(XP_VARIANCE_BOUND + 1);
         base = Math.round(base * getFloorDifficultyScale(floor));
+        base = Math.round(base * getXpRewardScale(floor));
         if (difficulty != null) {
             base = difficulty.scaleXpReward(base);
         }
@@ -109,6 +118,7 @@ public final class GameBalance {
     public static int calculateFloorClearXp(int floor, SettingsManager.Difficulty difficulty) {
         int base = Math.max(1, BASE_FLOOR_CLEAR_XP);
         base = Math.round(base * getFloorDifficultyScale(floor));
+        base = Math.round(base * getXpRewardScale(floor));
         if (difficulty != null) {
             base = difficulty.scaleXpReward(base);
         }
@@ -121,6 +131,7 @@ public final class GameBalance {
     public static int calculateItemFoundXp(int floor, SettingsManager.Difficulty difficulty) {
         int base = Math.max(1, BASE_ITEM_FOUND_XP);
         base = Math.round(base * getFloorDifficultyScale(floor));
+        base = Math.round(base * getXpRewardScale(floor));
         if (difficulty != null) {
             base = difficulty.scaleXpReward(base);
         }
@@ -133,6 +144,7 @@ public final class GameBalance {
     public static int calculateTrapDisabledXp(int floor, SettingsManager.Difficulty difficulty) {
         int base = Math.max(1, BASE_TRAP_DISABLED_XP);
         base = Math.round(base * getFloorDifficultyScale(floor));
+        base = Math.round(base * getXpRewardScale(floor));
         if (difficulty != null) {
             base = difficulty.scaleXpReward(base);
         }
@@ -188,17 +200,67 @@ public final class GameBalance {
     }
 
     /**
-     * Returns a gentle scaling factor per floor. Floors 1-5: light ramp; 6-10: moderate; 11-15: hardest.
+     * Returns the reward pacing scale for the long campaign.
+     * This grows steadily from floor 1 to floor 99 so player progression stays active.
      */
     public static float getFloorDifficultyScale(int floor) {
-        if (floor <= 0) return 1f;
-        if (floor <= 5) {
-            return 1f + (Math.max(0, floor - 1) * 0.03f); // up to ~1.12
-        } else if (floor <= 10) {
-            return 1.12f + ((floor - 5) * 0.04f); // 1.16..1.32
-        } else {
-            return 1.32f + ((Math.min(15, floor) - 10) * 0.05f); // 1.37..1.57 at F15
+        if (floor <= 0) {
+            return 1f;
         }
+        int clampedFloor = Math.min(FINAL_FLOOR, Math.max(1, floor));
+        float progress = (clampedFloor - 1) / (float) (FINAL_FLOOR - 1);
+        return 1f + (progress * 1.6f); // 1.00 .. 2.60 by floor 99
+    }
+
+    /**
+     * Returns the combat pacing scale for monsters.
+     * This intentionally ramps slower than reward scaling so players have room to grow.
+     */
+    public static float getMonsterDifficultyScale(int floor) {
+        if (floor <= 0) {
+            return 1f;
+        }
+        int clampedFloor = Math.min(FINAL_FLOOR, Math.max(1, floor));
+        float progress = (clampedFloor - 1) / (float) (FINAL_FLOOR - 1);
+        return 1f + (progress * 0.38f); // 1.00 .. 1.38 by floor 99
+    }
+
+    /**
+     * Returns a bonus multiplier for XP pacing so players level more steadily than enemy power rises.
+     */
+    public static float getXpRewardScale(int floor) {
+        if (floor <= 0) {
+            return 1.10f;
+        }
+        int clampedFloor = Math.min(FINAL_FLOOR, Math.max(1, floor));
+        float progress = (clampedFloor - 1) / (float) (FINAL_FLOOR - 1);
+        return 1.10f + (progress * 0.55f); // 1.10 .. 1.65 by floor 99
+    }
+
+    /**
+     * Returns the actual chance to apply a terrain status on the given floor.
+     * Terrain pressure ramps in slowly even after a terrain theme unlocks.
+     */
+    public static float getTerrainHazardChance(int floor, float lateGameBaseChance) {
+        if (lateGameBaseChance <= 0f) {
+            return 0f;
+        }
+        int clampedFloor = Math.min(FINAL_FLOOR, Math.max(1, floor));
+        float progress = (clampedFloor - 1) / (float) (FINAL_FLOOR - 1);
+        float scale = 0.45f + (progress * 0.40f); // 45% .. 85% of the late-game base rate
+        return Math.max(0f, Math.min(1f, lateGameBaseChance * scale));
+    }
+
+    /**
+     * Returns terrain status duration with early-game mitigation.
+     */
+    public static int getTerrainHazardTurns(int floor, int lateGameTurns) {
+        if (lateGameTurns <= 1) {
+            return Math.max(1, lateGameTurns);
+        }
+        int clampedFloor = Math.min(FINAL_FLOOR, Math.max(1, floor));
+        float progress = (clampedFloor - 1) / (float) (FINAL_FLOOR - 1);
+        return progress >= 0.65f ? lateGameTurns : Math.max(1, lateGameTurns - 1);
     }
 
     /** Returns true if the floor should host a boss encounter. */
@@ -209,6 +271,7 @@ public final class GameBalance {
     /** Calculates bonus XP for defeating a boss. */
     public static int calculateBossXpReward(int floor, SettingsManager.Difficulty difficulty) {
         int base = Math.max(10, floor * 4);
+        base = Math.round(base * getXpRewardScale(floor));
         if (difficulty != null) {
             base = difficulty.scaleXpReward(base);
         }

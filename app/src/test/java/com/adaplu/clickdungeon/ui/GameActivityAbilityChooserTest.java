@@ -41,12 +41,20 @@ public class GameActivityAbilityChooserTest {
     }
 
     @Test
-    public void wizardAbilitySelectionConsumesMpAndTargets() throws Exception {
+    public void wizardAbilitySelectionShowsUnlockedAbilitiesAndConsumesAChargeOnResolve() throws Exception {
         CharacterProfile profile = new CharacterProfile("Mage", PlayerClass.WIZARD);
-        int startingMp = profile.getCurrentMP();
+        profile.addClassXp(PlayerClass.WIZARD, 200);
+        int startingCharges = profile.getAbilityCharges(
+                PlayerClass.WIZARD,
+                PlayerClass.ABILITY_WIZARD_FIREBALL,
+                System.currentTimeMillis());
 
         ActivityController<GameActivity> controller = launchWithProfile(profile);
         GameActivity activity = controller.setup().get();
+        setField(activity, "dungeonGrid", buildEmptyGrid());
+        setField(activity, "playerRow", 2);
+        setField(activity, "playerCol", 2);
+        invoke(activity, "renderGrid");
 
         activity.findViewById(R.id.btnClassAbility).performClick();
         ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
@@ -54,7 +62,7 @@ public class GameActivityAbilityChooserTest {
         android.app.Dialog dialog = ShadowDialog.getLatestDialog();
         assertNotNull(dialog);
         ListView listView = findListView(dialog);
-        assertTrue(listView.getAdapter().getCount() > 0);
+        assertEquals(profile.getUnlockedAbilities(PlayerClass.WIZARD).length, listView.getAdapter().getCount());
 
         listView.performItemClick(
                 listView.getAdapter().getView(0, null, listView),
@@ -62,16 +70,31 @@ public class GameActivityAbilityChooserTest {
                 listView.getAdapter().getItemId(0));
         ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
 
+        assertEquals("WIZARD_FIREBALL", getField(activity, "pendingAbilityTargetMode").toString());
         CharacterProfile updated = (CharacterProfile) getField(activity, "profile");
-        assertEquals(startingMp - 3, updated.getCurrentMP());
-        Object mode = getField(activity, "pendingAbilityTargetMode");
-        assertEquals("WIZARD_FIREBALL", mode.toString());
+        assertEquals(startingCharges, updated.getAbilityCharges(
+                PlayerClass.WIZARD,
+                PlayerClass.ABILITY_WIZARD_FIREBALL,
+                System.currentTimeMillis()));
+
+        invoke(activity, "handleAbilityTargetSelection", 2, 3);
+        ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
+
+        assertEquals("NONE", getField(activity, "pendingAbilityTargetMode").toString());
+        assertEquals(startingCharges - 1, updated.getAbilityCharges(
+                PlayerClass.WIZARD,
+                PlayerClass.ABILITY_WIZARD_FIREBALL,
+                System.currentTimeMillis()));
     }
 
     @Test
-    public void wizardAbilityBlocksWhenOutOfMp() throws Exception {
+    public void wizardAbilityBlocksWhenOutOfCharges() throws Exception {
         CharacterProfile profile = new CharacterProfile("Mage", PlayerClass.WIZARD);
-        profile.setCurrentMP(0);
+        profile.addClassXp(PlayerClass.WIZARD, 200);
+        long now = System.currentTimeMillis();
+        profile.consumeAbilityCharge(PlayerClass.WIZARD, PlayerClass.ABILITY_WIZARD_FIREBALL, now);
+        profile.consumeAbilityCharge(PlayerClass.WIZARD, PlayerClass.ABILITY_WIZARD_FIREBALL, now);
+        profile.consumeAbilityCharge(PlayerClass.WIZARD, PlayerClass.ABILITY_WIZARD_FIREBALL, now);
 
         ActivityController<GameActivity> controller = launchWithProfile(profile);
         GameActivity activity = controller.setup().get();
@@ -88,10 +111,7 @@ public class GameActivityAbilityChooserTest {
                 listView.getAdapter().getItemId(0));
         ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
 
-        CharacterProfile updated = (CharacterProfile) getField(activity, "profile");
-        assertEquals(0, updated.getCurrentMP());
-        Object mode = getField(activity, "pendingAbilityTargetMode");
-        assertEquals("NONE", mode.toString());
+        assertEquals("NONE", getField(activity, "pendingAbilityTargetMode").toString());
     }
 
     private ActivityController<GameActivity> launchWithProfile(CharacterProfile profile) {
@@ -102,10 +122,40 @@ public class GameActivityAbilityChooserTest {
         return Robolectric.buildActivity(GameActivity.class, intent);
     }
 
+    private void setField(GameActivity activity, String name, Object value) throws Exception {
+        java.lang.reflect.Field field = GameActivity.class.getDeclaredField(name);
+        field.setAccessible(true);
+        field.set(activity, value);
+    }
+
     private Object getField(GameActivity activity, String name) throws Exception {
         java.lang.reflect.Field field = GameActivity.class.getDeclaredField(name);
         field.setAccessible(true);
         return field.get(activity);
+    }
+
+    private Object invoke(GameActivity activity, String methodName, Object... args) throws Exception {
+        Class<?>[] types = new Class<?>[args.length];
+        for (int i = 0; i < args.length; i++) {
+            if (args[i] instanceof Integer) {
+                types[i] = int.class;
+            } else {
+                types[i] = args[i].getClass();
+            }
+        }
+        java.lang.reflect.Method method = GameActivity.class.getDeclaredMethod(methodName, types);
+        method.setAccessible(true);
+        return method.invoke(activity, args);
+    }
+
+    private com.adaplu.clickdungeon.model.Tile[][] buildEmptyGrid() {
+        com.adaplu.clickdungeon.model.Tile[][] grid = new com.adaplu.clickdungeon.model.Tile[5][5];
+        for (int r = 0; r < 5; r++) {
+            for (int c = 0; c < 5; c++) {
+                grid[r][c] = new com.adaplu.clickdungeon.model.Tile(com.adaplu.clickdungeon.model.TileType.EMPTY);
+            }
+        }
+        return grid;
     }
 
     private ListView findListView(android.app.Dialog dialog) {
