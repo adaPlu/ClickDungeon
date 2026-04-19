@@ -237,6 +237,9 @@ public class GameActivityTileViewTest {
         ReflectionHelpers.setField(activity, "profile", new CharacterProfile("K", PlayerClass.KNIGHT));
         int knightRes = ReflectionHelpers.callInstanceMethod(activity, "getPlayerIconResource");
 
+        ReflectionHelpers.setField(activity, "profile", new CharacterProfile("R", PlayerClass.RANGER));
+        int rangerRes = ReflectionHelpers.callInstanceMethod(activity, "getPlayerIconResource");
+
         ReflectionHelpers.setField(activity, "profile", new CharacterProfile("T", PlayerClass.THIEF));
         int thiefRes = ReflectionHelpers.callInstanceMethod(activity, "getPlayerIconResource");
 
@@ -247,6 +250,7 @@ public class GameActivityTileViewTest {
         int fallbackRes = ReflectionHelpers.callInstanceMethod(activity, "getPlayerIconResource");
 
         assertEquals(R.drawable.icon_knight, knightRes);
+        assertEquals(R.drawable.icon_ranger, rangerRes);
         assertEquals(R.drawable.icon_thief, thiefRes);
         assertEquals(R.drawable.icon_wizard, wizardRes);
         assertEquals(R.drawable.icon_knight, fallbackRes);

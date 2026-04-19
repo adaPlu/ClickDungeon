@@ -99,7 +99,11 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         THIEF_AMBUSH,
         KNIGHT_SHIELD,
         KNIGHT_TAUNT,
-        KNIGHT_VALIANT_STRIKE
+        KNIGHT_VALIANT_STRIKE,
+        RANGER_PIERCING_SHOT,
+        RANGER_RAPID_VOLLEY,
+        RANGER_NET_TRAP,
+        RANGER_EAGLE_EYE
     }
 
     /** Reasons used to decide whether a save is immediate or debounced. */
@@ -111,10 +115,8 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         COMBAT_FLEE,
         COMBAT_DAMAGE,
         COMBAT_HEAL,
-        MP_SPEND,
         INVENTORY_CHANGE,
         EQUIP_CHANGE,
-        STAT_ALLOC,
         TILE_REVEAL,
         ABILITY_USED,
         COMBAT_STATE_UPDATE,
@@ -135,8 +137,7 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
     private static final String PROGRESS_KEY_GOLD = "gold_collected_total";
     private static final String PROGRESS_KEY_ENEMIES = "enemies_defeated_total";
     private static final int ABILITY_RANGE = 3;
-    private static final int ABILITY_COOLDOWN_FLOORS = 2;
-    private static final int RANGED_ATTACK_MIN_FLOOR = 6;
+    private static final int RANGED_ATTACK_MIN_FLOOR = 55;
     private static final float RANGED_ATTACK_CHANCE_HARDCORE = 0.25f;
     private static final int MERCHANT_FLOOR_INTERVAL = 3;
     private static final float MERCHANT_VISIT_CHANCE = 0.5f;
@@ -152,7 +153,7 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
     // --- Grid + run constants ---
     private static final int GRID_SIZE = 5;
     private static final int TOTAL_SAVE_SLOTS = 4;
-    private static final int MAX_FLOOR = 15;
+    private static final int MAX_FLOOR = GameBalance.FINAL_FLOOR;
     private static final int DEFAULT_SLOT_INDEX = 0;
     private static final String TAG_COMBAT_DIALOG = "CombatDialog";
     private static final long GRID_ANIMATION_FRAME_DELAY_MS = 120L;
@@ -167,10 +168,8 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
             SaveReason.COMBAT_FLEE,
             SaveReason.COMBAT_DAMAGE,
             SaveReason.COMBAT_HEAL,
-            SaveReason.MP_SPEND,
             SaveReason.INVENTORY_CHANGE,
-            SaveReason.EQUIP_CHANGE,
-            SaveReason.STAT_ALLOC
+            SaveReason.EQUIP_CHANGE
     );
 
     // --- UI references ---
@@ -180,9 +179,8 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
     private TextView playerNameLevelText, xpCounterText;
     private ImageView playerHudIcon;
     private ProgressBar hpCounterBar;
-    private ProgressBar mpCounterBar;
     private Button classAbilityButton;
-    private Button levelUpButton;
+    private Button classMenuButton;
     private Button inventoryButton;
     private Button usePotionButton;
 
@@ -214,8 +212,8 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
     private int pendingCombatXpReward = 0;
     private int playerRow = GRID_SIZE / 2;
     private int playerCol = GRID_SIZE / 2;
-    private int nextAbilityAvailableFloor = 1;
     private AbilityTargetMode pendingAbilityTargetMode = AbilityTargetMode.NONE;
+    private String pendingAbilityName = null;
     private boolean knightShieldActive = false;
     private int knightShieldStrength = 0;
     private int knightShieldRow = -1;
@@ -283,11 +281,10 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         xpCounterText = findViewById(R.id.textXpCounter);
         playerHudIcon = findViewById(R.id.imagePlayerHudIcon);
         hpCounterBar = findViewById(R.id.progressHpCounter);
-        mpCounterBar = findViewById(R.id.progressMpCounter);
         statusEffectText = findViewById(R.id.textStatus);
         floorText = findViewById(R.id.textFloor);
         classAbilityButton = findViewById(R.id.btnClassAbility);
-        levelUpButton = findViewById(R.id.btnLevelUp);
+        classMenuButton = findViewById(R.id.btnClassMenu);
         inventoryButton = findViewById(R.id.btnInventory);
         usePotionButton = findViewById(R.id.btnUsePotion);
         AchievementManager.loadAchievements(this);
@@ -365,7 +362,6 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         renderGrid();
         updateGoldCounter();
         updatePlatinumCounter();
-        updateMpCounter();
         updateHpCounter();
         updateXpCounter();
         updatePlayerIdentityHud();
@@ -374,7 +370,7 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         updateFloorDisplay();
         applyTerrainBackgroundForCurrentTerrain();
         setupClassAbilityButton();
-        setupLevelUpButton();
+        setupClassMenuButton();
         setupInventoryButton();
         OnboardingManager.showDungeonTutorialIfNeeded(this, difficultyMode, colorBlindModeEnabled);
     }
@@ -424,10 +420,12 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         dungeonGrid = new Tile[GRID_SIZE][GRID_SIZE];
         if (profile != null) {
             profile.setCurrentHP(profile.getMaxHP());
+            for (PlayerClass playerClass : PlayerClass.values()) {
+                profile.restoreAbilityChargeDefaults(playerClass);
+            }
         }
         generateDungeon();
         resetPlayerPositionToCenter();
-        nextAbilityAvailableFloor = currentFloor;
         smokeVeilCharges = 0;
         int potionCount = 3;
         if (profile != null && profile.getPlayerClass() == PlayerClass.WIZARD) {
@@ -444,7 +442,6 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         updatePlatinumCounter();
         updateHpCounter();
         updateXpCounter();
-        updateMpCounter();
         updatePlayerIdentityHud();
         updatePlayerHudIcon();
         updateStatusText();
@@ -496,13 +493,11 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         updateAbilityButtonState();
     }
 
-    private void setupLevelUpButton() {
-        if (levelUpButton == null) {
+    private void setupClassMenuButton() {
+        if (classMenuButton == null) {
             return;
         }
-        // Surface stat allocation when the player has unspent points.
-        levelUpButton.setOnClickListener(v -> showInventoryDialog());
-        updateLevelUpButtonState();
+        classMenuButton.setOnClickListener(v -> showClassMenu());
     }
 
     private void setupInventoryButton() {
@@ -512,6 +507,61 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         if (usePotionButton != null) {
             usePotionButton.setOnClickListener(v -> useHealingPotionFromHud());
         }
+    }
+
+    private void showClassMenu() {
+        if (profile == null || profile.getPlayerClass() == null) {
+            new AlertDialog.Builder(this)
+                    .setTitle(R.string.class_menu_title)
+                    .setMessage(R.string.class_menu_unavailable)
+                    .setPositiveButton(android.R.string.ok, null)
+                    .show();
+            return;
+        }
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.class_menu_title)
+                .setMessage(buildClassStatusMessage())
+                .setPositiveButton(android.R.string.ok, null)
+                .show();
+    }
+
+    private String buildClassStatusMessage() {
+        if (profile == null || profile.getPlayerClass() == null) {
+            return getString(R.string.class_menu_unavailable);
+        }
+        PlayerClass playerClass = profile.getPlayerClass();
+        long now = System.currentTimeMillis();
+        StringBuilder detail = new StringBuilder();
+        detail.append(getString(
+                R.string.class_menu_status,
+                formatClassName(playerClass),
+                profile.getCurrentClassXp()));
+        detail.append("\n\n").append(getString(R.string.class_menu_manage_hint));
+        for (PlayerClass.AbilityDefinition ability : profile.getUnlockedAbilities(playerClass)) {
+            int charges = profile.getAbilityCharges(playerClass, ability.getName(), now);
+            if (charges >= 3) {
+                detail.append("\n\n").append(getString(
+                        R.string.ability_manage_entry_unlocked,
+                        ability.getName(),
+                        charges));
+            } else {
+                detail.append("\n\n").append(getString(
+                        R.string.ability_manage_entry_recharging,
+                        ability.getName(),
+                        charges,
+                        formatAbilityEta(profile.getAbilityRechargeRemainingMillis(
+                                playerClass, ability.getName(), now))));
+            }
+        }
+        return detail.toString();
+    }
+
+    private String formatClassName(PlayerClass playerClass) {
+        if (playerClass == null) {
+            return getString(R.string.player_name_fallback);
+        }
+        String raw = playerClass.name().toLowerCase(Locale.ROOT);
+        return Character.toUpperCase(raw.charAt(0)) + raw.substring(1);
     }
 
     private void useHealingPotionFromHud() {
@@ -533,12 +583,9 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
     private void triggerClassAbility() {
         if (pendingAbilityTargetMode != AbilityTargetMode.NONE) {
             pendingAbilityTargetMode = AbilityTargetMode.NONE;
+            pendingAbilityName = null;
             Toast.makeText(this, R.string.ability_target_cancelled, Toast.LENGTH_SHORT).show();
             updateAbilityButtonState();
-            return;
-        }
-        if (!isAbilityReady()) {
-            Toast.makeText(this, getString(R.string.ability_on_cooldown, nextAbilityAvailableFloor), Toast.LENGTH_SHORT).show();
             return;
         }
         if (profile == null || profile.getPlayerClass() == null) {
@@ -551,15 +598,14 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         if (profile == null || profile.getPlayerClass() == null) {
             return;
         }
-        PlayerClass.AbilityDefinition[] abilities =
-                profile.getPlayerClass().getAbilitiesUpToLevel(profile.getLevel());
+        PlayerClass.AbilityDefinition[] abilities = profile.getUnlockedAbilities(profile.getPlayerClass());
         if (abilities.length == 0) {
             return;
         }
-        // Present unlocked abilities and route to the current class effect mapping.
         String[] labels = new String[abilities.length];
         for (int i = 0; i < abilities.length; i++) {
-            labels[i] = abilities[i].getName();
+            int charges = profile.getAbilityCharges(profile.getPlayerClass(), abilities[i].getName(), System.currentTimeMillis());
+            labels[i] = getString(R.string.ability_chooser_entry, abilities[i].getName(), charges);
         }
         new AlertDialog.Builder(this)
                 .setTitle(R.string.use_ability)
@@ -571,143 +617,129 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         if (profile == null || profile.getPlayerClass() == null) {
             return;
         }
-        // Ability effects are still tied to legacy class actions; names will map to distinct behavior later.
         PlayerClass playerClass = profile.getPlayerClass();
         String abilityName = ability != null ? ability.getName() : "";
+        if (!tryReserveAbilityUse(playerClass, abilityName, false)) {
+            return;
+        }
         switch (playerClass) {
             case WIZARD:
                 if (PlayerClass.ABILITY_WIZARD_ARCANE_SHIELD.equals(abilityName)) {
-                    if (!consumeWizardMp(abilityName)) {
-                        Toast.makeText(this, R.string.not_enough_mp, Toast.LENGTH_SHORT).show();
-                        return;
-                    }
                     if (executeWizardArcaneShield()) {
-                        consumeAbilityUse();
+                        finalizeAbilityUse();
                         requestSave(SaveReason.ABILITY_USED);
                     }
                     break;
                 }
                 if (PlayerClass.ABILITY_WIZARD_FIREBALL.equals(abilityName)) {
-                    if (!consumeWizardMp(abilityName)) {
-                        Toast.makeText(this, R.string.not_enough_mp, Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-                    beginAbilityTargeting(AbilityTargetMode.WIZARD_FIREBALL, R.plurals.ability_target_prompt_fireball);
+                    beginAbilityTargeting(abilityName, AbilityTargetMode.WIZARD_FIREBALL, R.plurals.ability_target_prompt_fireball);
                     break;
                 }
                 if (PlayerClass.ABILITY_WIZARD_FROST_NOVA.equals(abilityName)) {
-                    if (!consumeWizardMp(abilityName)) {
-                        Toast.makeText(this, R.string.not_enough_mp, Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-                    beginAbilityTargeting(AbilityTargetMode.WIZARD_FROST_NOVA, R.plurals.ability_target_prompt_frost_nova);
+                    beginAbilityTargeting(abilityName, AbilityTargetMode.WIZARD_FROST_NOVA, R.plurals.ability_target_prompt_frost_nova);
                     break;
                 }
                 if (PlayerClass.ABILITY_WIZARD_CHAIN_LIGHTNING.equals(abilityName)) {
-                    if (!consumeWizardMp(abilityName)) {
-                        Toast.makeText(this, R.string.not_enough_mp, Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-                    beginAbilityTargeting(AbilityTargetMode.WIZARD_CHAIN_LIGHTNING, R.plurals.ability_target_prompt_chain_lightning);
+                    beginAbilityTargeting(abilityName, AbilityTargetMode.WIZARD_CHAIN_LIGHTNING, R.plurals.ability_target_prompt_chain_lightning);
                     break;
                 }
                 if (PlayerClass.ABILITY_WIZARD_METEOR.equals(abilityName)) {
-                    if (!consumeWizardMp(abilityName)) {
-                        Toast.makeText(this, R.string.not_enough_mp, Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-                    beginAbilityTargeting(AbilityTargetMode.WIZARD_METEOR, R.plurals.ability_target_prompt_meteor);
+                    beginAbilityTargeting(abilityName, AbilityTargetMode.WIZARD_METEOR, R.plurals.ability_target_prompt_meteor);
                 }
                 break;
             case THIEF:
                 if (PlayerClass.ABILITY_THIEF_VEIL_OF_SMOKE.equals(abilityName)) {
                     if (executeThiefVeilOfSmoke()) {
-                        consumeAbilityUse();
+                        finalizeAbilityUse();
                         requestSave(SaveReason.ABILITY_USED);
                     }
                     break;
                 }
                 if (PlayerClass.ABILITY_THIEF_TRAP_SCAN.equals(abilityName)) {
-                    beginAbilityTargeting(AbilityTargetMode.THIEF_SCAN, R.plurals.ability_target_prompt_scan);
+                    beginAbilityTargeting(abilityName, AbilityTargetMode.THIEF_SCAN, R.plurals.ability_target_prompt_scan);
                     break;
                 }
                 if (PlayerClass.ABILITY_THIEF_SHADOWSTEP.equals(abilityName)) {
-                    beginAbilityTargeting(AbilityTargetMode.THIEF_SHADOWSTEP, R.plurals.ability_target_prompt_shadowstep);
+                    beginAbilityTargeting(abilityName, AbilityTargetMode.THIEF_SHADOWSTEP, R.plurals.ability_target_prompt_shadowstep);
                     break;
                 }
                 if (PlayerClass.ABILITY_THIEF_DISARM_EXPERT.equals(abilityName)) {
-                    beginAbilityTargeting(AbilityTargetMode.THIEF_DISARM_EXPERT, R.plurals.ability_target_prompt_disarm);
+                    beginAbilityTargeting(abilityName, AbilityTargetMode.THIEF_DISARM_EXPERT, R.plurals.ability_target_prompt_disarm);
                     break;
                 }
                 if (PlayerClass.ABILITY_THIEF_AMBUSH.equals(abilityName)) {
-                    beginAbilityTargeting(AbilityTargetMode.THIEF_AMBUSH, R.plurals.ability_target_prompt_ambush);
+                    beginAbilityTargeting(abilityName, AbilityTargetMode.THIEF_AMBUSH, R.plurals.ability_target_prompt_ambush);
                 }
                 break;
             case KNIGHT:
                 if (PlayerClass.ABILITY_KNIGHT_FORTIFY.equals(abilityName)) {
                     if (executeKnightFortify()) {
-                        consumeAbilityUse();
+                        finalizeAbilityUse();
                         requestSave(SaveReason.ABILITY_USED);
                     }
                     break;
                 }
                 if (PlayerClass.ABILITY_KNIGHT_GUARDIANS_OATH.equals(abilityName)) {
                     if (executeKnightGuardiansOath()) {
-                        consumeAbilityUse();
+                        finalizeAbilityUse();
                         requestSave(SaveReason.ABILITY_USED);
                     }
                     break;
                 }
                 if (PlayerClass.ABILITY_KNIGHT_SHIELD_WALL.equals(abilityName)) {
-                    beginAbilityTargeting(AbilityTargetMode.KNIGHT_SHIELD, R.plurals.ability_target_prompt_shield);
+                    beginAbilityTargeting(abilityName, AbilityTargetMode.KNIGHT_SHIELD, R.plurals.ability_target_prompt_shield);
                     break;
                 }
                 if (PlayerClass.ABILITY_KNIGHT_TAUNT.equals(abilityName)) {
-                    beginAbilityTargeting(AbilityTargetMode.KNIGHT_TAUNT, R.plurals.ability_target_prompt_taunt);
+                    beginAbilityTargeting(abilityName, AbilityTargetMode.KNIGHT_TAUNT, R.plurals.ability_target_prompt_taunt);
                     break;
                 }
                 if (PlayerClass.ABILITY_KNIGHT_VALIANT_STRIKE.equals(abilityName)) {
-                    beginAbilityTargeting(AbilityTargetMode.KNIGHT_VALIANT_STRIKE, R.plurals.ability_target_prompt_valiant_strike);
+                    beginAbilityTargeting(abilityName, AbilityTargetMode.KNIGHT_VALIANT_STRIKE, R.plurals.ability_target_prompt_valiant_strike);
+                }
+                break;
+            case RANGER:
+                if (PlayerClass.ABILITY_RANGER_CAMOUFLAGE.equals(abilityName)) {
+                    if (executeRangerCamouflage()) {
+                        finalizeAbilityUse();
+                        requestSave(SaveReason.ABILITY_USED);
+                    }
+                    break;
+                }
+                if (PlayerClass.ABILITY_RANGER_PIERCING_SHOT.equals(abilityName)) {
+                    beginAbilityTargeting(abilityName, AbilityTargetMode.RANGER_PIERCING_SHOT,
+                            R.plurals.ability_target_prompt_piercing_shot);
+                    break;
+                }
+                if (PlayerClass.ABILITY_RANGER_RAPID_VOLLEY.equals(abilityName)) {
+                    beginAbilityTargeting(abilityName, AbilityTargetMode.RANGER_RAPID_VOLLEY,
+                            R.plurals.ability_target_prompt_rapid_volley);
+                    break;
+                }
+                if (PlayerClass.ABILITY_RANGER_NET_TRAP.equals(abilityName)) {
+                    beginAbilityTargeting(abilityName, AbilityTargetMode.RANGER_NET_TRAP,
+                            R.plurals.ability_target_prompt_net_trap);
+                    break;
+                }
+                if (PlayerClass.ABILITY_RANGER_EAGLE_EYE.equals(abilityName)) {
+                    beginAbilityTargeting(abilityName, AbilityTargetMode.RANGER_EAGLE_EYE,
+                            R.plurals.ability_target_prompt_eagle_eye);
                 }
                 break;
             default:
                 break;
         }
+        if (pendingAbilityTargetMode == AbilityTargetMode.NONE) {
+            pendingAbilityName = null;
+            updateAbilityButtonState();
+        }
     }
 
-    private boolean consumeWizardMp(String abilityName) {
-        if (profile == null || !profile.usesMp()) {
-            return true;
-        }
-        // Wizard abilities share a flat MP cost until per-ability tuning is introduced.
-        int cost = getWizardMpCost(abilityName);
-        if (profile.getCurrentMP() < cost) {
-            return false;
-        }
-        profile.setCurrentMP(profile.getCurrentMP() - cost);
-        updateMpCounter();
-        requestSave(SaveReason.MP_SPEND);
-        return true;
-    }
-
-    private int getWizardMpCost(String abilityName) {
-        if (PlayerClass.ABILITY_WIZARD_METEOR.equals(abilityName)) {
-            return GameBalance.WIZARD_MP_COST_METEOR;
-        }
-        if (PlayerClass.ABILITY_WIZARD_CHAIN_LIGHTNING.equals(abilityName)) {
-            return GameBalance.WIZARD_MP_COST_CHAIN_LIGHTNING;
-        }
-        if (PlayerClass.ABILITY_WIZARD_FROST_NOVA.equals(abilityName)
-                || PlayerClass.ABILITY_WIZARD_ARCANE_SHIELD.equals(abilityName)) {
-            return GameBalance.WIZARD_MP_COST_FROST_NOVA;
-        }
-        return GameBalance.WIZARD_MP_COST_DEFAULT;
-    }
-
-    private void beginAbilityTargeting(AbilityTargetMode mode, int promptPluralResId) {
+    private void beginAbilityTargeting(String abilityName, AbilityTargetMode mode, int promptPluralResId) {
         if (mode == null) {
             return;
         }
+        pendingAbilityName = abilityName;
         pendingAbilityTargetMode = mode;
         String prompt = getResources().getQuantityString(promptPluralResId, ABILITY_RANGE, ABILITY_RANGE);
         Toast.makeText(this, prompt, Toast.LENGTH_SHORT).show();
@@ -719,16 +751,18 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
             return;
         }
         boolean targeting = pendingAbilityTargetMode != AbilityTargetMode.NONE;
-        classAbilityButton.setEnabled(!targeting && isAbilityReady());
+        classAbilityButton.setEnabled(!targeting && hasAnyReadyAbility());
         classAbilityButton.setText(getString(targeting
                 ? R.string.ability_button_targeting
-                : R.string.use_ability));
+                : getAbilityButtonLabelRes(profile.getPlayerClass())));
     }
 
     private int getAbilityButtonLabelRes(PlayerClass playerClass) {
         switch (playerClass) {
             case WIZARD:
                 return R.string.ability_button_wizard;
+            case RANGER:
+                return R.string.ability_button_ranger;
             case THIEF:
                 return R.string.ability_button_thief;
             case KNIGHT:
@@ -738,22 +772,48 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         }
     }
 
-    private boolean isAbilityReady() {
-        return profile != null
-                && currentFloor >= nextAbilityAvailableFloor
-                && pendingAbilityTargetMode == AbilityTargetMode.NONE;
-    }
-
-    private void updateLevelUpButtonState() {
-        if (levelUpButton == null || profile == null) {
-            return;
+    private boolean hasAnyReadyAbility() {
+        if (profile == null || profile.getPlayerClass() == null) {
+            return false;
         }
-        // Hide the Level Up button unless stat points are available.
-        levelUpButton.setVisibility(profile.getAvailableStatPoints() > 0 ? View.VISIBLE : View.GONE);
+        for (PlayerClass.AbilityDefinition ability : profile.getUnlockedAbilities(profile.getPlayerClass())) {
+            if (profile.getAbilityCharges(profile.getPlayerClass(), ability.getName(), System.currentTimeMillis()) > 0) {
+                return true;
+            }
+        }
+        return false;
     }
 
-    private void consumeAbilityUse() {
-        nextAbilityAvailableFloor = currentFloor + ABILITY_COOLDOWN_FLOORS;
+    private boolean tryReserveAbilityUse(PlayerClass playerClass, String abilityName, boolean silent) {
+        if (profile == null || playerClass == null || TextUtils.isEmpty(abilityName)) {
+            return false;
+        }
+        long now = System.currentTimeMillis();
+        if (profile.getAbilityCharges(playerClass, abilityName, now) > 0) {
+            return true;
+        }
+        PlayerClass.AbilityDefinition ability = playerClass.findAbility(abilityName);
+        long remaining = ability != null
+                ? profile.getAbilityRechargeRemainingMillis(playerClass, abilityName, now)
+                : 0L;
+        if (!silent) {
+            Toast.makeText(this,
+                    getString(R.string.ability_no_charges, formatAbilityEta(remaining)),
+                    Toast.LENGTH_SHORT).show();
+        }
+        return false;
+    }
+
+    private String formatAbilityEta(long remainingMillis) {
+        long seconds = Math.max(1L, (long) Math.ceil(remainingMillis / 1000.0));
+        return getString(R.string.ability_charge_eta_seconds, seconds);
+    }
+
+    private void finalizeAbilityUse() {
+        if (profile != null && profile.getPlayerClass() != null && !TextUtils.isEmpty(pendingAbilityName)) {
+            profile.consumeAbilityCharge(profile.getPlayerClass(), pendingAbilityName, System.currentTimeMillis());
+        }
+        pendingAbilityName = null;
         pendingAbilityTargetMode = AbilityTargetMode.NONE;
         updateAbilityButtonState();
     }
@@ -827,40 +887,38 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
     }
 
     private MonsterTemplate[] getMonsterPoolForFloor(int floor) {
-        switch (floor) {
-            case 1:
-                return new MonsterTemplate[] { MonsterCatalog.SLIME, MonsterCatalog.GOBLIN, MonsterCatalog.RAT };
-            case 2:
-                return new MonsterTemplate[] { MonsterCatalog.SLIME, MonsterCatalog.GOBLIN, MonsterCatalog.BAT };
-            case 3:
-                return new MonsterTemplate[] { MonsterCatalog.GOBLIN, MonsterCatalog.SKELETON, MonsterCatalog.SPIDER };
-            case 4:
-                return new MonsterTemplate[] { MonsterCatalog.SKELETON, MonsterCatalog.ORC, MonsterCatalog.WOLF };
-            case 5:
-                return new MonsterTemplate[] { MonsterCatalog.ORC, MonsterCatalog.TROLL, MonsterCatalog.BANDIT };
-            case 6:
-                return new MonsterTemplate[] { MonsterCatalog.TROLL, MonsterCatalog.WITCH, MonsterCatalog.CULTIST };
-            case 7:
-                return new MonsterTemplate[] { MonsterCatalog.WITCH, MonsterCatalog.VAMPIRE, MonsterCatalog.WARLOCK };
-            case 8:
-                return new MonsterTemplate[] { MonsterCatalog.VAMPIRE, MonsterCatalog.DEMON, MonsterCatalog.WRAITH };
-            case 9:
-                return new MonsterTemplate[] { MonsterCatalog.DEMON, MonsterCatalog.DRAGON, MonsterCatalog.GOLEM };
-            case 10:
-                return new MonsterTemplate[] { MonsterCatalog.DRAGON, MonsterCatalog.LICH, MonsterCatalog.HELLHOUND };
-            case 11:
-                return new MonsterTemplate[] { MonsterCatalog.DRAGON, MonsterCatalog.LICH, MonsterCatalog.REVENANT };
-            case 12:
-                return new MonsterTemplate[] { MonsterCatalog.LICH, MonsterCatalog.DEMON, MonsterCatalog.WRAITH };
-            case 13:
-                return new MonsterTemplate[] { MonsterCatalog.DRAGON, MonsterCatalog.LICH, MonsterCatalog.DEMON };
-            case 14:
-                return new MonsterTemplate[] { MonsterCatalog.DRAGON, MonsterCatalog.LICH, MonsterCatalog.ARCHDEMON };
-            case 15:
-                return new MonsterTemplate[] { MonsterCatalog.DRAGON, MonsterCatalog.ARCHDEMON, MonsterCatalog.ANCIENT_WYRM };
-            default:
-                return new MonsterTemplate[] { MonsterCatalog.SLIME, MonsterCatalog.GOBLIN, MonsterCatalog.SKELETON };
+        int clampedFloor = Math.max(1, Math.min(MAX_FLOOR, floor));
+        if (clampedFloor <= 9) {
+            return new MonsterTemplate[] { MonsterCatalog.SLIME, MonsterCatalog.GOBLIN, MonsterCatalog.RAT, MonsterCatalog.BAT };
         }
+        if (clampedFloor <= 18) {
+            return new MonsterTemplate[] { MonsterCatalog.SLIME, MonsterCatalog.GOBLIN, MonsterCatalog.BAT, MonsterCatalog.SPIDER };
+        }
+        if (clampedFloor <= 27) {
+            return new MonsterTemplate[] { MonsterCatalog.GOBLIN, MonsterCatalog.SKELETON, MonsterCatalog.SPIDER, MonsterCatalog.WOLF };
+        }
+        if (clampedFloor <= 36) {
+            return new MonsterTemplate[] { MonsterCatalog.SKELETON, MonsterCatalog.ORC, MonsterCatalog.WOLF, MonsterCatalog.BANDIT };
+        }
+        if (clampedFloor <= 45) {
+            return new MonsterTemplate[] { MonsterCatalog.ORC, MonsterCatalog.TROLL, MonsterCatalog.BANDIT, MonsterCatalog.CULTIST };
+        }
+        if (clampedFloor <= 54) {
+            return new MonsterTemplate[] { MonsterCatalog.TROLL, MonsterCatalog.WITCH, MonsterCatalog.CULTIST, MonsterCatalog.WARLOCK };
+        }
+        if (clampedFloor <= 63) {
+            return new MonsterTemplate[] { MonsterCatalog.WITCH, MonsterCatalog.VAMPIRE, MonsterCatalog.WARLOCK, MonsterCatalog.WRAITH };
+        }
+        if (clampedFloor <= 72) {
+            return new MonsterTemplate[] { MonsterCatalog.VAMPIRE, MonsterCatalog.GOLEM, MonsterCatalog.WRAITH, MonsterCatalog.LICH };
+        }
+        if (clampedFloor <= 81) {
+            return new MonsterTemplate[] { MonsterCatalog.DEMON, MonsterCatalog.GOLEM, MonsterCatalog.LICH, MonsterCatalog.REVENANT };
+        }
+        if (clampedFloor <= 90) {
+            return new MonsterTemplate[] { MonsterCatalog.DEMON, MonsterCatalog.HELLHOUND, MonsterCatalog.REVENANT, MonsterCatalog.DRAGON };
+        }
+        return new MonsterTemplate[] { MonsterCatalog.DRAGON, MonsterCatalog.HELLHOUND, MonsterCatalog.ARCHDEMON, MonsterCatalog.ANCIENT_WYRM };
     }
 
     private void ensureTerrainForFloor(int floor) {
@@ -871,12 +929,35 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
     }
 
     private TerrainType selectTerrainForFloor(int floor) {
-        TerrainType[] types = TerrainType.values();
-        if (types.length == 0) {
-            return null;
+        int clampedFloor = Math.max(1, Math.min(MAX_FLOOR, floor));
+        if (clampedFloor <= 14) {
+            return TerrainType.CAVERN;
         }
-        int index = Math.abs(Math.max(1, floor) - 1) % types.length;
-        return types[index];
+        if (clampedFloor <= 24) {
+            return TerrainType.CRYPT;
+        }
+        if (clampedFloor <= 34) {
+            return TerrainType.SUNKEN_TEMPLE;
+        }
+        if (clampedFloor <= 44) {
+            return TerrainType.THORN_WILDS;
+        }
+        if (clampedFloor <= 54) {
+            return TerrainType.MIRE;
+        }
+        if (clampedFloor <= 64) {
+            return TerrainType.FROZEN_RUINS;
+        }
+        if (clampedFloor <= 74) {
+            return TerrainType.STORM_PLATEAU;
+        }
+        if (clampedFloor <= 84) {
+            return TerrainType.LAVA_FIELD;
+        }
+        if (clampedFloor <= 94) {
+            return TerrainType.ARCANE_NEXUS;
+        }
+        return TerrainType.ASH_WASTES;
     }
 
     private MonsterTemplate pickTerrainWeightedMonster(MonsterTemplate[] basePool) {
@@ -1063,7 +1144,6 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
                 knightShieldStrength,
                 knightShieldRow,
                 knightShieldCol,
-                nextAbilityAvailableFloor,
                 currentTerrain != null ? currentTerrain.name() : null);
     }
 
@@ -1279,6 +1359,12 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
                 return "G";
             case EMPTY:
                 return ".";
+            case BOOST_ATTACK:
+                return "ATK";
+            case BOOST_DEFENSE:
+                return "DEF";
+            case BOOST_HEALTH:
+                return "HP";
             case ENEMY:
                 if (!tile.hasMonster()) {
                     return getString(R.string.combat_tile_cleared);
@@ -1321,6 +1407,12 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
                 return "BK";
             case CHEST:
                 return "C";
+            case BOOST_ATTACK:
+                return "ATK";
+            case BOOST_DEFENSE:
+                return "DEF";
+            case BOOST_HEALTH:
+                return "HP";
             case TRAP_FIRE:
                 return "F";
             case TRAP_POISON:
@@ -1355,6 +1447,12 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         switch (tile.getType()) {
             case GOLD:
                 return getString(R.string.tile_desc_gold);
+            case BOOST_ATTACK:
+                return getString(R.string.tile_desc_boost_attack);
+            case BOOST_DEFENSE:
+                return getString(R.string.tile_desc_boost_defense);
+            case BOOST_HEALTH:
+                return getString(R.string.tile_desc_boost_health);
             case ENEMY:
                 return getString(R.string.tile_desc_enemy);
             case STAIR_DOWN:
@@ -2099,12 +2197,24 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
             case KNIGHT_VALIANT_STRIKE:
                 resolved = executeKnightValiantStrike(row, col);
                 break;
+            case RANGER_PIERCING_SHOT:
+                resolved = executeRangerPiercingShot(row, col);
+                break;
+            case RANGER_RAPID_VOLLEY:
+                resolved = executeRangerRapidVolley(row, col);
+                break;
+            case RANGER_NET_TRAP:
+                resolved = executeRangerNetTrap(row, col);
+                break;
+            case RANGER_EAGLE_EYE:
+                resolved = executeRangerEagleEye(row, col);
+                break;
             case NONE:
             default:
                 break;
         }
         if (resolved) {
-            consumeAbilityUse();
+            finalizeAbilityUse();
             requestSave(SaveReason.ABILITY_USED);
         }
     }
@@ -2159,7 +2269,7 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
             playCueWithFallback(SoundManager.KEY_EFFECT_POSITIVE, FeedbackManager.SoundEffect.POSITIVE);
         }
         boolean affectedAny = false;
-        int damage = 2 + getAbilityLevelScale();
+        int damage = Math.max(2, getAbilityAttackPower());
         for (int r = row - 1; r <= row + 1; r++) {
             for (int c = col - 1; c <= col + 1; c++) {
                 if (!isValidGridPosition(r, c)) {
@@ -2190,7 +2300,7 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         if (!playClassSound("attack")) {
             playCueWithFallback(SoundManager.KEY_EFFECT_POSITIVE, FeedbackManager.SoundEffect.POSITIVE);
         }
-        int damage = 3 + getAbilityLevelScale();
+        int damage = Math.max(3, getAbilityAttackPower() + 1);
         boolean hitAny = false;
         hitAny |= applyAbilityDamageToTile(row, col, damage, true);
         int[][] offsets = { {1,0}, {-1,0}, {0,1}, {0,-1} };
@@ -2214,7 +2324,7 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         if (!playClassSound("attack")) {
             playCueWithFallback(SoundManager.KEY_EFFECT_POSITIVE, FeedbackManager.SoundEffect.POSITIVE);
         }
-        int damage = 6 + (getAbilityLevelScale() * 2);
+        int damage = Math.max(6, (getAbilityAttackPower() * 2) + 2);
         boolean affectedAny = false;
         for (int r = row - 1; r <= row + 1; r++) {
             for (int c = col - 1; c <= col + 1; c++) {
@@ -2332,7 +2442,7 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
             return false;
         }
         tile.reveal();
-        int damage = 4 + getAbilityLevelScale();
+        int damage = Math.max(4, getAbilityAttackPower() + 2);
         Monster monster = tile.getMonster();
         monster.takeDamage(damage);
         if (monster.isDead()) {
@@ -2418,7 +2528,7 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
             return false;
         }
         tile.reveal();
-        int damage = 6 + (getAbilityLevelScale() * 2);
+        int damage = Math.max(6, (getAbilityAttackPower() * 2) + 2);
         Monster monster = tile.getMonster();
         monster.takeDamage(damage);
         if (monster.isDead()) {
@@ -2459,6 +2569,7 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
 
         // Reset ability targeting mode.
         pendingAbilityTargetMode = AbilityTargetMode.NONE;
+        pendingAbilityName = null;
 
         // Knight shield must be off at the start of every run.
         clearKnightShield(0);
@@ -2473,7 +2584,7 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
 
     private boolean executeKnightFortify() {
         clearStatusEffects();
-        int heal = 4 + getAbilityLevelScale();
+        int heal = Math.max(4, getAbilityDefensePower() + 3);
         healPlayer(heal);
         playCueWithFallback(SoundManager.KEY_EFFECT_POSITIVE, FeedbackManager.SoundEffect.POSITIVE);
         Toast.makeText(this, R.string.fortify_ready, Toast.LENGTH_SHORT).show();
@@ -2482,7 +2593,7 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
 
     private boolean executeKnightGuardiansOath() {
         clearStatusEffects();
-        int heal = 6 + (getAbilityLevelScale() * 2);
+        int heal = Math.max(6, (profile != null ? profile.getMaxHP() / 3 : 0) + 4);
         healPlayer(heal);
         knightShieldStrength = calculateKnightShieldStrength();
         knightShieldRow = playerRow;
@@ -2493,13 +2604,180 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         return true;
     }
 
+    // --- Ranger abilities (v1: Knight sprite/sound fallback until ranger assets ship) ---
+
+    /**
+     * Piercing Shot bypasses enemy defense and scales from current attack.
+     * Uses Knight attack animation/sound as a placeholder.
+     */
+    private boolean executeRangerPiercingShot(int row, int col) {
+        Tile tile = dungeonGrid[row][col];
+        if (tile == null) return false;
+        TextView tileText = getTileTextView(row, col);
+        if (!playClassSound("attack")) {
+            playCueWithFallback(SoundManager.KEY_EFFECT_POSITIVE, FeedbackManager.SoundEffect.POSITIVE);
+        }
+        tile.reveal();
+        updateTileTextDisplay(tileText, tile);
+        if (!tile.hasMonster()) {
+            Toast.makeText(this, R.string.piercing_shot_whiff, Toast.LENGTH_SHORT).show();
+            return true;
+        }
+        Monster monster = tile.getMonster();
+        // Piercing Shot ignores defense — apply raw damage.
+        int damage = Math.max(3, getAbilityAttackPower() + 1);
+        monster.takeDamage(damage);
+        FeedbackManager.vibrate(this, FeedbackManager.VibrationPattern.LIGHT);
+        if (monster.isDead()) {
+            handleAbilityMonsterDefeat(monster, tile, tileText, row, col);
+            Toast.makeText(this,
+                    getString(R.string.piercing_shot_kill, monster.getMonsterType()),
+                    Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(this,
+                    getResources().getQuantityString(R.plurals.piercing_shot_hit, damage, damage),
+                    Toast.LENGTH_SHORT).show();
+        }
+        return true;
+    }
+
+    /**
+     * Rapid Volley reveals and damages all enemies in a 3x3 area.
+     * Uses Knight attack animation/sound as a placeholder.
+     */
+    private boolean executeRangerRapidVolley(int row, int col) {
+        if (!playClassSound("attack")) {
+            playCueWithFallback(SoundManager.KEY_EFFECT_POSITIVE, FeedbackManager.SoundEffect.POSITIVE);
+        }
+        int damage = Math.max(2, getAbilityAttackPower());
+        boolean hitAny = false;
+        for (int r = row - 1; r <= row + 1; r++) {
+            for (int c = col - 1; c <= col + 1; c++) {
+                if (!isValidGridPosition(r, c)) continue;
+                Tile tile = dungeonGrid[r][c];
+                if (tile == null) continue;
+                tile.reveal();
+                TextView tileText = getTileTextView(r, c);
+                updateTileTextDisplay(tileText, tile);
+                if (tile.hasMonster()) {
+                    Monster monster = tile.getMonster();
+                    monster.takeDamage(damage);
+                    hitAny = true;
+                    if (monster.isDead()) {
+                        handleAbilityMonsterDefeat(monster, tile, tileText, r, c);
+                    }
+                }
+            }
+        }
+        FeedbackManager.vibrate(this, FeedbackManager.VibrationPattern.LIGHT);
+        Toast.makeText(this, hitAny
+                ? getResources().getQuantityString(R.plurals.rapid_volley_hit, damage, damage)
+                : getString(R.string.rapid_volley_whiff),
+                Toast.LENGTH_SHORT).show();
+        return true;
+    }
+
+    /**
+     * Camouflage — immediate ability; reveals tiles adjacent to player and heals slightly.
+     * No targeting required.
+     */
+    private boolean executeRangerCamouflage() {
+        if (playerRow < 0 || playerCol < 0) return false;
+        if (!playClassSound("defend")) {
+            playCueWithFallback(SoundManager.KEY_EFFECT_POSITIVE, FeedbackManager.SoundEffect.POSITIVE);
+        }
+        for (int r = playerRow - 1; r <= playerRow + 1; r++) {
+            for (int c = playerCol - 1; c <= playerCol + 1; c++) {
+                if (!isValidGridPosition(r, c)) continue;
+                Tile tile = dungeonGrid[r][c];
+                if (tile != null) {
+                    tile.reveal();
+                    TextView tileText = getTileTextView(r, c);
+                    updateTileTextDisplay(tileText, tile);
+                }
+            }
+        }
+        int heal = Math.max(3, profile != null ? profile.getMaxHP() / 4 : 3);
+        healPlayer(heal);
+        Toast.makeText(this, R.string.camouflage_activated, Toast.LENGTH_SHORT).show();
+        return true;
+    }
+
+    /**
+     * Net Trap — reduces the targeted enemy's attack for subsequent combat hits.
+     * Implemented as a 25% temporary defense gain on the player side (no per-monster debuff yet).
+     */
+    private boolean executeRangerNetTrap(int row, int col) {
+        Tile tile = dungeonGrid[row][col];
+        if (tile == null) return false;
+        tile.reveal();
+        TextView tileText = getTileTextView(row, col);
+        updateTileTextDisplay(tileText, tile);
+        if (!tile.hasMonster()) {
+            Toast.makeText(this, R.string.net_trap_no_target, Toast.LENGTH_SHORT).show();
+            return true;
+        }
+        if (!playClassSound("defend")) {
+            playCueWithFallback(SoundManager.KEY_EFFECT_POSITIVE, FeedbackManager.SoundEffect.POSITIVE);
+        }
+        Monster monster = tile.getMonster();
+        // Apply a 1-point damage debuff to the monster for this encounter.
+        int debuffAmount = Math.max(1, 1 + (getAbilityAttackPower() / 2));
+        monster.takeDamage(debuffAmount);
+        FeedbackManager.vibrate(this, FeedbackManager.VibrationPattern.LIGHT);
+        if (monster.isDead()) {
+            handleAbilityMonsterDefeat(monster, tile, tileText, row, col);
+            Toast.makeText(this,
+                    getString(R.string.net_trap_kill, monster.getMonsterType()),
+                    Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(this,
+                    getString(R.string.net_trap_applied, monster.getMonsterType()),
+                    Toast.LENGTH_SHORT).show();
+        }
+        return true;
+    }
+
+    /**
+     * Eagle Eye — critical hit that deals 2x piercing damage to the target.
+     */
+    private boolean executeRangerEagleEye(int row, int col) {
+        Tile tile = dungeonGrid[row][col];
+        if (tile == null) return false;
+        TextView tileText = getTileTextView(row, col);
+        if (!playClassSound("attack")) {
+            playCueWithFallback(SoundManager.KEY_EFFECT_POSITIVE, FeedbackManager.SoundEffect.POSITIVE);
+        }
+        tile.reveal();
+        updateTileTextDisplay(tileText, tile);
+        if (!tile.hasMonster()) {
+            Toast.makeText(this, R.string.eagle_eye_whiff, Toast.LENGTH_SHORT).show();
+            return true;
+        }
+        Monster monster = tile.getMonster();
+        int baseDamage = Math.max(4, getAbilityAttackPower() + 2);
+        int critDamage = baseDamage * 2; // Eagle Eye always crits.
+        monster.takeDamage(critDamage);
+        FeedbackManager.vibrate(this, FeedbackManager.VibrationPattern.MEDIUM);
+        if (monster.isDead()) {
+            handleAbilityMonsterDefeat(monster, tile, tileText, row, col);
+            Toast.makeText(this,
+                    getString(R.string.eagle_eye_kill, monster.getMonsterType()),
+                    Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(this,
+                    getResources().getQuantityString(R.plurals.eagle_eye_hit, critDamage, critDamage),
+                    Toast.LENGTH_SHORT).show();
+        }
+        return true;
+    }
+
     private boolean executeWizardArcaneShield() {
-        if (profile == null || !profile.usesMp()) {
+        if (profile == null) {
             return false;
         }
-        int restore = 4 + getAbilityLevelScale();
-        profile.setCurrentMP(Math.min(profile.getMaxMP(), profile.getCurrentMP() + restore));
-        updateMpCounter();
+        int restore = Math.max(4, getAbilityDefensePower() + 4);
+        healPlayer(restore);
         playCueWithFallback(SoundManager.KEY_EFFECT_POSITIVE, FeedbackManager.SoundEffect.POSITIVE);
         Toast.makeText(this, R.string.arcane_shield_ready, Toast.LENGTH_SHORT).show();
         return true;
@@ -2557,13 +2835,12 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
     }
 
     private int calculateFireballDamage() {
-        int level = profile != null ? Math.max(1, profile.getLevel()) : 1;
-        return 4 + (level * 2);
+        return Math.max(4, getAbilityAttackPower() + 2);
     }
 
     private int calculateKnightShieldStrength() {
-        int level = profile != null ? Math.max(1, profile.getLevel()) : 1;
-        return 6 + (level * 3);
+        int maxHp = profile != null ? profile.getMaxHP() : 12;
+        return Math.max(6, (maxHp / 3) + (getAbilityDefensePower() * 2));
     }
 
     private boolean applyAbilityDamageToTile(int row, int col, int damage, boolean showToast) {
@@ -2589,8 +2866,12 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         return true;
     }
 
-    private int getAbilityLevelScale() {
-        return profile != null ? Math.max(1, profile.getLevel()) : 1;
+    private int getAbilityAttackPower() {
+        return profile != null ? Math.max(1, profile.getTotalAttack()) : 1;
+    }
+
+    private int getAbilityDefensePower() {
+        return profile != null ? Math.max(1, profile.getTotalDefense()) : 1;
     }
 
     @Nullable
@@ -2698,13 +2979,11 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         if (metadata == null) {
             resetPlayerPositionToCenter();
             clearKnightShield(0);
-            nextAbilityAvailableFloor = currentFloor;
             currentTerrain = selectTerrainForFloor(currentFloor);
             return;
         }
         playerRow = metadata.playerRow >= 0 ? clampGridIndex(metadata.playerRow) : GRID_SIZE / 2;
         playerCol = metadata.playerCol >= 0 ? clampGridIndex(metadata.playerCol) : GRID_SIZE / 2;
-        nextAbilityAvailableFloor = Math.max(currentFloor, metadata.nextAbilityAvailableFloor);
         currentTerrain = TerrainType.fromName(metadata.currentTerrain);
         if (currentTerrain == null) {
             currentTerrain = selectTerrainForFloor(currentFloor);
@@ -2727,7 +3006,7 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
             TelemetryManager.logRunFailed(
                     currentFloor,
                     profile.getPlayerClass() != null ? profile.getPlayerClass().name() : "UNKNOWN",
-                    profile.getLevel(),
+                    profile.getClassXpEarned(profile.getPlayerClass()),
                     currentGold);
             profile.setCurrentHP(profile.getMaxHP());
         }
@@ -2808,6 +3087,32 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
                 String message = getResources().getQuantityString(
                         R.plurals.gold_found_message, goldFound, goldFound);
                 Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+                requestSave(SaveReason.INVENTORY_CHANGE);
+                break;
+
+            case BOOST_HEALTH:
+                profile.addHealthBoost(GameBalance.BOOST_HEALTH_GAIN);
+                profile.heal(GameBalance.BOOST_HEALTH_GAIN);
+                updateHpCounter();
+                Toast.makeText(this,
+                        getString(R.string.boost_health_found, GameBalance.BOOST_HEALTH_GAIN),
+                        Toast.LENGTH_SHORT).show();
+                requestSave(SaveReason.INVENTORY_CHANGE);
+                break;
+
+            case BOOST_ATTACK:
+                profile.addAttackBoost(GameBalance.BOOST_ATTACK_GAIN);
+                Toast.makeText(this,
+                        getString(R.string.boost_attack_found, GameBalance.BOOST_ATTACK_GAIN),
+                        Toast.LENGTH_SHORT).show();
+                requestSave(SaveReason.INVENTORY_CHANGE);
+                break;
+
+            case BOOST_DEFENSE:
+                profile.addDefenseBoost(GameBalance.BOOST_DEFENSE_GAIN);
+                Toast.makeText(this,
+                        getString(R.string.boost_defense_found, GameBalance.BOOST_DEFENSE_GAIN),
+                        Toast.LENGTH_SHORT).show();
                 requestSave(SaveReason.INVENTORY_CHANGE);
                 break;
 
@@ -3097,25 +3402,37 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         switch (currentTerrain) {
             case LAVA_FIELD:
                 if (monster.getAffinity() != MonsterAffinity.FIRE) {
-                    maybeApplyPoison(2, 0.15f);
+                    maybeApplyPoison(
+                            GameBalance.getTerrainHazardTurns(currentFloor, 2),
+                            GameBalance.getTerrainHazardChance(currentFloor, 0.15f));
                 }
                 break;
             case MIRE:
-                maybeApplyPoison(2, 0.15f);
+                maybeApplyPoison(
+                        GameBalance.getTerrainHazardTurns(currentFloor, 2),
+                        GameBalance.getTerrainHazardChance(currentFloor, 0.15f));
                 break;
             case FROZEN_RUINS:
                 if (monster.getAffinity() != MonsterAffinity.ICE) {
-                    maybeApplyFreeze(2, 0.15f);
+                    maybeApplyFreeze(
+                            GameBalance.getTerrainHazardTurns(currentFloor, 2),
+                            GameBalance.getTerrainHazardChance(currentFloor, 0.15f));
                 }
                 break;
             case THORN_WILDS:
-                maybeApplyPoison(2, 0.10f);
+                maybeApplyPoison(
+                        GameBalance.getTerrainHazardTurns(currentFloor, 2),
+                        GameBalance.getTerrainHazardChance(currentFloor, 0.10f));
                 break;
             case STORM_PLATEAU:
-                maybeApplyFreeze(1, 0.10f);
+                maybeApplyFreeze(
+                        GameBalance.getTerrainHazardTurns(currentFloor, 1),
+                        GameBalance.getTerrainHazardChance(currentFloor, 0.10f));
                 break;
             case ASH_WASTES:
-                maybeApplyPoison(1, 0.10f);
+                maybeApplyPoison(
+                        GameBalance.getTerrainHazardTurns(currentFloor, 1),
+                        GameBalance.getTerrainHazardChance(currentFloor, 0.10f));
                 break;
             default:
                 break;
@@ -3173,7 +3490,7 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
                 TelemetryManager.logRunCompleted(
                         currentFloor,
                         profile.getPlayerClass() != null ? profile.getPlayerClass().name() : "UNKNOWN",
-                        profile.getLevel(),
+                        profile.getClassXpEarned(profile.getPlayerClass()),
                         currentGold);
             }
             showVictoryDialog();
@@ -3267,35 +3584,12 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         }
     }
 
-    private void updateMpCounter() {
-        if (mpCounterBar == null) {
-            return;
-        }
-        if (profile != null && profile.getMaxMP() > 0) {
-            mpCounterBar.setVisibility(View.VISIBLE);
-            mpCounterBar.setMax(Math.max(1, profile.getMaxMP()));
-            mpCounterBar.setProgress(Math.max(0, profile.getCurrentMP()));
-        } else {
-            mpCounterBar.setVisibility(View.GONE);
-            mpCounterBar.setMax(1);
-            mpCounterBar.setProgress(0);
-        }
-    }
-
     private void awardExperience(int xpReward) {
         if (profile == null || xpReward <= 0) {
             return;
         }
-        // Keep HUD state in sync when XP triggers a level-up.
-        int beforeLevel = profile.getLevel();
         profile.addExperience(xpReward);
         updateXpCounter();
-        if (profile.getLevel() != beforeLevel) {
-            updatePlayerIdentityHud();
-            updateHpCounter();
-            updateMpCounter();
-            updateLevelUpButtonState();
-        }
     }
 
     private void updateXpCounter() {
@@ -3303,12 +3597,10 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
             return;
         }
         if (profile == null) {
-            xpCounterText.setText(getString(R.string.xp_display_dynamic, 0, 100));
+            xpCounterText.setText(getString(R.string.xp_display_dynamic, 0));
             return;
         }
-        int level = Math.max(1, profile.getLevel());
-        int xpNeeded = Math.max(100, level * 100);
-        xpCounterText.setText(getString(R.string.xp_display_dynamic, profile.getXp(), xpNeeded));
+        xpCounterText.setText(getString(R.string.xp_display_dynamic, profile.getCurrentClassXp()));
     }
 
     private void updatePlayerIdentityHud() {
@@ -3316,16 +3608,16 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
             return;
         }
         if (profile == null) {
-            playerNameLevelText.setText(getString(R.string.player_hud_name_level_placeholder));
+            playerNameLevelText.setText(getString(R.string.player_hud_name_class_placeholder));
             return;
         }
         String playerName = TextUtils.isEmpty(profile.getName())
                 ? getString(R.string.player_name_fallback)
                 : profile.getName().trim();
         playerNameLevelText.setText(getString(
-                R.string.player_hud_name_level,
+                R.string.player_hud_name_class,
                 playerName,
-                Math.max(1, profile.getLevel())));
+                formatClassName(profile.getPlayerClass())));
     }
 
     private void updatePlayerHudIcon() {
@@ -3578,16 +3870,10 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         TextView emptyView = dialogView.findViewById(R.id.textEmptyInventory);
         TextView changeLogTitle = dialogView.findViewById(R.id.textInventoryChangeLogTitle);
         TextView changeLogView = dialogView.findViewById(R.id.textInventoryChangeLog);
-        View statAllocation = dialogView.findViewById(R.id.layoutStatAllocation);
-        TextView statPointsView = dialogView.findViewById(R.id.textStatPoints);
-        TextView statStrengthView = dialogView.findViewById(R.id.textStatStrength);
-        TextView statDexterityView = dialogView.findViewById(R.id.textStatDexterity);
-        TextView statConstitutionView = dialogView.findViewById(R.id.textStatConstitution);
-        TextView statIntelligenceView = dialogView.findViewById(R.id.textStatIntelligence);
-        View statStrengthButton = dialogView.findViewById(R.id.buttonStatStrength);
-        View statDexterityButton = dialogView.findViewById(R.id.buttonStatDexterity);
-        View statConstitutionButton = dialogView.findViewById(R.id.buttonStatConstitution);
-        View statIntelligenceButton = dialogView.findViewById(R.id.buttonStatIntelligence);
+        TextView classXpView = dialogView.findViewById(R.id.textCurrentClassXp);
+        TextView healthView = dialogView.findViewById(R.id.textStatHealth);
+        TextView attackView = dialogView.findViewById(R.id.textStatAttack);
+        TextView defenseView = dialogView.findViewById(R.id.textStatDefense);
 
         recycler.setLayoutManager(new LinearLayoutManager(this));
         java.util.List<com.adaplu.clickdungeon.model.InventoryItem> items = InventoryManager.loadInventory(this);
@@ -3630,27 +3916,7 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         emptyView.setVisibility(items.isEmpty() ? View.VISIBLE : View.GONE);
         if (profile != null) {
             updateEquippedSummary(profile, weaponView, armorView, statView);
-            TextView mpView = dialogView.findViewById(R.id.textInventoryMp);
-            if (mpView != null) {
-                mpView.setText(getString(R.string.mp_display_dynamic, profile.getCurrentMP(), profile.getMaxMP()));
-            }
-            bindStatAllocationInDialog(profile,
-                    statAllocation,
-                    statPointsView,
-                    statStrengthView,
-                    statDexterityView,
-                    statConstitutionView,
-                    statIntelligenceView,
-                    statStrengthButton,
-                    statDexterityButton,
-                    statConstitutionButton,
-                    statIntelligenceButton,
-                    weaponView,
-                    armorView,
-                    statView,
-                    mpView);
-        } else if (statAllocation != null) {
-            statAllocation.setVisibility(View.GONE);
+            updateStatSummary(profile, classXpView, healthView, attackView, defenseView);
         }
         bindChangeLogViews(changeLogTitle, changeLogView,
                 InventoryManager.getInventoryChangeLog(this));
@@ -3712,82 +3978,33 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
                 profile.getDefenseBonus()));
     }
 
-    /** Wires stat allocation buttons to profile updates inside the dialog. */
-    private void bindStatAllocationInDialog(CharacterProfile profile,
-                                            View allocationView,
-                                            TextView pointsView,
-                                            TextView strengthView,
-                                            TextView dexterityView,
-                                            TextView constitutionView,
-                                            TextView intelligenceView,
-                                            View strengthButton,
-                                            View dexterityButton,
-                                            View constitutionButton,
-                                            View intelligenceButton,
-                                            TextView weaponView,
-                                            TextView armorView,
-                                            TextView statView,
-                                            TextView mpView) {
-        if (allocationView == null) {
+    private void updateStatSummary(CharacterProfile profile,
+                                   TextView classXpView,
+                                   TextView healthView,
+                                   TextView attackView,
+                                   TextView defenseView) {
+        if (profile == null) {
             return;
         }
-        allocationView.setVisibility(View.VISIBLE);
-        Runnable refresh = () -> {
-            updateStatViews(profile, pointsView, strengthView,
-                    dexterityView, constitutionView, intelligenceView);
-            if (mpView != null) {
-                mpView.setText(getString(R.string.mp_display_dynamic, profile.getCurrentMP(), profile.getMaxMP()));
-            }
-        };
-        refresh.run();
-
-        strengthButton.setOnClickListener(v -> {
-            if (profile.increaseStrength(1)) {
-                refresh.run();
-                updateEquippedSummary(profile, weaponView, armorView, statView);
-                updateHpCounter();
-                updateLevelUpButtonState();
-                requestSave(SaveReason.STAT_ALLOC);
-            }
-        });
-        dexterityButton.setOnClickListener(v -> {
-            if (profile.increaseDexterity(1)) {
-                refresh.run();
-                updateEquippedSummary(profile, weaponView, armorView, statView);
-                updateLevelUpButtonState();
-                requestSave(SaveReason.STAT_ALLOC);
-            }
-        });
-        constitutionButton.setOnClickListener(v -> {
-            if (profile.increaseConstitution(1)) {
-                refresh.run();
-                updateHpCounter();
-                updateLevelUpButtonState();
-                requestSave(SaveReason.STAT_ALLOC);
-            }
-        });
-        intelligenceButton.setOnClickListener(v -> {
-            if (profile.increaseIntelligence(1)) {
-                refresh.run();
-                updateMpCounter();
-                updateLevelUpButtonState();
-                requestSave(SaveReason.STAT_ALLOC);
-            }
-        });
-    }
-
-    /** Refreshes stat point and attribute text fields in the dialog. */
-    private void updateStatViews(CharacterProfile profile,
-                                 TextView pointsView,
-                                 TextView strengthView,
-                                 TextView dexterityView,
-                                 TextView constitutionView,
-                                 TextView intelligenceView) {
-        pointsView.setText(getString(R.string.stat_points_available, profile.getAvailableStatPoints()));
-        strengthView.setText(getString(R.string.stat_label_strength, profile.getStrength()));
-        dexterityView.setText(getString(R.string.stat_label_dexterity, profile.getDexterity()));
-        constitutionView.setText(getString(R.string.stat_label_constitution, profile.getConstitution()));
-        intelligenceView.setText(getString(R.string.stat_label_intelligence, profile.getIntelligence()));
+        if (classXpView != null) {
+            classXpView.setText(getString(R.string.class_xp_available, profile.getCurrentClassXp()));
+        }
+        if (healthView != null) {
+            healthView.setText(getString(R.string.stat_label_health,
+                    profile.getCurrentHP(),
+                    profile.getMaxHP(),
+                    profile.getHealthBoost()));
+        }
+        if (attackView != null) {
+            attackView.setText(getString(R.string.stat_label_attack,
+                    profile.getBaseAttack(),
+                    profile.getAttackBoost()));
+        }
+        if (defenseView != null) {
+            defenseView.setText(getString(R.string.stat_label_defense,
+                    profile.getBaseDefense(),
+                    profile.getDefenseBoost()));
+        }
     }
 
     private void bindChangeLogViews(TextView titleView, TextView logView, java.util.List<String> entries) {

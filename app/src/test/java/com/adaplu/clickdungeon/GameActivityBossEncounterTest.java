@@ -41,7 +41,7 @@ public class GameActivityBossEncounterTest {
     @Test
     public void bossFloorPlacesBossMonster() {
         GameActivity activity = Robolectric.buildActivity(GameActivity.class).setup().get();
-        ReflectionHelpers.setField(activity, "currentFloor", 5);
+        ReflectionHelpers.setField(activity, "currentFloor", 11);
         ReflectionHelpers.callInstanceMethod(activity, "generateDungeon");
 
         Tile[][] grid = ReflectionHelpers.getField(activity, "dungeonGrid");
@@ -59,7 +59,7 @@ public class GameActivityBossEncounterTest {
     @Test
     public void bossVictoryUnlocksAchievement() {
         GameActivity activity = Robolectric.buildActivity(GameActivity.class).setup().get();
-        Monster boss = BossCatalog.createBossForFloor(5);
+        Monster boss = BossCatalog.createBossForFloor(11);
         Tile bossTile = new Tile(com.adaplu.clickdungeon.model.TileType.ENEMY, boss);
 
         ReflectionHelpers.setField(activity, "activeCombatTile", bossTile);
@@ -74,7 +74,7 @@ public class GameActivityBossEncounterTest {
     @Test
     public void bossDefeatDoesNotUnlockAchievement() {
         GameActivity activity = Robolectric.buildActivity(GameActivity.class).setup().get();
-        Monster boss = BossCatalog.createBossForFloor(5);
+        Monster boss = BossCatalog.createBossForFloor(11);
         assertFalse(AchievementManager.isUnlocked(activity, activity.getString(R.string.achievement_boss_slayer_title)));
         activity.onCombatDefeat();
         assertFalse(AchievementManager.isUnlocked(activity, activity.getString(R.string.achievement_boss_slayer_title)));

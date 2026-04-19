@@ -133,7 +133,7 @@ public class GameActivityInventoryDialogTest {
     }
 
     @Test
-    public void inventoryDialog_statAllocationUpdatesPointsAndMp() {
+    public void inventoryDialog_showsSimplifiedStatSummary() {
         CharacterProfile profile = seedProfile(PlayerClass.WIZARD);
         profile.addExperience(120);
         context.getSharedPreferences("player_profile", Context.MODE_PRIVATE)
@@ -145,23 +145,18 @@ public class GameActivityInventoryDialogTest {
         showInventoryDialog(activity);
 
         android.app.Dialog dialog = getLatestDialog();
-        TextView pointsView = dialog.findViewById(R.id.textStatPoints);
-        TextView mpView = dialog.findViewById(R.id.textInventoryMp);
-        Button intelligenceButton = dialog.findViewById(R.id.buttonStatIntelligence);
-        assertNotNull(pointsView);
-        assertNotNull(mpView);
-        assertNotNull(intelligenceButton);
-
-        String beforePoints = pointsView.getText().toString();
-        String beforeMp = mpView.getText().toString();
-
-        intelligenceButton.performClick();
-        Shadows.shadowOf(Looper.getMainLooper()).idle();
-
-        String afterPoints = pointsView.getText().toString();
-        String afterMp = mpView.getText().toString();
-        assertTrue(!beforePoints.equals(afterPoints));
-        assertTrue(!beforeMp.equals(afterMp));
+        TextView classXpView = dialog.findViewById(R.id.textCurrentClassXp);
+        TextView healthView = dialog.findViewById(R.id.textStatHealth);
+        TextView attackView = dialog.findViewById(R.id.textStatAttack);
+        TextView defenseView = dialog.findViewById(R.id.textStatDefense);
+        assertNotNull(classXpView);
+        assertNotNull(healthView);
+        assertNotNull(attackView);
+        assertNotNull(defenseView);
+        assertTrue(classXpView.getText().toString().contains("120"));
+        assertTrue(healthView.getText().toString().contains("HP:"));
+        assertTrue(attackView.getText().toString().contains("ATK:"));
+        assertTrue(defenseView.getText().toString().contains("DEF:"));
     }
 
     @Test

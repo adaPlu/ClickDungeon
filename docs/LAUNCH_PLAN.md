@@ -1,7 +1,7 @@
 # ClickDungeon Launch Plan
 
 **Created:** 2026-04-06  
-**Last updated:** 2026-04-09  
+**Last updated:** 2026-04-18  
 **Current version:** 1.0.0 (`versionCode=2`)  
 **Current branch at audit:** `scaffold/pr-store-assets`  
 **Package name:** `com.adaplu.clickdungeon`  
@@ -12,9 +12,10 @@
 ## Current State Summary
 
 ### Verified in Code
-- Full dungeon loop: 5x5 grid, terrain-per-floor, traps, boss floors, XP/gold,
-  status effects, and save/continue flow
-- Three playable classes with ability progression: Knight, Thief, Wizard
+- Full dungeon loop: 5x5 grid with one health/attack/defense boost tile per
+  floor, terrain-per-floor, traps, boss floors, XP/gold, status effects, and
+  save/continue flow across the 1-99 campaign
+- Four playable classes with ability progression: Knight, Ranger, Thief, Wizard
 - Combat dialog with animations, monster telegraphs, and action flow
 - Save system with encrypted preferences and integrity checks
 - Shop, buyback flow, achievements, onboarding, settings, and audio diagnostics
@@ -37,8 +38,9 @@
    provisioning from the Firebase Console is pending.
 3. Play Console setup and internal testing are not yet complete.
 4. Localization scaffolding is still absent.
-5. Ranger remains intentionally incomplete and must stay unreachable until it is
-   properly finished.
+5. Ranger gameplay is enabled, and the temporary icon/sprite-sheet fallback is
+   an acceptable launch fallback rather than a blocker. Dedicated Ranger art is
+   a post-launch polish item.
 
 ---
 
@@ -53,7 +55,7 @@ Status: complete
 
 - `CombatDialogFragment` no longer stores bitmaps in fragment arguments
 - ProGuard keep rules and minify/resource-shrink settings are in place
-- `RANGER` has a safe fallback to Knight assets and test coverage
+- `RANGER` is enabled with safe icon/sprite fallbacks and test coverage
 
 ### Gate 2 - Performance
 Status: complete
@@ -148,7 +150,7 @@ Remaining:
 ```text
 Gate 1 - Critical bug fixes
 [x] Bitmap bundle issue resolved
-[x] Ranger fallback added
+[x] Ranger fallback added and accepted for launch
 [x] ProGuard keep rules added
 
 Gate 2 - Performance
@@ -200,4 +202,4 @@ Gate 6 - Firebase baseline
 | Draft legal/store docs mistaken for final assets | High | Keep Gate 4 status explicit and require review before release |
 | Firebase provisioned against wrong package name | High | Use `com.adaplu.clickdungeon` consistently in all setup docs |
 | Default launcher icons shipped by mistake | Medium | Treat icon replacement as a hard release gate |
-| Ranger accidentally exposed before implementation | Medium | Keep class-selection wiring disabled until complete |
+| Ranger placeholder art is intentionally retained for launch | Low | Keep dedicated Ranger icon/sprite import on the post-launch content backlog |

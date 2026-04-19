@@ -40,13 +40,12 @@ public class GameActivityAbilityTest {
 
     @Test
     public void abilityTargetingRejectsOutOfRangeTiles() throws Exception {
-        GameActivity activity = launchWithProfile(PlayerClass.WIZARD, 3);
+        GameActivity activity = launchWithProfile(PlayerClass.WIZARD, 120);
         Tile[][] grid = buildEmptyGrid();
         setField(activity, "dungeonGrid", grid);
         setField(activity, "playerRow", 2);
         setField(activity, "playerCol", 2);
         setField(activity, "currentFloor", 1);
-        setField(activity, "nextAbilityAvailableFloor", 1);
         setField(activity, "pendingAbilityTargetMode",
                 enumValue(GameActivity.class, "AbilityTargetMode", "WIZARD_FIREBALL"));
         invoke(activity, "renderGrid");
@@ -55,19 +54,22 @@ public class GameActivityAbilityTest {
 
         Object pending = getField(activity, "pendingAbilityTargetMode");
         assertEquals(enumValue(GameActivity.class, "AbilityTargetMode", "WIZARD_FIREBALL"), pending);
-        assertEquals(1, (int) getField(activity, "nextAbilityAvailableFloor"));
         assertFalse(grid[0][0].isRevealed());
     }
 
     @Test
-    public void abilityUseTriggersCooldown() throws Exception {
-        GameActivity activity = launchWithProfile(PlayerClass.WIZARD, 2);
+    public void abilityUseConsumesAChargeOnSuccessfulResolution() throws Exception {
+        GameActivity activity = launchWithProfile(PlayerClass.WIZARD, 120);
         Tile[][] grid = buildEmptyGrid();
         setField(activity, "dungeonGrid", grid);
         setField(activity, "playerRow", 2);
         setField(activity, "playerCol", 2);
         setField(activity, "currentFloor", 1);
-        setField(activity, "nextAbilityAvailableFloor", 1);
+        CharacterProfile profile = (CharacterProfile) getField(activity, "profile");
+        int startingCharges = profile.getAbilityCharges(
+                PlayerClass.WIZARD,
+                PlayerClass.ABILITY_WIZARD_FIREBALL,
+                System.currentTimeMillis());
         setField(activity, "pendingAbilityTargetMode",
                 enumValue(GameActivity.class, "AbilityTargetMode", "WIZARD_FIREBALL"));
         invoke(activity, "renderGrid");
@@ -76,7 +78,10 @@ public class GameActivityAbilityTest {
 
         Object pending = getField(activity, "pendingAbilityTargetMode");
         assertEquals(enumValue(GameActivity.class, "AbilityTargetMode", "NONE"), pending);
-        assertEquals(3, (int) getField(activity, "nextAbilityAvailableFloor"));
+        assertEquals(startingCharges - 1, profile.getAbilityCharges(
+                PlayerClass.WIZARD,
+                PlayerClass.ABILITY_WIZARD_FIREBALL,
+                System.currentTimeMillis()));
     }
 
     @Test
@@ -272,31 +277,42 @@ public class GameActivityAbilityTest {
     }
 
     @Test
-    public void arcaneShieldRestoresMana() throws Exception {
+    public void arcaneShieldRestoresHp() throws Exception {
         GameActivity activity = launchWithProfile(PlayerClass.WIZARD, 6);
         CharacterProfile profile = (CharacterProfile) getField(activity, "profile");
-        profile.setCurrentMP(1);
-        int before = profile.getCurrentMP();
+        profile.setCurrentHP(2);
+        int before = profile.getCurrentHP();
 
         boolean resolved = (boolean) invoke(activity, "executeWizardArcaneShield");
 
         assertTrue(resolved);
-        assertTrue(profile.getCurrentMP() > before);
+        assertTrue(profile.getCurrentHP() > before);
     }
 
     @Test
-    public void consumeWizardMpUsesAbilityCosts() throws Exception {
-        GameActivity activity = launchWithProfile(PlayerClass.WIZARD, 6);
-        CharacterProfile profile = (CharacterProfile) getField(activity, "profile");
-        profile.setCurrentMP(6);
+    public void abilityChargesRegenerateOverTime() throws Exception {
+        CharacterProfile profile = new CharacterProfile("Mage", PlayerClass.WIZARD);
+        profile.addClassXp(PlayerClass.WIZARD, 200);
+        long now = System.currentTimeMillis();
 
-        boolean meteorAllowed = (boolean) invoke(activity, "consumeWizardMp", PlayerClass.ABILITY_WIZARD_METEOR);
-        assertFalse(meteorAllowed);
-        assertEquals(6, profile.getCurrentMP());
+        int startingCharges = profile.getAbilityCharges(
+                PlayerClass.WIZARD,
+                PlayerClass.ABILITY_WIZARD_FIREBALL,
+                now);
+        assertEquals(3, startingCharges);
 
-        boolean chainAllowed = (boolean) invoke(activity, "consumeWizardMp", PlayerClass.ABILITY_WIZARD_CHAIN_LIGHTNING);
-        assertTrue(chainAllowed);
-        assertEquals(1, profile.getCurrentMP());
+        boolean consumed = profile.consumeAbilityCharge(PlayerClass.WIZARD, PlayerClass.ABILITY_WIZARD_FIREBALL, now);
+        assertTrue(consumed);
+        assertEquals(2, profile.getAbilityCharges(
+                PlayerClass.WIZARD,
+                PlayerClass.ABILITY_WIZARD_FIREBALL,
+                now));
+
+        long later = now + 40000L;
+        assertTrue(profile.getAbilityCharges(
+                PlayerClass.WIZARD,
+                PlayerClass.ABILITY_WIZARD_FIREBALL,
+                later) >= 2);
     }
 
     @Test
@@ -315,10 +331,10 @@ public class GameActivityAbilityTest {
         assertEquals(TileType.EMPTY, trapTile.getType());
     }
 
-    private GameActivity launchWithProfile(PlayerClass playerClass, int level) {
+    private GameActivity launchWithProfile(PlayerClass playerClass, int classXp) {
         Context context = ApplicationProvider.getApplicationContext();
         CharacterProfile profile = new CharacterProfile("Tester", playerClass);
-        profile.setLevel(level);
+        profile.addClassXp(playerClass, classXp);
         Intent intent = new Intent(context, GameActivity.class);
         intent.putExtra(GameActivity.EXTRA_PROFILE_JSON, new Gson().toJson(profile));
         intent.putExtra(GameActivity.EXTRA_IS_NEW_GAME, true);

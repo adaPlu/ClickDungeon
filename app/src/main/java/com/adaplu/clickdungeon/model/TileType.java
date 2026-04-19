@@ -6,6 +6,9 @@ package com.adaplu.clickdungeon.model;
 public enum TileType {
     EMPTY,
     GOLD,
+    BOOST_ATTACK,
+    BOOST_DEFENSE,
+    BOOST_HEALTH,
     ENEMY,
 
     // Trap types

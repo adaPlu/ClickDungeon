@@ -20,43 +20,50 @@ public class CharacterProfileTest {
     @Test
     public void constructorSetsStatsPerClass() {
         CharacterProfile knight = new CharacterProfile("K", PlayerClass.KNIGHT);
-        assertEquals(10, knight.getMaxHP());
+        assertEquals(18, knight.getMaxHP());
         assertEquals(2, knight.getAttack());
-        assertEquals(3, knight.getDefense());
+        assertEquals(1, knight.getDefense());
 
         CharacterProfile thief = new CharacterProfile("T", PlayerClass.THIEF);
-        assertEquals(6, thief.getMaxHP());
-        assertEquals(4, thief.getAttack());
-        assertEquals(5, thief.getDefense());
+        assertEquals(13, thief.getMaxHP());
+        assertEquals(2, thief.getAttack());
+        assertEquals(1, thief.getDefense());
 
         CharacterProfile wizard = new CharacterProfile("W", PlayerClass.WIZARD);
-        assertEquals(4, wizard.getMaxHP());
-        assertEquals(3, wizard.getAttack());
-        assertEquals(2, wizard.getDefense());
+        assertEquals(12, wizard.getMaxHP());
+        assertEquals(2, wizard.getAttack());
+        assertEquals(1, wizard.getDefense());
+
+        CharacterProfile ranger = new CharacterProfile("R", PlayerClass.RANGER);
+        assertEquals(14, ranger.getMaxHP());
+        assertEquals(2, ranger.getAttack());
+        assertEquals(1, ranger.getDefense());
     }
 
     @Test
-    public void addExperienceLevelsUpAndCarriesRemainder() {
+    public void addExperienceAddsToCurrentClassXp() {
         CharacterProfile profile = new CharacterProfile("Test", PlayerClass.KNIGHT);
         profile.addExperience(250);
 
-        assertEquals(2, profile.getLevel());
-        assertEquals(150, profile.getXp());
-        assertEquals(12, profile.getMaxHP());
-        assertEquals(12, profile.getCurrentHP());
-        assertEquals(2, profile.getAttack());
-        assertEquals(4, profile.getDefense());
-        assertEquals(2, profile.getAvailableStatPoints());
+        assertEquals(1, profile.getLevel());
+        assertEquals(250, profile.getCurrentClassXp());
+        assertEquals(18, profile.getMaxHP());
+        assertEquals(18, profile.getCurrentHP());
     }
 
     @Test
-    public void wizardUsesMpAndGainsManaWithIntelligence() {
+    public void abilityChargesRegenerateOverTime() {
         CharacterProfile profile = new CharacterProfile("Mage", PlayerClass.WIZARD);
-        assertTrue(profile.usesMp());
-        int initialMp = profile.getMaxMP();
-        profile.addExperience(120);
-        profile.increaseIntelligence(1);
-        assertTrue(profile.getMaxMP() > initialMp);
+        profile.addClassXp(PlayerClass.WIZARD, 200);
+        assertTrue(profile.unlockAbility(PlayerClass.WIZARD, PlayerClass.ABILITY_WIZARD_METEOR));
+
+        long now = 1_000L;
+        assertEquals(3, profile.getAbilityCharges(PlayerClass.WIZARD, PlayerClass.ABILITY_WIZARD_METEOR, now));
+        assertTrue(profile.consumeAbilityCharge(PlayerClass.WIZARD, PlayerClass.ABILITY_WIZARD_METEOR, now));
+        assertEquals(2, profile.getAbilityCharges(PlayerClass.WIZARD, PlayerClass.ABILITY_WIZARD_METEOR, now));
+
+        long restoredAt = now + PlayerClass.WIZARD.findAbility(PlayerClass.ABILITY_WIZARD_METEOR).getRechargeDurationMillis();
+        assertEquals(3, profile.getAbilityCharges(PlayerClass.WIZARD, PlayerClass.ABILITY_WIZARD_METEOR, restoredAt));
     }
 
     @Test
@@ -69,12 +76,12 @@ public class CharacterProfileTest {
     }
 
     @Test
-    public void setAvailableStatPoints_clampsToNonNegative() {
-        CharacterProfile profile = new CharacterProfile("Test", PlayerClass.KNIGHT);
-        profile.setAvailableStatPoints(3);
-        assertEquals(3, profile.getAvailableStatPoints());
-        profile.setAvailableStatPoints(-2);
-        assertEquals(0, profile.getAvailableStatPoints());
+    public void unlockingAbilitySpendsClassXp() {
+        CharacterProfile profile = new CharacterProfile("Test", PlayerClass.RANGER);
+        profile.addClassXp(PlayerClass.RANGER, 80);
+
+        assertTrue(profile.unlockAbility(PlayerClass.RANGER, PlayerClass.ABILITY_RANGER_CAMOUFLAGE));
+        assertEquals(24, profile.getClassXp(PlayerClass.RANGER));
     }
 
     @Test
@@ -93,5 +100,15 @@ public class CharacterProfileTest {
         profile.setAnimatedPlayer(animatedPlayer);
 
         assertEquals(animatedPlayer, profile.getAnimatedPlayer());
+    }
+
+    @Test
+    public void rangerAttackScalesFromBoosts() {
+        CharacterProfile profile = new CharacterProfile("Scout", PlayerClass.RANGER);
+        assertEquals(2, profile.getAttack());
+
+        profile.addAttackBoost(2);
+
+        assertEquals(4, profile.getAttack());
     }
 }

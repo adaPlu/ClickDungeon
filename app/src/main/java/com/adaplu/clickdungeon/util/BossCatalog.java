@@ -14,14 +14,15 @@ import java.util.Map;
  */
 public final class BossCatalog {
 
-    private static final Map<Integer, BossDefinition> BOSSES = new HashMap<>();
+    private static final Map<Integer, BossDefinition> BASE_BOSSES = new HashMap<>();
+    private static final int BOSS_INTERVAL = 11;
 
     static {
-        BOSSES.put(5, new BossDefinition("Lich", 14, 6, 4, 2,
+        BASE_BOSSES.put(1, new BossDefinition("Lich", 14, 6, 4, 2,
                 MonsterFamily.UNDEAD, MonsterAffinity.ARCANE));
-        BOSSES.put(10, new BossDefinition("Archdemon", 18, 8, 6, 3,
+        BASE_BOSSES.put(2, new BossDefinition("Archdemon", 18, 8, 6, 3,
                 MonsterFamily.DEMONIC, MonsterAffinity.FIRE));
-        BOSSES.put(15, new BossDefinition("Ancient Wyrm", 22, 9, 7, 3,
+        BASE_BOSSES.put(3, new BossDefinition("Ancient Wyrm", 22, 9, 7, 3,
                 MonsterFamily.ELEMENTAL, MonsterAffinity.FIRE));
     }
 
@@ -29,19 +30,32 @@ public final class BossCatalog {
     }
 
     public static boolean isBossFloor(int floor) {
-        return BOSSES.containsKey(floor);
+        return floor > 0
+                && floor <= GameBalance.FINAL_FLOOR
+                && floor % BOSS_INTERVAL == 0;
     }
 
     @Nullable
     public static Monster createBossForFloor(int floor) {
-        BossDefinition definition = BOSSES.get(floor);
+        if (!isBossFloor(floor)) {
+            return null;
+        }
+        int bossStage = floor / BOSS_INTERVAL;
+        BossDefinition definition = BASE_BOSSES.get(((bossStage - 1) % BASE_BOSSES.size()) + 1);
         if (definition == null) {
             return null;
         }
-        Monster boss = new Monster(definition.name, definition.maxHp,
-                definition.attack, definition.defense, "");
+
+        float vitalityScale = 1f + ((bossStage - 1) * 0.12f);
+        int scaledHp = Math.max(1, Math.round(definition.maxHp * vitalityScale) + (bossStage - 1));
+        int scaledAttack = Math.max(1, definition.attack + ((bossStage - 1) / 2));
+        int scaledDefense = Math.max(0, definition.defense + ((bossStage - 1) / 3));
+        int phaseCount = Math.min(5, definition.phaseCount + ((bossStage - 1) / 4));
+
+        Monster boss = new Monster(definition.name, scaledHp,
+                scaledAttack, scaledDefense, "");
         boss.setBoss(true);
-        boss.setBossPhaseCount(definition.phaseCount);
+        boss.setBossPhaseCount(phaseCount);
         boss.setFamily(definition.family);
         boss.setAffinity(definition.affinity);
         return boss;

@@ -79,7 +79,23 @@ public class GameBalanceTest {
     public void floorDifficultyScaleIncreasesByBand() {
         assertEquals(1f, GameBalance.getFloorDifficultyScale(0), 0.0001f);
         assertTrue(GameBalance.getFloorDifficultyScale(3) > 1f);
-        assertTrue(GameBalance.getFloorDifficultyScale(8) > GameBalance.getFloorDifficultyScale(5));
-        assertTrue(GameBalance.getFloorDifficultyScale(12) > GameBalance.getFloorDifficultyScale(10));
+        assertTrue(GameBalance.getFloorDifficultyScale(40) > GameBalance.getFloorDifficultyScale(10));
+        assertTrue(GameBalance.getFloorDifficultyScale(99) > GameBalance.getFloorDifficultyScale(75));
+    }
+
+    @Test
+    public void monsterDifficultyScaleAlsoIncreasesButMoreSlowly() {
+        assertEquals(1f, GameBalance.getMonsterDifficultyScale(0), 0.0001f);
+        assertTrue(GameBalance.getMonsterDifficultyScale(50) > GameBalance.getMonsterDifficultyScale(10));
+        assertTrue(GameBalance.getFloorDifficultyScale(99) > GameBalance.getMonsterDifficultyScale(99));
+    }
+
+    @Test
+    public void xpRewardScaleAndTerrainHazardsRampWithFloor() {
+        assertTrue(GameBalance.getXpRewardScale(99) > GameBalance.getXpRewardScale(1));
+        assertTrue(GameBalance.getTerrainHazardChance(99, 0.15f)
+                > GameBalance.getTerrainHazardChance(20, 0.15f));
+        assertEquals(1, GameBalance.getTerrainHazardTurns(20, 2));
+        assertEquals(2, GameBalance.getTerrainHazardTurns(99, 2));
     }
 }

@@ -75,7 +75,7 @@ public class GameActivityInteractionTest {
     }
 
     @Test
-    public void handleTileClick_enemyStartsCombatDialog() {
+    public void handleTileClick_enemyRevealDoesNotStartDialogImmediately() {
         GameActivity activity = buildActivityWithEmptyGrid();
         Tile[][] grid = ReflectionHelpers.getField(activity, "dungeonGrid");
         grid[1][1] = new Tile(TileType.ENEMY, new Monster("Slime", 4, 1, 0, "S"));
@@ -91,7 +91,8 @@ public class GameActivityInteractionTest {
 
         CombatDialogFragment fragment = (CombatDialogFragment) activity.getSupportFragmentManager()
                 .findFragmentByTag("CombatDialog");
-        assertNotNull(fragment);
+        assertTrue(grid[1][1].isRevealed());
+        assertNull(fragment);
     }
 
     @Test
@@ -131,7 +132,8 @@ public class GameActivityInteractionTest {
         assertEquals(TileType.EMPTY, combatTile.getType());
         assertNull(combatTile.getMonster());
         assertEquals(15, (int) ReflectionHelpers.getField(activity, "currentGold"));
-        assertEquals(50, profile.getXp());
+        assertEquals(2, profile.getLevel());
+        assertEquals(18, profile.getXp());
         assertEquals(0, (int) ReflectionHelpers.getField(activity, "pendingCombatGoldReward"));
         assertEquals(0, (int) ReflectionHelpers.getField(activity, "pendingCombatXpReward"));
     }

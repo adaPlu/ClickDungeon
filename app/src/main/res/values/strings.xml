@@ -12,6 +12,7 @@
 <string name="achievements">Achievements</string>
 <string name="achievements_title">Your Achievements</string>
 <string name="back_to_menu">Back to Menu</string>
+<string name="classes">Classes</string>
 
 <!-- Settings -->
 <string name="settings_title">Game Settings</string>
@@ -69,11 +70,12 @@
 <string name="locked_stair_unlocked">Unlocked stair with %1$s!</string>
 <string name="locked_stair_missing">You need the %1$s!</string>
 <string name="ability_button_wizard">Cast Fireball</string>
+<string name="ability_button_ranger">Fire Shot</string>
 <string name="ability_button_thief">Trap Scan</string>
 <string name="ability_button_knight">Raise Shield</string>
 <string name="ability_button_targeting">Select target&#8230;</string>
 <string name="ability_target_cancelled">Ability targeting cancelled.</string>
-<string name="ability_on_cooldown">Ability ready again on Floor %1$d.</string>
+<string name="ability_no_charges">No charges left. Next charge in %1$s.</string>
 <string name="fireball_result_whiff">The fireball fizzles without a target.</string>
 <string name="fireball_result_kill">Fireball incinerates the %1$s.</string>
 <string name="frost_nova_hit">Frost Nova chills nearby threats.</string>
@@ -103,7 +105,7 @@
 <string name="valiant_engage">Valiant Strike lands. Fight begins.</string>
 <string name="fortify_ready">Fortify restores your focus.</string>
 <string name="guardians_oath_ready">Guardian\'s Oath reinforces your defenses.</string>
-<string name="arcane_shield_ready">Arcane Shield restores your mana.</string>
+<string name="arcane_shield_ready">Arcane Shield stabilizes your defenses.</string>
 <string name="ability_kill_confirmed">Target defeated.</string>
 <string name="knight_shield_broken">Your shield shatters!</string>
 <string name="player_position_unknown">Reveal a tile first to anchor your position.</string>
@@ -117,11 +119,11 @@
 <!-- Game -->
 <string name="blocked_by_monster">A nearby monster blocks the way.</string>
 <string name="hp_display_dynamic">HP: %1$d/%2$d</string>
-<string name="mp_display_dynamic">MP: %1$d/%2$d</string>
-<string name="xp_display_dynamic">XP: %1$d/%2$d</string>
-<string name="xp_display_placeholder">XP: &#8212;/&#8212;</string>
-<string name="player_hud_name_level">%1$s Lv.%2$d</string>
-<string name="player_hud_name_level_placeholder">Hero Lv.1</string>
+<string name="mp_display_dynamic">Ability Charges: %1$d/%2$d</string>
+<string name="xp_display_dynamic">Class XP: %1$d</string>
+<string name="xp_display_placeholder">Class XP: &#8212;</string>
+<string name="player_hud_name_class">%1$s - %2$s</string>
+<string name="player_hud_name_class_placeholder">Hero - Knight</string>
 <string name="player_name_fallback">Hero</string>
 <string name="victory_title">Victory!</string>
 <string name="victory_message">You revealed all safe tiles. Well done!</string>
@@ -129,8 +131,7 @@
 <string name="main_menu">Main Menu</string>
 <string name="play_again">Play Again</string>
 <string name="use_ability">Use Ability</string>
-<string name="level_up">Level Up</string>
-<string name="not_enough_mp">Not enough MP!</string>
+<string name="not_enough_mp">Not enough charges!</string>
 <string name="inventory_empty">No items collected yet.</string>
 <string name="inventory_gain_message">+1 %1$s</string>
 <string name="inventory_use_message">Used 1 %1$s</string>
@@ -141,8 +142,10 @@
 <string name="monster_loot_item">Bonus loot: %1$s.</string>
 <string name="monster_loot_magic">Bonus loot: %1$s.</string>
     <string name="open_inventory">Open Inventory</string>
+    <string name="open_class_menu">Class</string>
     <string name="use_ability_desc">Use your class ability in combat</string>
     <string name="open_inventory_desc">Open inventory during combat</string>
+    <string name="open_class_menu_desc">View your current class and unlocked abilities</string>
     <string name="use_potion">Potion</string>
     <string name="use_potion_desc">Use a healing potion to restore HP</string>
     <string name="potion_used">Healed %d HP from potion</string>
@@ -240,6 +243,9 @@
 <!-- Accessibility & onboarding -->
 <string name="tile_desc_hidden">Hidden tile</string>
 <string name="tile_desc_gold">Gold pile</string>
+<string name="tile_desc_boost_attack">Attack shrine</string>
+<string name="tile_desc_boost_defense">Defense shrine</string>
+<string name="tile_desc_boost_health">Health shrine</string>
 <string name="tile_desc_enemy">Enemy encounter</string>
 <string name="tile_desc_stairs_down">Stairs descending to the next floor</string>
 <string name="tile_desc_stairs_up">Stairs leading upward</string>
@@ -293,17 +299,41 @@ Adjust these preferences anytime from Settings.</string>
 <string name="shop_item_out_of_stock">Out of stock</string>
 <string name="shop_item_in_stock">%1$d in stock</string>
 <string name="floor_display_hard_suffix"> (Hard)</string>
-<string name="stat_allocate_title">Allocate Stat Points</string>
-<string name="stat_points_available">Stat points: %1$d</string>
-<string name="stat_label_strength">STR: %1$d</string>
-<string name="stat_label_dexterity">DEX: %1$d</string>
-<string name="stat_label_constitution">CON: %1$d</string>
-<string name="stat_label_intelligence">INT: %1$d</string>
-<string name="stat_add_button">+</string>
-<string name="stat_add_strength_desc">Increase Strength</string>
-<string name="stat_add_dexterity_desc">Increase Dexterity</string>
-<string name="stat_add_constitution_desc">Increase Constitution</string>
-<string name="stat_add_intelligence_desc">Increase Intelligence</string>
+<string name="stat_summary_title">Stats</string>
+<string name="class_xp_available">Available XP: %1$d</string>
+<string name="stat_label_health">HP: %1$d/%2$d (+%3$d)</string>
+<string name="stat_label_attack">ATK: %1$d (+%2$d)</string>
+<string name="stat_label_defense">DEF: %1$d (+%2$d)</string>
+<string name="boost_health_found">Max HP increased by %1$d.</string>
+<string name="boost_attack_found">Attack increased by %1$d.</string>
+<string name="boost_defense_found">Defense increased by %1$d.</string>
+<string name="class_menu_title">Class Status</string>
+<string name="class_menu_status">Current class: %1$s\nAvailable XP: %2$d</string>
+<string name="class_menu_manage_hint">Unlock new abilities from Main Menu &gt; Classes.</string>
+<string name="class_menu_unavailable">No class profile is loaded yet.</string>
+<string name="class_menu_abilities">Abilities</string>
+<string name="class_switch_title">Choose Class</string>
+<string name="class_switched">Switched to %1$s.</string>
+<string name="class_ability_unlock_title">Unlock Abilities</string>
+<string name="class_ability_unlock_success">Unlocked %1$s.</string>
+<string name="class_ability_unlock_failed">Not enough class XP for %1$s.</string>
+<string name="ability_manage_entry_locked">%1$s - Unlock for %2$d XP</string>
+<string name="ability_manage_entry_unlocked">%1$s - Ready x%2$d</string>
+<string name="ability_manage_entry_recharging">%1$s - %2$d charges (%3$s)</string>
+<string name="ability_ready_short">ready</string>
+<string name="ability_charge_eta_seconds">%1$ds</string>
+<string name="ability_chooser_entry">%1$s x%2$d</string>
+<string name="class_upgrade_picker_title">Choose a Class</string>
+<string name="class_upgrade_picker_entry">%1$s - XP %2$d</string>
+<string name="class_upgrade_detail_title">%1$s Upgrades</string>
+<string name="class_upgrade_current_xp">Current XP: %1$d</string>
+<string name="class_upgrade_detail_note">Tap an affordable ability to unlock it.</string>
+<string name="class_upgrade_profile_required">Create a character first to save unlocks.</string>
+<string name="class_upgrade_already_unlocked">%1$s is already unlocked.</string>
+<string name="class_upgrade_state_unlocked">Unlocked x%1$d</string>
+<string name="class_upgrade_state_affordable">Affordable - tap to unlock</string>
+<string name="class_upgrade_state_locked">Locked - need %1$d more XP</string>
+<string name="class_upgrade_ability_entry">%1$s\nCost: %2$d XP\n%3$s\n%4$s</string>
 <plurals name="gold_found_message">
     <item quantity="one">You found %1$d gold!</item>
     <item quantity="other">You found %1$d gold!</item>
@@ -351,6 +381,43 @@ Adjust these preferences anytime from Settings.</string>
 <plurals name="ability_target_prompt_valiant_strike">
     <item quantity="one">Select an enemy within %1$d space for Valiant Strike.</item>
     <item quantity="other">Select an enemy within %1$d spaces for Valiant Strike.</item>
+</plurals>
+<plurals name="ability_target_prompt_piercing_shot">
+    <item quantity="one">Select an enemy within %1$d space for Piercing Shot.</item>
+    <item quantity="other">Select an enemy within %1$d spaces for Piercing Shot.</item>
+</plurals>
+<plurals name="ability_target_prompt_rapid_volley">
+    <item quantity="one">Select a tile within %1$d space to unleash Rapid Volley.</item>
+    <item quantity="other">Select a tile within %1$d spaces to unleash Rapid Volley.</item>
+</plurals>
+<plurals name="ability_target_prompt_net_trap">
+    <item quantity="one">Select an enemy within %1$d space to set a Net Trap.</item>
+    <item quantity="other">Select an enemy within %1$d spaces to set a Net Trap.</item>
+</plurals>
+<plurals name="ability_target_prompt_eagle_eye">
+    <item quantity="one">Select an enemy within %1$d space for Eagle Eye critical.</item>
+    <item quantity="other">Select an enemy within %1$d spaces for Eagle Eye critical.</item>
+</plurals>
+<string name="piercing_shot_whiff">Piercing Shot finds no target.</string>
+<string name="piercing_shot_kill">Piercing Shot fells %1$s!</string>
+<plurals name="piercing_shot_hit">
+    <item quantity="one">Piercing Shot deals %1$d damage, ignoring armor!</item>
+    <item quantity="other">Piercing Shot deals %1$d damage, ignoring armor!</item>
+</plurals>
+<string name="rapid_volley_whiff">Rapid Volley — no enemies in range.</string>
+<plurals name="rapid_volley_hit">
+    <item quantity="one">Rapid Volley strikes for %1$d damage!</item>
+    <item quantity="other">Rapid Volley strikes for %1$d damage each!</item>
+</plurals>
+<string name="camouflage_activated">Camouflage! Nearby tiles revealed and you recover health.</string>
+<string name="net_trap_no_target">No enemy to ensnare here.</string>
+<string name="net_trap_kill">Net Trap takes down %1$s!</string>
+<string name="net_trap_applied">%1$s is ensnared and weakened!</string>
+<string name="eagle_eye_whiff">Eagle Eye finds no target.</string>
+<string name="eagle_eye_kill">Eagle Eye critically strikes %1$s!</string>
+<plurals name="eagle_eye_hit">
+    <item quantity="one">Eagle Eye CRIT: %1$d damage!</item>
+    <item quantity="other">Eagle Eye CRIT: %1$d damage!</item>
 </plurals>
 <plurals name="ability_range_error">
     <item quantity="one">Target must be within %1$d space.</item>
