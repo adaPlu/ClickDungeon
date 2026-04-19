@@ -151,6 +151,46 @@ public final class TelemetryManager {
     }
 
     // -------------------------------------------------------------------------
+    // Exploration
+    // -------------------------------------------------------------------------
+
+    /**
+     * Fired when the player descends to a new floor.
+     *
+     * @param floor       floor number just entered
+     * @param terrain     terrain type name, e.g. "CAVERN"
+     * @param isBossFloor whether this floor has a boss encounter
+     */
+    public static void logFloorReached(int floor, String terrain, boolean isBossFloor) {
+        if (sAnalytics == null) return;
+        Bundle b = new Bundle();
+        b.putInt("floor_number", floor);
+        b.putString("terrain", terrain);
+        b.putBoolean("is_boss_floor", isBossFloor);
+        sAnalytics.logEvent("floor_reached", b);
+    }
+
+    // -------------------------------------------------------------------------
+    // Abilities
+    // -------------------------------------------------------------------------
+
+    /**
+     * Fired when the player activates a class ability.
+     *
+     * @param abilityName  ability identifier, e.g. "Fireball"
+     * @param playerClass  active class name, e.g. "WIZARD"
+     * @param floor        current floor
+     */
+    public static void logAbilityUsed(String abilityName, String playerClass, int floor) {
+        if (sAnalytics == null) return;
+        Bundle b = new Bundle();
+        b.putString("ability_name", abilityName);
+        b.putString("player_class", playerClass);
+        b.putInt("floor_number", floor);
+        sAnalytics.logEvent("ability_used", b);
+    }
+
+    // -------------------------------------------------------------------------
     // Errors / health
     // -------------------------------------------------------------------------
 

@@ -11,6 +11,7 @@ import android.content.Intent;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.TooltipCompat;
 
+import com.adaplu.clickdungeon.BuildConfig;
 import com.adaplu.clickdungeon.util.SettingsManager;
 import com.adaplu.clickdungeon.util.SoundManager;
 import com.google.android.material.switchmaterial.SwitchMaterial;
@@ -36,12 +37,21 @@ public class SettingsActivity extends AppCompatActivity {
         SwitchMaterial vibrationSwitch = findViewById(R.id.switchVibration);
         SwitchMaterial colorBlindSwitch = findViewById(R.id.switchColorBlind);
         SwitchMaterial tutorialSwitch = findViewById(R.id.switchTutorialHints);
-        SwitchMaterial audioDiagnosticsSwitch = findViewById(R.id.switchAudioDiagnostics);
+        SwitchMaterial audioDiagnosticsSwitch = BuildConfig.DEBUG
+                ? (SwitchMaterial) findViewById(R.id.switchAudioDiagnostics)
+                : null;
         Spinner difficultySpinner = findViewById(R.id.spinnerDifficulty);
         TextView difficultySummaryText = findViewById(R.id.textDifficultySummary);
         TextView colorBlindSummaryText = findViewById(R.id.textColorBlindSummary);
         TextView tutorialSummaryText = findViewById(R.id.textTutorialSummary);
         TextView audioDiagnosticsSummaryText = findViewById(R.id.textAudioDiagnosticsSummary);
+
+        // Hide the audio diagnostics row entirely in non-debug (release) builds.
+        if (!BuildConfig.DEBUG) {
+            View rawSwitch = findViewById(R.id.switchAudioDiagnostics);
+            if (rawSwitch != null) rawSwitch.setVisibility(View.GONE);
+            if (audioDiagnosticsSummaryText != null) audioDiagnosticsSummaryText.setVisibility(View.GONE);
+        }
 
         isInitializing = true;
 
@@ -135,7 +145,7 @@ public class SettingsActivity extends AppCompatActivity {
                     SettingsManager.setAudioDiagnosticsEnabled(this, isChecked);
                 }
                 updateAudioDiagnosticsSummary(audioDiagnosticsSummaryText, isChecked);
-                if (isChecked) {
+                if (isChecked && BuildConfig.DEBUG) {
                     startActivity(new Intent(this, AudioDiagnosticsActivity.class));
                 }
             });
