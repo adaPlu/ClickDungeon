@@ -1,153 +1,161 @@
 # ClickDungeon Launch Plan
 
-**Created:** 2026-04-06  
-**Last updated:** 2026-04-18  
-**Current version:** 1.0.0 (`versionCode=2`)  
-**Current branch at audit:** `scaffold/pr-store-assets`  
-**Package name:** `com.adaplu.clickdungeon`  
+**Created:** 2026-04-06
+**Last updated:** 2026-04-18 (Lead review + main merge)
+**Current version:** 1.0.0 (`versionCode=2`)
+**Package name:** `com.adaplu.clickdungeon`
 **Goal:** Ship v1.0 on Google Play
 
 ---
 
-## Current State Summary
+## Branch / Review Process (enforced from this point forward)
 
-### Verified in Code
-- Full dungeon loop: 5x5 grid with one health/attack/defense boost tile per
-  floor, terrain-per-floor, traps, boss floors, XP/gold, status effects, and
-  save/continue flow across the 1-99 campaign
-- Four playable classes with ability progression: Knight, Ranger, Thief, Wizard
+```
+worker/feature-branch  →  PR to main  →  Lead review  →  merge to main
+```
+
+No code goes directly to main. Every worker pushes their branch, opens a PR,
+and the lead must approve before merge. This document tracks which worker owns
+which branch at any given time.
+
+---
+
+## Current State Summary (as of 2026-04-18 lead review)
+
+### Verified in Code (main branch)
+- Full dungeon loop: 5×5 grid, terrain per floor, traps, boss floors, XP/gold,
+  status effects, save/continue across the 1-99 campaign
+- All four classes fully playable: Knight, Ranger (wired this session),
+  Thief, Wizard — each with 5 ability unlocks and targeted combat abilities
 - Combat dialog with animations, monster telegraphs, and action flow
-- Save system with encrypted preferences and integrity checks
-- Shop, buyback flow, achievements, onboarding, settings, and audio diagnostics
-- Release build scaffold in place with signing config support, minification, and
-  resource shrinking
-- Animated and static dungeon board art is committed, and board tiles now render
-  with images instead of text letters
-- Unit test suite passes locally via `:app:testDebugUnitTest`
-
-### Verified Artifacts
-- Release AAB present under `app/build/outputs/bundle/release/`
-- Keystore-based signing scaffold present in Gradle config
+- Save system: encrypted preferences, integrity checks, force-save on
+  TRIM_MEMORY_RUNNING_CRITICAL, debounced background saves
+- Shop, buyback, achievements, onboarding, settings, audio diagnostics
+- Release build scaffold: signing config, minification, resource shrinking
+- Animated dungeon board art committed; board tiles render with images
+- Unit test suite: 65+ Robolectric tests covering all P0/P1/P2 backlog items,
+  plus new MonsterCatalog and TelemetryManager coverage
+- Firebase: plugins wired, dependencies wired, Crashlytics initialized with
+  release-only collection, try/catch guard in ClickDungeonApp for test safety
+- TelemetryManager: 8 typed log methods (run_start, run_failed, run_completed,
+  combat_ended, level_up, purchase, save_failed, session_start)
 
 ### Still Open Before Release
-1. Store/legal assets are only partially scaffolded; screenshots, feature
-   graphic, and hosted privacy-policy URL are still missing. Launcher icons
-   are already in place.
-2. Firebase/Crashlytics is wired in code (plugins, dependencies, and
-   initialization in ClickDungeonApp are all done). Only `google-services.json`
-   provisioning from the Firebase Console is pending.
-3. Play Console setup and internal testing are not yet complete.
-4. Localization scaffolding is still absent.
-5. Ranger gameplay is enabled, and the temporary icon/sprite-sheet fallback is
-   an acceptable launch fallback rather than a blocker. Dedicated Ranger art is
-   a post-launch polish item.
+
+| # | Item | Owner Branch | Status |
+|---|------|-------------|--------|
+| 1 | Phone screenshots (min 2) + feature graphic (1024×500) | worker/gate4-store-assets | NOT STARTED |
+| 2 | Privacy policy: final text + contact address + hosted URL | worker/gate4-store-assets | NOT STARTED |
+| 3 | Gate Gate 3 physical-device smoke test recorded | worker/gate4-store-assets | NOT STARTED |
+| 4 | AudioDiagnosticsActivity gated behind BuildConfig.DEBUG | worker/gate6-firebase-telemetry | NOT STARTED |
+| 5 | floor_reached + ability_used telemetry events added | worker/gate6-firebase-telemetry | NOT STARTED |
+| 6 | Firebase provisioning runbook finalized | worker/gate6-firebase-telemetry | NOT STARTED |
+| 7 | Play Console app entry, AAB upload, internal track | (manual — Play Console) | NOT STARTED |
+| 8 | Ranger: GameBalance constants, SoundManager keys, sprite test | worker/ranger-polish | NOT STARTED |
+| 9 | Localization scaffolding (locale folders, baseline strings) | worker/ranger-polish | NOT STARTED |
 
 ---
 
 ## Gate Status
 
-### Gate 0 - Commit and Merge
-Status: complete historically. Earlier notes referring to the `PreError`
-branch are obsolete and should not drive current release work.
+### Gate 1 — Critical Bug Fixes
+**Status: COMPLETE**
+- Bitmap bundle issue resolved
+- Ranger fallback: icon_knight + knight_sprite_sheet, accepted for launch
+- ProGuard keep rules in place
+- HEALING_POTION_STRENGTH made public for cross-class access
 
-### Gate 1 - Critical Bug Fixes
-Status: complete
+### Gate 2 — Performance
+**Status: COMPLETE**
+- Dirty-tile rendering
+- Active tile animation tracking
+- Monster bitmap cache pre-warming
 
-- `CombatDialogFragment` no longer stores bitmaps in fragment arguments
-- ProGuard keep rules and minify/resource-shrink settings are in place
-- `RANGER` is enabled with safe icon/sprite fallbacks and test coverage
+### Gate 3 — Release Build
+**Status: COMPLETE (smoke test pending)**
+- signingConfigs scaffold present, reads from ~/.gradle/gradle.properties
+- isMinifyEnabled = true, isShrinkResources = true
+- versionCode=2, versionName="1.0.0"
+- bundleRelease completed locally
 
-### Gate 2 - Performance
-Status: complete
+**Remaining:** Physical-device smoke test (new game → combat → shop → boss → save/continue)
+recorded in this document.
 
-- Dirty-tile rendering is implemented
-- Active tile animation tracking is implemented
-- Monster bitmap cache pre-warming is implemented
-
-### Gate 3 - Release Build
-Status: mostly complete
-
-- `signingConfigs` scaffold is present in `app/build.gradle.kts`
-- `isMinifyEnabled = true` and `isShrinkResources = true`
-- `versionCode = 2`, `versionName = "1.0.0"`
-- Release bundle generation has succeeded locally
-
-Remaining work:
-- Smoke-test the release build on a physical device and record the result
-
-### Gate 4 - Store Assets and Legal
-Status: started, not shippable
+### Gate 4 — Store Assets and Legal
+**Status: STARTED — not shippable**
 
 In repo:
-- Store copy draft exists
-- Privacy policy draft exists
-- Store asset naming README exists
-- Store-asset validation script exists
-- Custom launcher icons already present in all mipmap densities
+- Store copy draft (docs/STORE_COPY.md)
+- Privacy policy draft (docs/PRIVACY_POLICY.md)
+- Store asset README and validation script
+- Custom launcher icons in all mipmap densities
 
 Still required:
-- Produce final screenshots (minimum 2 phone)
-- Produce feature graphic (1024×500)
-- Replace draft privacy policy with approved final text and real contact address
-- Host privacy policy at a stable public URL
-- Add hosted URL to Play Console listing
+- 2+ phone screenshots (1080×1920 minimum)
+- Feature graphic (1024×500)
+- Final privacy policy text with real contact address (adapluguez@gmail.com)
+- Privacy policy hosted at stable public URL
+- URL entered in Play Console listing
 
-### Gate 5 - Google Play Console
-Status: not started in repo-verifiable work
+**Owner:** worker/gate4-store-assets
 
-Required:
+### Gate 5 — Google Play Console
+**Status: NOT STARTED**
 - Create Play Console app entry
-- Upload signed AAB to internal testing
-- Run test matrix on internal track
-- Complete content rating and store listing metadata
+- Upload signed AAB to internal testing track
+- Complete content rating questionnaire
+- Complete store listing metadata
+- Run internal QA pass
 
-### Gate 6 - Firebase Baseline
-Status: mostly complete in code — provisioning pending
+**Note:** This gate is manual Play Console work and cannot be done in code.
+Document results in this file under Gate 5 results section once complete.
 
-Done in code:
-- Google Services and Crashlytics plugins wired in `build.gradle.kts` (root and app module)
-- `firebase-bom`, `firebase-crashlytics`, `firebase-analytics` dependencies in `app/build.gradle.kts`
-- `FirebaseCrashlytics` initialized in `ClickDungeonApp.java` (disabled in debug, enabled in release)
-- `google-services.json` added to `.gitignore`
+### Gate 6 — Firebase Baseline
+**Status: CODE COMPLETE — provisioning + verification pending**
+
+Done:
+- Google Services + Crashlytics plugins wired (root + app build.gradle.kts)
+- firebase-bom, firebase-crashlytics, firebase-analytics in app/build.gradle.kts
+- FirebaseCrashlytics initialized in ClickDungeonApp (release-only collection)
+- TelemetryManager wraps FirebaseAnalytics with 8 typed methods
+- google-services.json in .gitignore
 
 Remaining:
-- Create Firebase project for `com.adaplu.clickdungeon` in Firebase Console
-- Download and place `google-services.json` at `app/google-services.json` (local only, never commit)
-- Run release build and verify a non-fatal event appears in Firebase console
+- Provision Firebase project for com.adaplu.clickdungeon
+- Download and place google-services.json at app/ (local only, never commit)
+- Build release APK and verify events appear in Firebase DebugView
+- Gate AudioDiagnosticsActivity behind BuildConfig.DEBUG
+- Add floor_reached and ability_used telemetry calls (spec in TELEMETRY_EVENTS.md)
+
+**Owner:** worker/gate6-firebase-telemetry
 
 ---
 
 ## Ordered Next Steps
 
-1. Finish Gate 4 cleanup work
-   - Replace patch-artifact docs with final draft docs
-   - Produce launcher icon assets
-   - Produce screenshots and feature graphic
-   - Host privacy policy URL
+1. **Lead:** Assign and create three worker branches (done — see below)
+2. **worker/gate4-store-assets** — Screenshots, feature graphic, privacy policy
+3. **worker/gate6-firebase-telemetry** — Firebase runbook, audio gate, telemetry completions
+4. **worker/ranger-polish** — Ranger balance constants, SoundManager keys, localization scaffold
+5. **Lead review** each PR before merge to main
+6. **Gate 5** — Manual Play Console steps (no code)
+7. **Release** — after Gate 5 internal QA passes
 
-2. Run release smoke test on device
-   - New game
-   - Dungeon board tile rendering
-   - Combat
-   - Shop
-   - Save and continue
-   - Boss floor
+---
 
-3. Start Gate 6 only after Gate 4 docs are clean
-   - Provision Firebase against `com.adaplu.clickdungeon`
-   - Keep `google-services.json` out of git
-   - Wire Crashlytics and validate it
+## Active Worker Branches
 
-4. Complete Gate 5
-   - Internal track upload
-   - Internal QA pass
-   - Production rollout prep
+| Branch | Owner | Task | Base |
+|--------|-------|------|------|
+| worker/gate4-store-assets | Agent 1 | Gate 4 completion | main |
+| worker/gate6-firebase-telemetry | Agent 2 | Gate 6 telemetry + audio gate | main |
+| worker/ranger-polish | Agent 3 | Ranger balance + localization scaffold | main |
 
 ---
 
 ## Release Checklist
 
-```text
+```
 Gate 1 - Critical bug fixes
 [x] Bitmap bundle issue resolved
 [x] Ranger fallback added and accepted for launch
@@ -170,10 +178,10 @@ Gate 4 - Store assets and legal
 [x] Draft privacy policy added
 [x] Store asset README added
 [x] Store asset validation script added
-[x] Custom launcher icons present in all mipmap densities
+[x] Custom launcher icons in all mipmap densities
 [ ] Screenshots produced (minimum 2 phone)
 [ ] Feature graphic produced (1024x500)
-[ ] Final privacy policy text approved and contact address added
+[ ] Final privacy policy text approved + contact address added
 [ ] Privacy policy hosted at stable public URL
 [ ] URL added to Play Console listing
 
@@ -185,11 +193,15 @@ Gate 5 - Play Console
 
 Gate 6 - Firebase baseline
 [ ] Firebase project created
-[ ] google-services.json added locally only
+[ ] google-services.json placed locally (never commit)
 [x] Google Services plugin wired
 [x] Crashlytics + Analytics dependencies wired
-[x] FirebaseCrashlytics initialized in ClickDungeonApp (release-only collection)
-[ ] Firebase event verified
+[x] FirebaseCrashlytics initialized (release-only collection)
+[x] TelemetryManager: 8 typed event methods
+[ ] AudioDiagnosticsActivity gated behind BuildConfig.DEBUG
+[ ] floor_reached telemetry call added
+[ ] ability_used telemetry call added
+[ ] Firebase event verified on release build
 ```
 
 ---
@@ -198,8 +210,25 @@ Gate 6 - Firebase baseline
 
 | Risk | Impact | Mitigation |
 |------|--------|------------|
-| Keystore loss after first upload | Critical | Back up keystore and passwords offline immediately |
-| Draft legal/store docs mistaken for final assets | High | Keep Gate 4 status explicit and require review before release |
-| Firebase provisioned against wrong package name | High | Use `com.adaplu.clickdungeon` consistently in all setup docs |
-| Default launcher icons shipped by mistake | Medium | Treat icon replacement as a hard release gate |
-| Ranger placeholder art is intentionally retained for launch | Low | Keep dedicated Ranger icon/sprite import on the post-launch content backlog |
+| Keystore loss after first upload | Critical | Back up keystore + passwords offline — alias: clickdungeon, store: clickdungeon.jks |
+| Draft legal/store docs mistaken for final | High | Gate 4 status must be COMPLETE before any Play Console submission |
+| Firebase provisioned against wrong package name | High | Use com.adaplu.clickdungeon consistently everywhere |
+| Worker pushes directly to main | High | Branch protection enforced — all changes via PR + lead review |
+| Ranger placeholder art ships permanently | Low | Dedicated icon_ranger + ranger_sprite_sheet.png on post-launch backlog |
+
+---
+
+## Gate 3 Smoke Test Results (fill in when run)
+
+```
+Date:
+Device:
+Build type: release
+New game → class selection: PASS/FAIL
+Dungeon board renders: PASS/FAIL
+Combat (at least 1 win, 1 loss): PASS/FAIL
+Boss floor (floor 5): PASS/FAIL
+Shop: PASS/FAIL
+Save and continue: PASS/FAIL
+Notes:
+```
