@@ -73,6 +73,11 @@ public final class SoundManager {
         register(context, "knight_defend", R.raw.knight_defend);
         register(context, "knight_move", R.raw.knight_move);
 
+        // Ranger sounds — mapped to Knight assets until dedicated ranger audio ships
+        register(context, "ranger_attack", R.raw.knight_attack);
+        register(context, "ranger_defend", R.raw.knight_defend);
+        register(context, "ranger_move", R.raw.knight_move);
+
         register(context, "thief_attack", R.raw.thief_dagger);
         register(context, "thief_defend", R.raw.thief_cloak);
         register(context, "thief_move", R.raw.thief_steps);

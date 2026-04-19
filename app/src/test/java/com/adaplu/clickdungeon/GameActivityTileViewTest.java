@@ -231,6 +231,15 @@ public class GameActivityTileViewTest {
     }
 
     @Test
+    public void getPlayerSpriteSheetResource_ranger_fallsBackToKnight() {
+        GameActivity activity = buildActivity();
+        ReflectionHelpers.setField(activity, "profile", new CharacterProfile("R", PlayerClass.RANGER));
+        int rangerRes = ReflectionHelpers.callInstanceMethod(activity, "getPlayerSpriteSheetResource");
+        // Ranger has no dedicated sprite sheet yet — must fall back to knight_sprite_sheet without crashing.
+        assertEquals(R.drawable.knight_sprite_sheet, rangerRes);
+    }
+
+    @Test
     public void getPlayerIconResource_mapsClassAndFallback() {
         GameActivity activity = buildActivity();
 

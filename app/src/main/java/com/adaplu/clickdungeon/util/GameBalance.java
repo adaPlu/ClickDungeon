@@ -43,6 +43,13 @@ public final class GameBalance {
     public static final int WIZARD_MP_COST_ARCANE_SHIELD = 4;
     /** Default MP cost for unrecognized Wizard abilities. */
     public static final int WIZARD_MP_COST_DEFAULT = 3;
+    // Ranger ability base damage values
+    public static final int RANGER_PIERCING_SHOT_BASE = 3;
+    public static final int RANGER_RAPID_VOLLEY_BASE = 2;
+    public static final int RANGER_NET_TRAP_DEBUFF = 1;
+    public static final int RANGER_EAGLE_EYE_BASE = 4;
+    public static final int RANGER_EAGLE_EYE_CRIT_MULT = 2;
+    public static final int RANGER_CAMOUFLAGE_HEAL = 2;
     /** Permanent HP granted by a health shrine tile. */
     public static final int BOOST_HEALTH_GAIN = 2;
     /** Permanent ATK granted by an attack shrine tile. */

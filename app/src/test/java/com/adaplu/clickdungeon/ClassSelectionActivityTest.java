@@ -94,6 +94,17 @@ public class ClassSelectionActivityTest {
     }
 
     @Test
+    public void selectingRanger_disablesRangerButton_enablesOthers() {
+        ClassSelectionActivity activity = Robolectric.buildActivity(ClassSelectionActivity.class)
+                .setup().get();
+        Button ranger = activity.findViewById(R.id.btnRanger);
+        Button knight = activity.findViewById(R.id.btnKnight);
+        ranger.performClick();
+        assertFalse(ranger.isEnabled());
+        assertTrue(knight.isEnabled());
+    }
+
+    @Test
     public void startGameLaunchesGameActivityWithExtras() {
         Context context = ApplicationProvider.getApplicationContext();
         Intent intent = new Intent(context, ClassSelectionActivity.class);

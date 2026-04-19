@@ -171,10 +171,12 @@ Gate 4 - Store assets and legal
 [x] Store asset README added
 [x] Store asset validation script added
 [x] Custom launcher icons present in all mipmap densities
-[ ] Screenshots produced (minimum 2 phone)
-[ ] Feature graphic produced (1024x500)
-[ ] Final privacy policy text approved and contact address added
-[ ] Privacy policy hosted at stable public URL
+[x] Screenshot spec document created
+[x] Feature graphic spec created
+[x] Privacy policy placeholders replaced
+[ ] Screenshots actually captured on device
+[ ] Feature graphic actually produced
+[ ] Privacy policy hosted at public URL
 [ ] URL added to Play Console listing
 
 Gate 5 - Play Console
