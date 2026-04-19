@@ -77,4 +77,34 @@ public class TelemetryManagerTest {
     public void logSaveFailed_withNullReason_doesNotThrow() {
         TelemetryManager.logSaveFailed(null, 0);
     }
+
+    @Test
+    public void logFloorReached_beforeInit_doesNotThrow() {
+        TelemetryManager.logFloorReached(3, "CAVERN", false);
+    }
+
+    @Test
+    public void logFloorReached_withBossFloor_doesNotThrow() {
+        TelemetryManager.logFloorReached(5, "CRYPT", true);
+    }
+
+    @Test
+    public void logFloorReached_withNullTerrain_doesNotThrow() {
+        TelemetryManager.logFloorReached(1, null, false);
+    }
+
+    @Test
+    public void logAbilityUsed_beforeInit_doesNotThrow() {
+        TelemetryManager.logAbilityUsed("Fireball", "WIZARD", 4);
+    }
+
+    @Test
+    public void logAbilityUsed_withNullArgs_doesNotThrow() {
+        TelemetryManager.logAbilityUsed(null, null, 0);
+    }
+
+    @Test
+    public void logAbilityUsed_withEmptyAbilityName_doesNotThrow() {
+        TelemetryManager.logAbilityUsed("", "KNIGHT", 2);
+    }
 }

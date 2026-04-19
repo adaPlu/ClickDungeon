@@ -214,6 +214,7 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
     private int playerCol = GRID_SIZE / 2;
     private AbilityTargetMode pendingAbilityTargetMode = AbilityTargetMode.NONE;
     private String pendingAbilityName = null;
+    private String lastUsedAbilityName = "";
     private boolean knightShieldActive = false;
     private int knightShieldStrength = 0;
     private int knightShieldRow = -1;
@@ -466,6 +467,10 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         // Clear buyback items when moving to next floor
         MerchantManager.clearBuybackItems(this);
         currentTerrain = selectTerrainForFloor(currentFloor);
+        TelemetryManager.logFloorReached(
+                currentFloor,
+                currentTerrain != null ? currentTerrain.name() : "UNKNOWN",
+                BossCatalog.isBossFloor(currentFloor));
         generateDungeon();
         resetPlayerPositionToCenter();
         clearKnightShield(0);
@@ -619,6 +624,7 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         }
         PlayerClass playerClass = profile.getPlayerClass();
         String abilityName = ability != null ? ability.getName() : "";
+        lastUsedAbilityName = abilityName;
         if (!tryReserveAbilityUse(playerClass, abilityName, false)) {
             return;
         }
@@ -813,6 +819,10 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         if (profile != null && profile.getPlayerClass() != null && !TextUtils.isEmpty(pendingAbilityName)) {
             profile.consumeAbilityCharge(profile.getPlayerClass(), pendingAbilityName, System.currentTimeMillis());
         }
+        TelemetryManager.logAbilityUsed(
+                lastUsedAbilityName,
+                profile != null && profile.getPlayerClass() != null ? profile.getPlayerClass().name() : "UNKNOWN",
+                currentFloor);
         pendingAbilityName = null;
         pendingAbilityTargetMode = AbilityTargetMode.NONE;
         updateAbilityButtonState();
@@ -2625,7 +2635,7 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         }
         Monster monster = tile.getMonster();
         // Piercing Shot ignores defense — apply raw damage.
-        int damage = Math.max(3, getAbilityAttackPower() + 1);
+        int damage = Math.max(GameBalance.RANGER_PIERCING_SHOT_BASE, getAbilityAttackPower() + 1);
         monster.takeDamage(damage);
         FeedbackManager.vibrate(this, FeedbackManager.VibrationPattern.LIGHT);
         if (monster.isDead()) {
@@ -2649,7 +2659,7 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         if (!playClassSound("attack")) {
             playCueWithFallback(SoundManager.KEY_EFFECT_POSITIVE, FeedbackManager.SoundEffect.POSITIVE);
         }
-        int damage = Math.max(2, getAbilityAttackPower());
+        int damage = Math.max(GameBalance.RANGER_RAPID_VOLLEY_BASE, getAbilityAttackPower());
         boolean hitAny = false;
         for (int r = row - 1; r <= row + 1; r++) {
             for (int c = col - 1; c <= col + 1; c++) {
@@ -2697,7 +2707,7 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
                 }
             }
         }
-        int heal = Math.max(3, profile != null ? profile.getMaxHP() / 4 : 3);
+        int heal = Math.max(GameBalance.RANGER_CAMOUFLAGE_HEAL, profile != null ? profile.getMaxHP() / 4 : GameBalance.RANGER_CAMOUFLAGE_HEAL);
         healPlayer(heal);
         Toast.makeText(this, R.string.camouflage_activated, Toast.LENGTH_SHORT).show();
         return true;
@@ -2722,7 +2732,7 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
         }
         Monster monster = tile.getMonster();
         // Apply a 1-point damage debuff to the monster for this encounter.
-        int debuffAmount = Math.max(1, 1 + (getAbilityAttackPower() / 2));
+        int debuffAmount = Math.max(GameBalance.RANGER_NET_TRAP_DEBUFF, GameBalance.RANGER_NET_TRAP_DEBUFF + (getAbilityAttackPower() / 2));
         monster.takeDamage(debuffAmount);
         FeedbackManager.vibrate(this, FeedbackManager.VibrationPattern.LIGHT);
         if (monster.isDead()) {
@@ -2755,8 +2765,8 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
             return true;
         }
         Monster monster = tile.getMonster();
-        int baseDamage = Math.max(4, getAbilityAttackPower() + 2);
-        int critDamage = baseDamage * 2; // Eagle Eye always crits.
+        int baseDamage = Math.max(GameBalance.RANGER_EAGLE_EYE_BASE, getAbilityAttackPower() + 2);
+        int critDamage = baseDamage * GameBalance.RANGER_EAGLE_EYE_CRIT_MULT; // Eagle Eye always crits.
         monster.takeDamage(critDamage);
         FeedbackManager.vibrate(this, FeedbackManager.VibrationPattern.MEDIUM);
         if (monster.isDead()) {
