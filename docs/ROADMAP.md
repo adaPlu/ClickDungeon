@@ -95,8 +95,8 @@ _Historical planning notes below are retained for context. The live progression 
 - [x] Add tests for boss encounter triggers and win/loss outcomes.
 
 ### Phase 6 - Class & Progression Expansion (high)
-- [ ] Add one new class or perk track scaffolding.
-- [ ] Extend class ability metadata and ability selection UI.
+- [x] Add one new class or perk track scaffolding.
+- [x] Extend class ability metadata and ability selection UI.
 - [ ] Add balance hooks in `GameBalance`.
 - [ ] Add tests for new class unlocks, ability targeting, and charge regeneration.
 
@@ -109,7 +109,7 @@ _Historical planning notes below are retained for context. The live progression 
 - [x] Core strings externalized and accessibility labels in place (color-blind mode, tile descriptions).
 - [ ] Expand animation states and add haptic/particle FX.
 - [ ] Accessibility improvements (content descriptions, tap targets, focus order).
-- [ ] Localization scaffolding (locale folders, translation workflow).
+- [ ] Localization scaffolding (locale folders, translation workflow). (es scaffold added)
 
 ### Phase 9 - Connected Services (highest)
 - [ ] Abstract save system for cloud sync (Room or cloud provider later).

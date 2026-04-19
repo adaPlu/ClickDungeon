@@ -91,6 +91,14 @@ public class GameBalanceTest {
     }
 
     @Test
+    public void rangerBalanceConstantsArePositive() {
+        assertTrue(GameBalance.RANGER_PIERCING_SHOT_BASE > 0);
+        assertTrue(GameBalance.RANGER_RAPID_VOLLEY_BASE > 0);
+        assertTrue(GameBalance.RANGER_EAGLE_EYE_CRIT_MULT >= 2);
+        assertTrue(GameBalance.RANGER_CAMOUFLAGE_HEAL > 0);
+    }
+
+    @Test
     public void xpRewardScaleAndTerrainHazardsRampWithFloor() {
         assertTrue(GameBalance.getXpRewardScale(99) > GameBalance.getXpRewardScale(1));
         assertTrue(GameBalance.getTerrainHazardChance(99, 0.15f)

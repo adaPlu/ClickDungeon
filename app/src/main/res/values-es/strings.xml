@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">ClickDungeon</string>
+    <string name="play">Jugar</string>
+    <string name="settings">Ajustes</string>
+    <string name="shop">Tienda</string>
+    <string name="start_game">Iniciar Juego</string>
+    <string name="choose_class_label">Elige tu clase</string>
+    <string name="knight_option">Caballero</string>
+    <string name="ranger_option">Explorador</string>
+    <string name="thief_option">Ladrón</string>
+    <string name="wizard_option">Mago</string>
+    <!-- TODO: translate remaining strings -->
+</resources>
