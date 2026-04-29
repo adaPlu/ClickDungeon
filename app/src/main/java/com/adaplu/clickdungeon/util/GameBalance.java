@@ -43,13 +43,71 @@ public final class GameBalance {
     public static final int WIZARD_MP_COST_ARCANE_SHIELD = 4;
     /** Default MP cost for unrecognized Wizard abilities. */
     public static final int WIZARD_MP_COST_DEFAULT = 3;
+    /** Max Manhattan distance for targeted class abilities. */
+    public static final int ABILITY_TARGET_RANGE = 3;
+    /** Radius used by class abilities that affect a 3x3 area. */
+    public static final int ABILITY_AREA_RADIUS = 1;
+    /** Charges granted by Thief Veil of Smoke. */
+    public static final int THIEF_SMOKE_VEIL_CHARGES = 1;
+    /** Minimum damage for Wizard Fireball. */
+    public static final int WIZARD_FIREBALL_BASE_DAMAGE = 4;
+    /** Wizard Fireball bonus over attack power. */
+    public static final int WIZARD_FIREBALL_ATTACK_BONUS = 2;
+    /** Minimum damage for Wizard Frost Nova. */
+    public static final int WIZARD_FROST_NOVA_BASE_DAMAGE = 2;
+    /** Minimum primary damage for Wizard Chain Lightning. */
+    public static final int WIZARD_CHAIN_LIGHTNING_BASE_DAMAGE = 3;
+    /** Wizard Chain Lightning bonus over attack power. */
+    public static final int WIZARD_CHAIN_LIGHTNING_ATTACK_BONUS = 1;
+    /** Damage drop applied to chained Wizard Chain Lightning targets. */
+    public static final int WIZARD_CHAIN_LIGHTNING_CHAIN_FALLOFF = 1;
+    /** Minimum damage for Wizard Meteor. */
+    public static final int WIZARD_METEOR_BASE_DAMAGE = 6;
+    /** Wizard Meteor attack power multiplier. */
+    public static final int WIZARD_METEOR_ATTACK_MULTIPLIER = 2;
+    /** Wizard Meteor bonus after attack scaling. */
+    public static final int WIZARD_METEOR_ATTACK_BONUS = 2;
+    /** Minimum heal for Wizard Arcane Shield. */
+    public static final int WIZARD_ARCANE_SHIELD_BASE_RESTORE = 4;
+    /** Wizard Arcane Shield bonus over defense power. */
+    public static final int WIZARD_ARCANE_SHIELD_DEFENSE_BONUS = 4;
+    /** Minimum damage for Thief Ambush. */
+    public static final int THIEF_AMBUSH_BASE_DAMAGE = 4;
+    /** Thief Ambush bonus over attack power. */
+    public static final int THIEF_AMBUSH_ATTACK_BONUS = 2;
+    /** Minimum heal for Knight Fortify. */
+    public static final int KNIGHT_FORTIFY_BASE_HEAL = 4;
+    /** Knight Fortify bonus over defense power. */
+    public static final int KNIGHT_FORTIFY_DEFENSE_BONUS = 3;
+    /** Minimum heal for Knight Guardian's Oath. */
+    public static final int KNIGHT_GUARDIANS_OATH_BASE_HEAL = 6;
+    /** Knight Guardian's Oath flat HP bonus after max HP scaling. */
+    public static final int KNIGHT_GUARDIANS_OATH_HP_BONUS = 4;
+    /** Divisor used for Knight Guardian's Oath max HP scaling. */
+    public static final int KNIGHT_GUARDIANS_OATH_HP_DIVISOR = 3;
+    /** Minimum damage for Knight Valiant Strike. */
+    public static final int KNIGHT_VALIANT_STRIKE_BASE_DAMAGE = 6;
+    /** Knight Valiant Strike attack power multiplier. */
+    public static final int KNIGHT_VALIANT_STRIKE_ATTACK_MULTIPLIER = 2;
+    /** Knight Valiant Strike bonus after attack scaling. */
+    public static final int KNIGHT_VALIANT_STRIKE_ATTACK_BONUS = 2;
+    /** Minimum shield strength for Knight shield abilities. */
+    public static final int KNIGHT_SHIELD_BASE_STRENGTH = 6;
+    /** Divisor used for Knight shield max HP scaling. */
+    public static final int KNIGHT_SHIELD_HP_DIVISOR = 3;
+    /** Knight shield defense power multiplier. */
+    public static final int KNIGHT_SHIELD_DEFENSE_MULTIPLIER = 2;
     // Ranger ability base damage values
     public static final int RANGER_PIERCING_SHOT_BASE = 3;
+    public static final int RANGER_PIERCING_SHOT_ATTACK_BONUS = 1;
     public static final int RANGER_RAPID_VOLLEY_BASE = 2;
     public static final int RANGER_NET_TRAP_DEBUFF = 1;
+    public static final int RANGER_NET_TRAP_ATTACK_DIVISOR = 2;
     public static final int RANGER_EAGLE_EYE_BASE = 4;
+    public static final int RANGER_EAGLE_EYE_ATTACK_BONUS = 2;
     public static final int RANGER_EAGLE_EYE_CRIT_MULT = 2;
     public static final int RANGER_CAMOUFLAGE_HEAL = 2;
+    public static final int RANGER_CAMOUFLAGE_MAX_HP_DIVISOR = 4;
     /** Permanent HP granted by a health shrine tile. */
     public static final int BOOST_HEALTH_GAIN = 2;
     /** Permanent ATK granted by an attack shrine tile. */
@@ -84,6 +142,112 @@ public final class GameBalance {
     private static List<ShopItem> cachedPremiumItems;
 
     private GameBalance() {
+    }
+
+    /** Calculates Wizard Fireball damage from current attack power. */
+    public static int calculateWizardFireballDamage(int attackPower) {
+        return Math.max(WIZARD_FIREBALL_BASE_DAMAGE,
+                sanitizeAbilityPower(attackPower) + WIZARD_FIREBALL_ATTACK_BONUS);
+    }
+
+    /** Calculates Wizard Frost Nova damage from current attack power. */
+    public static int calculateWizardFrostNovaDamage(int attackPower) {
+        return Math.max(WIZARD_FROST_NOVA_BASE_DAMAGE, sanitizeAbilityPower(attackPower));
+    }
+
+    /** Calculates Wizard Chain Lightning primary target damage. */
+    public static int calculateWizardChainLightningPrimaryDamage(int attackPower) {
+        return Math.max(WIZARD_CHAIN_LIGHTNING_BASE_DAMAGE,
+                sanitizeAbilityPower(attackPower) + WIZARD_CHAIN_LIGHTNING_ATTACK_BONUS);
+    }
+
+    /** Calculates Wizard Chain Lightning secondary target damage. */
+    public static int calculateWizardChainLightningChainDamage(int primaryDamage) {
+        return Math.max(1, primaryDamage - WIZARD_CHAIN_LIGHTNING_CHAIN_FALLOFF);
+    }
+
+    /** Calculates Wizard Meteor damage from current attack power. */
+    public static int calculateWizardMeteorDamage(int attackPower) {
+        return Math.max(WIZARD_METEOR_BASE_DAMAGE,
+                (sanitizeAbilityPower(attackPower) * WIZARD_METEOR_ATTACK_MULTIPLIER)
+                        + WIZARD_METEOR_ATTACK_BONUS);
+    }
+
+    /** Calculates Wizard Arcane Shield healing. */
+    public static int calculateWizardArcaneShieldRestore(int defensePower) {
+        return Math.max(WIZARD_ARCANE_SHIELD_BASE_RESTORE,
+                sanitizeAbilityPower(defensePower) + WIZARD_ARCANE_SHIELD_DEFENSE_BONUS);
+    }
+
+    /** Calculates Thief Ambush damage from current attack power. */
+    public static int calculateThiefAmbushDamage(int attackPower) {
+        return Math.max(THIEF_AMBUSH_BASE_DAMAGE,
+                sanitizeAbilityPower(attackPower) + THIEF_AMBUSH_ATTACK_BONUS);
+    }
+
+    /** Calculates Knight Fortify healing from current defense power. */
+    public static int calculateKnightFortifyHeal(int defensePower) {
+        return Math.max(KNIGHT_FORTIFY_BASE_HEAL,
+                sanitizeAbilityPower(defensePower) + KNIGHT_FORTIFY_DEFENSE_BONUS);
+    }
+
+    /** Calculates Knight Guardian's Oath healing from max HP. */
+    public static int calculateKnightGuardiansOathHeal(int maxHp) {
+        return Math.max(KNIGHT_GUARDIANS_OATH_BASE_HEAL,
+                (Math.max(0, maxHp) / KNIGHT_GUARDIANS_OATH_HP_DIVISOR)
+                        + KNIGHT_GUARDIANS_OATH_HP_BONUS);
+    }
+
+    /** Calculates Knight Valiant Strike damage from current attack power. */
+    public static int calculateKnightValiantStrikeDamage(int attackPower) {
+        return Math.max(KNIGHT_VALIANT_STRIKE_BASE_DAMAGE,
+                (sanitizeAbilityPower(attackPower) * KNIGHT_VALIANT_STRIKE_ATTACK_MULTIPLIER)
+                        + KNIGHT_VALIANT_STRIKE_ATTACK_BONUS);
+    }
+
+    /** Calculates Knight shield strength from max HP and defense power. */
+    public static int calculateKnightShieldStrength(int maxHp, int defensePower) {
+        return Math.max(KNIGHT_SHIELD_BASE_STRENGTH,
+                (Math.max(0, maxHp) / KNIGHT_SHIELD_HP_DIVISOR)
+                        + (sanitizeAbilityPower(defensePower) * KNIGHT_SHIELD_DEFENSE_MULTIPLIER));
+    }
+
+    /** Calculates Ranger Piercing Shot damage from current attack power. */
+    public static int calculateRangerPiercingShotDamage(int attackPower) {
+        return Math.max(RANGER_PIERCING_SHOT_BASE,
+                sanitizeAbilityPower(attackPower) + RANGER_PIERCING_SHOT_ATTACK_BONUS);
+    }
+
+    /** Calculates Ranger Rapid Volley damage from current attack power. */
+    public static int calculateRangerRapidVolleyDamage(int attackPower) {
+        return Math.max(RANGER_RAPID_VOLLEY_BASE, sanitizeAbilityPower(attackPower));
+    }
+
+    /** Calculates Ranger Camouflage healing from max HP. */
+    public static int calculateRangerCamouflageHeal(int maxHp) {
+        return Math.max(RANGER_CAMOUFLAGE_HEAL,
+                Math.max(0, maxHp) / RANGER_CAMOUFLAGE_MAX_HP_DIVISOR);
+    }
+
+    /** Calculates Ranger Net Trap direct damage. */
+    public static int calculateRangerNetTrapDamage(int attackPower) {
+        return Math.max(RANGER_NET_TRAP_DEBUFF,
+                RANGER_NET_TRAP_DEBUFF + (sanitizeAbilityPower(attackPower) / RANGER_NET_TRAP_ATTACK_DIVISOR));
+    }
+
+    /** Calculates Ranger Eagle Eye base damage before the guaranteed crit multiplier. */
+    public static int calculateRangerEagleEyeBaseDamage(int attackPower) {
+        return Math.max(RANGER_EAGLE_EYE_BASE,
+                sanitizeAbilityPower(attackPower) + RANGER_EAGLE_EYE_ATTACK_BONUS);
+    }
+
+    /** Calculates Ranger Eagle Eye guaranteed critical damage. */
+    public static int calculateRangerEagleEyeCritDamage(int attackPower) {
+        return calculateRangerEagleEyeBaseDamage(attackPower) * RANGER_EAGLE_EYE_CRIT_MULT;
+    }
+
+    private static int sanitizeAbilityPower(int value) {
+        return Math.max(1, value);
     }
 
     /**

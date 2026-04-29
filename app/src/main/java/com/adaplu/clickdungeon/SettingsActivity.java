@@ -37,9 +37,7 @@ public class SettingsActivity extends AppCompatActivity {
         SwitchMaterial vibrationSwitch = findViewById(R.id.switchVibration);
         SwitchMaterial colorBlindSwitch = findViewById(R.id.switchColorBlind);
         SwitchMaterial tutorialSwitch = findViewById(R.id.switchTutorialHints);
-        SwitchMaterial audioDiagnosticsSwitch = BuildConfig.DEBUG
-                ? (SwitchMaterial) findViewById(R.id.switchAudioDiagnostics)
-                : null;
+        SwitchMaterial audioDiagnosticsSwitch = findViewById(R.id.switchAudioDiagnostics);
         Spinner difficultySpinner = findViewById(R.id.spinnerDifficulty);
         TextView difficultySummaryText = findViewById(R.id.textDifficultySummary);
         TextView colorBlindSummaryText = findViewById(R.id.textColorBlindSummary);
@@ -48,9 +46,9 @@ public class SettingsActivity extends AppCompatActivity {
 
         // Hide the audio diagnostics row entirely in non-debug (release) builds.
         if (!BuildConfig.DEBUG) {
-            View rawSwitch = findViewById(R.id.switchAudioDiagnostics);
-            if (rawSwitch != null) rawSwitch.setVisibility(View.GONE);
+            if (audioDiagnosticsSwitch != null) audioDiagnosticsSwitch.setVisibility(View.GONE);
             if (audioDiagnosticsSummaryText != null) audioDiagnosticsSummaryText.setVisibility(View.GONE);
+            audioDiagnosticsSwitch = null;
         }
 
         isInitializing = true;

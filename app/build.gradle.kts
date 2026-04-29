@@ -18,9 +18,14 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
-    // Release signing is configured via ~/.gradle/gradle.properties to keep
-    // credentials out of source control. Add the following four properties
-    // to that file before running `./gradlew bundleRelease`:
+    fun signingValue(name: String): String? =
+        (project.findProperty(name) as String?)?.takeIf { it.isNotBlank() }
+            ?: project.providers.environmentVariable(name).orNull?.takeIf { it.isNotBlank() }
+
+    // Release signing is configured via user Gradle properties or CI environment
+    // secrets to keep credentials out of source control. Add the following four
+    // values to ~/.gradle/gradle.properties before running `./gradlew bundleRelease`,
+    // or expose the same names as environment variables in CI:
     //
     //   CLICKDUNGEON_STORE_FILE=/absolute/path/to/clickdungeon.jks
     //   CLICKDUNGEON_STORE_PASSWORD=<keystore password>
@@ -33,10 +38,10 @@ android {
     // Then back it up offline — losing it permanently locks the app out of Play.
     signingConfigs {
         create("release") {
-            val storeFilePath = project.findProperty("CLICKDUNGEON_STORE_FILE") as String?
-            val storePass    = project.findProperty("CLICKDUNGEON_STORE_PASSWORD") as String?
-            val keyAlias     = project.findProperty("CLICKDUNGEON_KEY_ALIAS") as String?
-            val keyPass      = project.findProperty("CLICKDUNGEON_KEY_PASSWORD") as String?
+            val storeFilePath = signingValue("CLICKDUNGEON_STORE_FILE")
+            val storePass    = signingValue("CLICKDUNGEON_STORE_PASSWORD")
+            val keyAlias     = signingValue("CLICKDUNGEON_KEY_ALIAS")
+            val keyPass      = signingValue("CLICKDUNGEON_KEY_PASSWORD")
             if (storeFilePath != null && storePass != null && keyAlias != null && keyPass != null) {
                 storeFile = File(storeFilePath)
                 storePassword = storePass

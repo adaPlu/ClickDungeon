@@ -63,8 +63,9 @@ public class SaveManagerTest {
         assertEquals(42, state.currentGold);
         assertEquals(7, state.currentPlatinum);
         assertEquals("Aeris", state.profile.getName());
-        assertEquals(1, state.profile.getAvailableStatPoints());
-        assertEquals(4, state.profile.getIntelligence());
+        assertEquals(120, state.profile.getCurrentClassXp());
+        assertEquals(0, state.profile.getAvailableStatPoints());
+        assertEquals(3, state.profile.getIntelligence());
         assertTrue(state.dungeonGrid[0][0].hasMonster());
         assertNotNull(state.metadata);
         assertEquals(-1, state.metadata.playerRow);

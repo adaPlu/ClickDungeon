@@ -127,7 +127,7 @@
                 android:id="@+id/imagePlayerHudIcon"
                 android:layout_width="54dp"
                 android:layout_height="54dp"
-                android:contentDescription="@string/combat_player_animation_desc"
+                android:contentDescription="@string/player_hud_icon_desc"
                 android:src="@drawable/icon_knight"
                 android:scaleType="centerInside"
                 android:layout_gravity="center_vertical" />
@@ -147,7 +147,8 @@
                     android:max="100"
                     android:progress="100"
                     android:progressTint="#FF4CAF50"
-                    android:background="#33000000" />
+                    android:background="#33000000"
+                    android:importantForAccessibility="no" />
 
                 <TextView
                     android:id="@+id/textHpCounter"

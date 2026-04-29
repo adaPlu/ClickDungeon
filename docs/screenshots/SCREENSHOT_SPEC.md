@@ -3,15 +3,15 @@
 ## Play Console Requirements
 
 - Minimum **2 phone screenshots** required for Google Play listing.
-- Accepted resolutions: **1080×1920 px** (16:9) or **1080×2340 px** (19.5:9).
+- Accepted resolutions: **1080x1920 px** (16:9) or **1080x2340 px** (19.5:9).
 - Format: PNG or JPEG, 24-bit color, no alpha.
-- All screenshots must be captured from a real device or an emulator running
-  the **release build** (not debug) so UI looks production-accurate.
-- Recommended device: **Pixel 6** (1080×2340, Android 12+) or any 1080p phone.
+- All screenshots must be captured from an external Android phone running the
+  **release build** (not debug) so UI looks production-accurate.
+- Recommended device: **Pixel 6** (1080x2340, Android 12+) or any 1080p phone.
 
 ---
 
-## Screenshot 1 — Main Menu (REQUIRED)
+## Screenshot 1 - Main Menu (REQUIRED)
 
 **Screen:** `MainMenuActivity`
 
@@ -20,13 +20,13 @@
 - App title "ClickDungeon" visible at top.
 - All three primary buttons visible and not obscured:
   - **Play** (new game)
-  - **Continue** (enabled — requires an existing save slot)
+  - **Continue** (enabled - requires an existing save slot)
   - **Settings**
 - No system status bar overlapping the logo if possible (use immersive mode).
 
 **Setup steps before capturing:**
 1. Launch the app with an existing save so the Continue button is active.
-2. Do not open any dialog — capture the idle main menu state.
+2. Do not open any dialog - capture the idle main menu state.
 
 **Recommended device orientation:** Portrait.
 
@@ -35,12 +35,12 @@
 
 ---
 
-## Screenshot 2 — Active Dungeon (REQUIRED)
+## Screenshot 2 - Active Dungeon (REQUIRED)
 
-**Screen:** `GameActivity` — mid-run on any floor between 2 and 10.
+**Screen:** `GameActivity` - mid-run on any floor between 2 and 10.
 
 **What to show:**
-- The full **5×5 dungeon grid** with a mix of tile states:
+- The full **5x5 dungeon grid** with a mix of tile states:
   - At least 3 revealed empty tiles.
   - At least 1 revealed enemy tile (monster icon visible).
   - At least 1 revealed gold/chest tile.
@@ -55,7 +55,7 @@
 
 **Setup steps before capturing:**
 1. Start a new game as **Knight** (most visually readable class icon).
-2. Reveal roughly half the tiles manually — mix of enemy, gold, and empty.
+2. Reveal roughly half the tiles manually - mix of enemy, gold, and empty.
 3. Keep at least 1 potion in inventory so the potion button shows a count.
 4. Capture before any enemy combat dialog opens.
 
@@ -66,7 +66,7 @@
 
 ---
 
-## Screenshot 3 — Boss Combat Dialog (OPTIONAL)
+## Screenshot 3 - Boss Combat Dialog (OPTIONAL)
 
 **Screen:** `CombatDialogFragment` shown over `GameActivity` on a boss floor.
 
@@ -78,18 +78,18 @@
 - Player HP visible in the HUD behind the dialog (partially visible is fine).
 
 **Setup steps before capturing:**
-1. Reach floor 5 or floor 10 (first boss floors in the campaign).
-2. Open combat with the boss — pause before taking any action.
+1. Reach floor 10, the first boss floor in the campaign.
+2. Open combat with the boss - pause before taking any action.
 3. Dismiss any telegraph overlay first if it obscures the health bar.
 
 **Recommended device orientation:** Portrait.
 
 **Caption suggestion for Play Console:**
-> "Face powerful bosses with telegraphed attacks — survive or flee."
+> "Face powerful bosses with telegraphed attacks - survive or flee."
 
 ---
 
-## Screenshot 4 — Class Selection (OPTIONAL)
+## Screenshot 4 - Class Selection (OPTIONAL)
 
 **Screen:** `ClassSelectionActivity`
 
@@ -104,7 +104,7 @@
 
 **Setup steps before capturing:**
 1. Start a new game to reach the class selection screen.
-2. Do not tap any class button — capture the initial selection state.
+2. Do not tap any class button - capture the initial selection state.
 
 **Recommended device orientation:** Portrait.
 
@@ -122,5 +122,32 @@
 | 3 | Boss Combat | PENDING | `screenshot_03_boss_combat.png` |
 | 4 | Class Selection | PENDING | `screenshot_04_class_selection.png` |
 
-Place captured files in this directory (`docs/screenshots/`) before uploading
-to the Google Play Console.
+Place captured files in `docs/screenshots/output/` before uploading to the
+Google Play Console. The feature graphic is already present at
+`docs/store_assets/feature_graphic.png`; the phone screenshots remain pending
+until this external-device capture is completed.
+
+## Windows / ADB Capture Workflow
+
+Use the guided PowerShell workflow from the repository root:
+
+```powershell
+.\scripts\capture_play_screenshots.ps1
+```
+
+The script checks that `adb` is available, verifies that one authorized Android
+phone is connected, creates `docs/screenshots/output/`, and captures the two
+required screenshots with the file names listed above.
+
+Useful options:
+
+```powershell
+.\scripts\capture_play_screenshots.ps1 -IncludeOptional
+.\scripts\capture_play_screenshots.ps1 -DeviceSerial SERIAL
+.\scripts\capture_play_screenshots.ps1 -Force
+.\scripts\capture_play_screenshots.ps1 -Help
+```
+
+If no live phone is connected, the script exits with instructions for installing
+Android Platform-Tools, connecting a phone, accepting USB debugging
+authorization, and confirming `adb devices` shows state `device`.

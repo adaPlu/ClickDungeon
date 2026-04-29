@@ -188,8 +188,8 @@ public class CombatDialogFragmentTest {
 
         CharSequence summary = ((android.widget.TextView) dialog.findViewById(R.id.textCombatSummary)).getText();
         String turnsText = activity.getResources().getQuantityString(R.plurals.combat_summary_turns, 1, 1);
-        String dealtText = activity.getResources().getQuantityString(R.plurals.combat_summary_damage, 3, 3);
-        String takenText = activity.getResources().getQuantityString(R.plurals.combat_summary_damage, 4, 4);
+        String dealtText = activity.getResources().getQuantityString(R.plurals.combat_summary_damage, 1, 1);
+        String takenText = activity.getResources().getQuantityString(R.plurals.combat_summary_damage, 6, 6);
         String potionsText = activity.getResources().getQuantityString(R.plurals.combat_summary_potions, 0, 0);
         assertTrue(summary.toString().contains(
                 activity.getString(R.string.combat_summary_defeat,

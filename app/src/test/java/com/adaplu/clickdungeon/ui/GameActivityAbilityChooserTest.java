@@ -91,15 +91,15 @@ public class GameActivityAbilityChooserTest {
     public void wizardAbilityBlocksWhenOutOfCharges() throws Exception {
         CharacterProfile profile = new CharacterProfile("Mage", PlayerClass.WIZARD);
         profile.addClassXp(PlayerClass.WIZARD, 200);
-        long now = System.currentTimeMillis();
-        profile.consumeAbilityCharge(PlayerClass.WIZARD, PlayerClass.ABILITY_WIZARD_FIREBALL, now);
-        profile.consumeAbilityCharge(PlayerClass.WIZARD, PlayerClass.ABILITY_WIZARD_FIREBALL, now);
-        profile.consumeAbilityCharge(PlayerClass.WIZARD, PlayerClass.ABILITY_WIZARD_FIREBALL, now);
-
         ActivityController<GameActivity> controller = launchWithProfile(profile);
         GameActivity activity = controller.setup().get();
+        CharacterProfile activityProfile = (CharacterProfile) getField(activity, "profile");
+        long now = System.currentTimeMillis();
+        activityProfile.consumeAbilityCharge(PlayerClass.WIZARD, PlayerClass.ABILITY_WIZARD_FIREBALL, now);
+        activityProfile.consumeAbilityCharge(PlayerClass.WIZARD, PlayerClass.ABILITY_WIZARD_FIREBALL, now);
+        activityProfile.consumeAbilityCharge(PlayerClass.WIZARD, PlayerClass.ABILITY_WIZARD_FIREBALL, now);
 
-        activity.findViewById(R.id.btnClassAbility).performClick();
+        invoke(activity, "showAbilityChooser");
         ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
 
         android.app.Dialog dialog = ShadowDialog.getLatestDialog();

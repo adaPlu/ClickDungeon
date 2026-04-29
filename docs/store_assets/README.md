@@ -16,6 +16,12 @@ It is a staging area for release-prep assets, not a source-art archive.
 - `feature_graphic.png`: 1024x500
 - screenshots: phone portrait captures sized for Play Console upload
 
+## Feature Graphic
+- Generated artifact: `feature_graphic.png`
+- Source process: run `./scripts/generate_feature_graphic.ps1` from the repo root.
+- Source art: committed dungeon/class art under `app/src/main/res/drawable-nodpi/`.
+- Validation: run `bash scripts/validate_store_assets.sh` from the repo root.
+
 ## Optional Density Exports
 - `mipmap-mdpi/ic_launcher.png`
 - `mipmap-hdpi/ic_launcher.png`

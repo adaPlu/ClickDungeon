@@ -125,6 +125,7 @@
 <string name="player_hud_name_class">%1$s - %2$s</string>
 <string name="player_hud_name_class_placeholder">Hero - Knight</string>
 <string name="player_name_fallback">Hero</string>
+<string name="player_hud_icon_desc">Player character portrait</string>
 <string name="victory_title">Victory!</string>
 <string name="victory_message">You revealed all safe tiles. Well done!</string>
 <string name="restart">Restart</string>

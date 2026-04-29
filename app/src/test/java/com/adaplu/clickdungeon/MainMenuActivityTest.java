@@ -21,7 +21,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
-import org.robolectric.shadows.ShadowAlertDialog;
+import org.robolectric.shadows.ShadowDialog;
 import org.robolectric.shadows.ShadowLooper;
 import com.adaplu.clickdungeon.util.SecurePreferences;
 
@@ -78,9 +78,9 @@ public class MainMenuActivityTest {
         MainMenuActivity activity = Robolectric.buildActivity(MainMenuActivity.class).setup().get();
         activity.findViewById(R.id.btnClasses).performClick();
 
-        android.app.AlertDialog picker = ShadowAlertDialog.getLatestAlertDialog();
+        android.app.Dialog picker = ShadowDialog.getLatestDialog();
         assertNotNull(picker);
-        ListView classList = picker.getListView();
+        ListView classList = findListView(picker);
         assertNotNull(classList);
         classList.performItemClick(
                 classList.getAdapter().getView(1, null, classList),
@@ -88,9 +88,9 @@ public class MainMenuActivityTest {
                 classList.getAdapter().getItemId(1));
         ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
 
-        android.app.AlertDialog detailDialog = ShadowAlertDialog.getLatestAlertDialog();
+        android.app.Dialog detailDialog = ShadowDialog.getLatestDialog();
         assertNotNull(detailDialog);
-        assertNotNull(detailDialog.getListView());
+        assertNotNull(findListView(detailDialog));
 
         String detail = activity.buildClassUpgradeDetailMessage(PlayerClass.RANGER, profile);
         assertTrue(detail.contains("Current XP: 56"));
@@ -111,9 +111,9 @@ public class MainMenuActivityTest {
 
         activity.findViewById(R.id.btnClasses).performClick();
 
-        android.app.AlertDialog picker = ShadowAlertDialog.getLatestAlertDialog();
+        android.app.Dialog picker = ShadowDialog.getLatestDialog();
         assertNotNull(picker);
-        ListView classList = picker.getListView();
+        ListView classList = findListView(picker);
         assertNotNull(classList);
         classList.performItemClick(
                 classList.getAdapter().getView(1, null, classList),
@@ -121,9 +121,9 @@ public class MainMenuActivityTest {
                 classList.getAdapter().getItemId(1));
         ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
 
-        android.app.AlertDialog detailDialog = ShadowAlertDialog.getLatestAlertDialog();
+        android.app.Dialog detailDialog = ShadowDialog.getLatestDialog();
         assertNotNull(detailDialog);
-        ListView abilityList = detailDialog.getListView();
+        ListView abilityList = findListView(detailDialog);
         assertNotNull(abilityList);
         abilityList.performItemClick(
                 abilityList.getAdapter().getView(1, null, abilityList),
@@ -134,5 +134,12 @@ public class MainMenuActivityTest {
         String json = SecurePreferences.get(context, "player_profile").getString("profile", null);
         CharacterProfile updated = new com.google.gson.Gson().fromJson(json, CharacterProfile.class);
         assertTrue(updated.isAbilityUnlocked(PlayerClass.RANGER, PlayerClass.ABILITY_RANGER_RAPID_VOLLEY));
+    }
+
+    private ListView findListView(android.app.Dialog dialog) {
+        if (dialog instanceof androidx.appcompat.app.AlertDialog) {
+            return ((androidx.appcompat.app.AlertDialog) dialog).getListView();
+        }
+        return dialog.findViewById(android.R.id.list);
     }
 }

@@ -132,8 +132,8 @@ public class GameActivityInteractionTest {
         assertEquals(TileType.EMPTY, combatTile.getType());
         assertNull(combatTile.getMonster());
         assertEquals(15, (int) ReflectionHelpers.getField(activity, "currentGold"));
-        assertEquals(2, profile.getLevel());
-        assertEquals(18, profile.getXp());
+        assertEquals(1, profile.getLevel());
+        assertEquals(50, profile.getXp());
         assertEquals(0, (int) ReflectionHelpers.getField(activity, "pendingCombatGoldReward"));
         assertEquals(0, (int) ReflectionHelpers.getField(activity, "pendingCombatXpReward"));
     }
@@ -151,7 +151,7 @@ public class GameActivityInteractionTest {
 
         assertTrue(consumed);
         assertEquals(0, InventoryManager.getItemQuantity(activity, "Healing Potion"));
-        assertEquals(profile.getMaxHP(), profile.getCurrentHP());
+        assertEquals(Math.min(profile.getMaxHP(), 10), profile.getCurrentHP());
     }
 
     @Test

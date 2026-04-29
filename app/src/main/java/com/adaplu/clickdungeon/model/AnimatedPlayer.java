@@ -3,7 +3,7 @@ package com.adaplu.clickdungeon.model;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.os.Build;
+import android.util.Log;
 
 import com.adaplu.clickdungeon.R;
 import com.adaplu.clickdungeon.util.SoundManager;
@@ -13,19 +13,23 @@ import java.util.Map;
 
 /**
  * Manages sprite-sheet animation frames for the player character.
+ * Optimized for high-resolution assets by calculating optimal sample sizes.
  */
 public class AnimatedPlayer {
+    private static final String TAG = "AnimatedPlayer";
+    
+    /** Target frame dimension for UI display (e.g., in dp). */
+    private static final int TARGET_DISPLAY_SIZE = 128;
+
     /** Map of action name to ordered frame strip. */
     private final Map<String, Bitmap[]> animations = new HashMap<>();
     /** Dimensions of a single frame within the sprite sheet. */
-    private final int frameWidth;
-    private final int frameHeight;
+    private int frameWidth;
+    private int frameHeight;
     /** Number of frames per action strip. */
-    private final int frameCount;
+    private int frameCount;
     /** Time per frame in milliseconds. */
-    private final long frameDuration; // duration in ms per frame
-    /** Timestamp used to throttle frame advancement. */
-    private long lastUpdateTime = 0;
+    private final long frameDuration;
     /** Index of the current frame within the active strip. */
     private int currentFrameIndex = 0;
     /** Timestamp when the current action started. */
@@ -44,65 +48,94 @@ public class AnimatedPlayer {
         this.frameDuration = frameDuration;
 
         int spriteSheetResId = getSpriteResourceForClass(playerClass);
-        Bitmap spriteSheet = BitmapFactory.decodeResource(context.getResources(), spriteSheetResId);
-
-        // Derive frame sizing from the sprite sheet (4 rows: idle/move/attack/defend; columns = frames)
-        int rows = 4;
-        int derivedFrameHeight = rows > 0 ? spriteSheet.getHeight() / rows : spriteSheet.getHeight();
-        if (derivedFrameHeight <= 0) {
-            derivedFrameHeight = spriteSheet.getHeight();
+        Bitmap spriteSheet = decodeSpriteSheet(context, spriteSheetResId, frameCount);
+        
+        if (spriteSheet == null) {
+            this.frameWidth = Math.max(1, frameWidth);
+            this.frameHeight = Math.max(1, frameHeight);
+            this.frameCount = Math.max(1, frameCount);
+            return;
         }
-        // Derive columns from the sheet dimensions so assets can vary by class without code changes.
-        int derivedFrameCount = Math.max(1, spriteSheet.getWidth() / Math.max(1, derivedFrameHeight));
-        int derivedFrameWidth = spriteSheet.getWidth() / derivedFrameCount;
 
-        this.frameWidth = derivedFrameWidth;
-        this.frameHeight = derivedFrameHeight;
-        this.frameCount = derivedFrameCount;
+        // Derive frame sizing from the sprite sheet (4 rows: idle/move/attack/defend).
+        int rows = 4;
+        this.frameHeight = spriteSheet.getHeight() / rows;
+        this.frameCount = spriteSheet.getWidth() / this.frameHeight;
+        this.frameWidth = spriteSheet.getWidth() / this.frameCount;
 
-        // Assuming row 0 = idle, 1 = move, 2 = attack, 3 = defend
-        // TODO: Extended states (hit, defeat, cast, loot, level_up) are spec'd in ANIMATION_ARCHITECTURE.md
         String[] actions = {"idle", "move", "attack", "defend"};
-        for (int i = 0; i < actions.length && i < rows; i++) {
-            Bitmap[] frames = new Bitmap[this.frameCount];
-            for (int j = 0; j < this.frameCount; j++) {
-                frames[j] = Bitmap.createBitmap(
-                        spriteSheet,
-                        j * this.frameWidth,
-                        i * this.frameHeight,
-                        this.frameWidth,
-                        this.frameHeight);
+        try {
+            for (int i = 0; i < actions.length; i++) {
+                Bitmap[] frames = new Bitmap[this.frameCount];
+                for (int j = 0; j < this.frameCount; j++) {
+                    frames[j] = Bitmap.createBitmap(
+                            spriteSheet,
+                            j * this.frameWidth,
+                            i * this.frameHeight,
+                            this.frameWidth,
+                            this.frameHeight);
+                }
+                animations.put(actions[i], frames);
             }
-            animations.put(actions[i], frames);
+            if (spriteSheet != null && !spriteSheet.isRecycled()) {
+                spriteSheet.recycle();
+            }
+        } catch (IllegalArgumentException | OutOfMemoryError error) {
+            Log.w(TAG, "Unable to slice player sprite sheet", error);
+            animations.clear();
         }
     }
 
-    /** Resolves the sprite sheet resource for the selected class. */
     private int getSpriteResourceForClass(PlayerClass playerClass) {
         switch (playerClass) {
             case KNIGHT: return R.drawable.knight_sprite_sheet;
-            case RANGER:
-                // Ranger sprite sheet not yet available; falls back to knight until v1.1.
-                return R.drawable.knight_sprite_sheet;
+            case RANGER: return R.drawable.knight_sprite_sheet; // Fallback
             case THIEF:  return R.drawable.thief_sprite_sheet;
             case WIZARD: return R.drawable.wizard_sprite_sheet;
             default:     return R.drawable.knight_sprite_sheet;
         }
     }
 
-    /**
-     * Returns the current animation frame, advancing based on time elapsed.
-     */
+    private Bitmap decodeSpriteSheet(Context context, int resId, int frameCount) {
+        BitmapFactory.Options bounds = new BitmapFactory.Options();
+        bounds.inJustDecodeBounds = true;
+        BitmapFactory.decodeResource(context.getResources(), resId, bounds);
+
+        int targetWidth = frameCount * TARGET_DISPLAY_SIZE;
+        int targetHeight = 4 * TARGET_DISPLAY_SIZE;
+
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inSampleSize = calculateInSampleSize(bounds, targetWidth, targetHeight);
+        options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+        
+        try {
+            return BitmapFactory.decodeResource(context.getResources(), resId, options);
+        } catch (OutOfMemoryError error) {
+            Log.w(TAG, "Unable to decode player sprite sheet - OOM", error);
+            return null;
+        }
+    }
+
+    private int calculateInSampleSize(BitmapFactory.Options options, int reqWidth, int targetHeight) {
+        final int height = options.outHeight;
+        final int width = options.outWidth;
+        int inSampleSize = 1;
+
+        if (height > targetHeight || width > reqWidth) {
+            final int halfHeight = height / 2;
+            final int halfWidth = width / 2;
+            while ((halfHeight / inSampleSize) >= targetHeight && (halfWidth / inSampleSize) >= reqWidth) {
+                inSampleSize *= 2;
+            }
+        }
+        return inSampleSize;
+    }
+
     public Bitmap getCurrentFrame() {
         long now = System.currentTimeMillis();
+        if (actionStartTime == 0) actionStartTime = now;
 
-        // Initialize action start time on first use so frames compute deterministically.
-        if (actionStartTime == 0) {
-            actionStartTime = now;
-        }
-
-        // Automatically reset to idle after short animation delay
-        if (!"idle".equals(currentAction) && now - actionStartTime > 600) {
+        if (!"idle".equals(currentAction) && now - actionStartTime > 800) {
             setAction("idle");
         }
 
@@ -110,50 +143,25 @@ public class AnimatedPlayer {
         if (frames == null || frames.length == 0) {
             frames = animations.get("idle");
         }
-        if (frames == null || frames.length == 0) {
-            return null;
-        }
+        if (frames == null || frames.length == 0) return null;
 
-        // Compute frame index from elapsed time since action start. This keeps
-        // animations in sync with the action timeline even if the view loop
-        // experiences jitter or suspended ticks.
-        long elapsed = Math.max(0, now - actionStartTime);
-        int frameIndex = (int) ((elapsed / frameDuration) % frames.length);
-        currentFrameIndex = frameIndex;
-        lastUpdateTime = now;
-
-        return frames[currentFrameIndex];
+        int frameIndex = (int) (((now - actionStartTime) / frameDuration) % frames.length);
+        return frames[frameIndex];
     }
 
-    /**
-     * Switches the active action and plays the class-specific SFX.
-     */
     public void setAction(String action) {
         if (!currentAction.equals(action)) {
             currentAction = action;
-            currentFrameIndex = 0;
-            lastUpdateTime = System.currentTimeMillis();
-            actionStartTime = lastUpdateTime;
-
-            // Use SoundManager to play the correct class-based sound
+            actionStartTime = System.currentTimeMillis();
             SoundManager.playForClass(playerClass.name(), action);
         }
     }
 
-    /** Resets animation state back to idle with frame index cleared. */
     public void reset() {
-        currentFrameIndex = 0;
-        lastUpdateTime = 0;
         currentAction = "idle";
+        actionStartTime = 0;
     }
 
-    /** Returns the active action string. */
-    public String getCurrentAction() {
-        return currentAction;
-    }
-
-    /** Returns the player class used to select sprites and SFX. */
-    public PlayerClass getPlayerClass() {
-        return playerClass;
-    }
+    public String getCurrentAction() { return currentAction; }
+    public PlayerClass getPlayerClass() { return playerClass; }
 }

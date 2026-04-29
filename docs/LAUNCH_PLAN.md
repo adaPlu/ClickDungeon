@@ -1,10 +1,10 @@
 # ClickDungeon Launch Plan
 
-**Created:** 2026-04-06  
-**Last updated:** 2026-04-18  
-**Current version:** 1.0.0 (`versionCode=2`)  
-**Current branch at audit:** `scaffold/pr-store-assets`  
-**Package name:** `com.adaplu.clickdungeon`  
+**Created:** 2026-04-06
+**Last updated:** 2026-04-26
+**Current version:** 1.0.0 (`versionCode=2`)
+**Current branch at doc sync:** `main`
+**Package name:** `com.adaplu.clickdungeon`
 **Goal:** Ship v1.0 on Google Play
 
 ---
@@ -23,22 +23,33 @@
   resource shrinking
 - Animated and static dungeon board art is committed, and board tiles now render
   with images instead of text letters
-- Unit test suite passes locally via `:app:testDebugUnitTest`
+- Current verification lane is green: debug APK builds, `:app:testDebugUnitTest`
+  passes, and `:app:lintDebug` passes
+- Backend `npm audit fix` has been applied for non-breaking advisories. Remaining
+  backend audit findings are Firebase Admin / Google Cloud transitive dependency
+  advisories that npm only resolves via a breaking forced downgrade; resolve
+  during Firebase provisioning with a tested dependency path.
+- Tracked `gradle.properties` no longer carries signing secrets or a local JDK
+  path
+- English-only is the adopted v1 locale policy; translation scaffolding is
+  post-launch work
 
 ### Verified Artifacts
-- Release AAB present under `app/build/outputs/bundle/release/`
-- Keystore-based signing scaffold present in Gradle config
+- Debug APK build completed in the latest verification pass
+- Keystore-based signing scaffold is present in Gradle config
+- Release bundle generation has succeeded in prior local verification
 
 ### Still Open Before Release
-1. Store/legal assets are only partially scaffolded; screenshots, feature
-   graphic, and hosted privacy-policy URL are still missing. Launcher icons
-   are already in place.
-2. Firebase/Crashlytics is wired in code (plugins, dependencies, and
-   initialization in ClickDungeonApp are all done). Only `google-services.json`
-   provisioning from the Firebase Console is pending.
-3. Play Console setup and internal testing are not yet complete.
-4. Localization scaffolding is still absent.
-5. Ranger gameplay is enabled, and the temporary icon/sprite-sheet fallback is
+1. Gate 4 is blocked only by external capture/hosting: final phone
+   screenshots, hosted privacy-policy URL, and Play listing URL entry. In-repo
+   copy, specs, policy text, launcher icons, feature graphic, and validation
+   script are present.
+2. Gate 5 Play Console work remains external to the repository: app entry,
+   internal track upload, content rating, store listing metadata, and internal QA.
+3. Gate 6 Firebase code wiring is in repo. External Firebase Console
+   provisioning, local-only `google-services.json`, and console verification are
+   still pending.
+4. Ranger gameplay is enabled, and the temporary icon/sprite-sheet fallback is
    an acceptable launch fallback rather than a blocker. Dedicated Ranger art is
    a post-launch polish item.
 
@@ -47,8 +58,7 @@
 ## Gate Status
 
 ### Gate 0 - Commit and Merge
-Status: complete historically. Earlier notes referring to the `PreError`
-branch are obsolete and should not drive current release work.
+Status: complete historically. No current branch-specific action is required.
 
 ### Gate 1 - Critical Bug Fixes
 Status: complete
@@ -65,65 +75,74 @@ Status: complete
 - Monster bitmap cache pre-warming is implemented
 
 ### Gate 3 - Release Build
-Status: mostly complete
+Status: verification lane green; release smoke pending
 
 - `signingConfigs` scaffold is present in `app/build.gradle.kts`
+- Signing secrets and local JDK paths are not tracked in `gradle.properties`
 - `isMinifyEnabled = true` and `isShrinkResources = true`
 - `versionCode = 2`, `versionName = "1.0.0"`
+- Debug APK build completed in the latest verification pass
+- `:app:testDebugUnitTest` and `:app:lintDebug` pass
 - Release bundle generation has succeeded locally
 
 Remaining work:
 - Smoke-test the release build on a physical device and record the result
 
 ### Gate 4 - Store Assets and Legal
-Status: started, not shippable
+Status: in-repo work complete; blocked only by external screenshots and hosting
 
 In repo:
 - Store copy draft exists
-- Privacy policy draft exists
+- Privacy policy text exists
 - Store asset naming README exists
+- Screenshot and feature graphic specs exist
+- Feature graphic exists at `docs/store_assets/feature_graphic.png`
 - Store-asset validation script exists
-- Custom launcher icons already present in all mipmap densities
+- Custom launcher icons are present in all mipmap densities
+- English-only v1 locale policy is adopted
 
-Still required:
-- Produce final screenshots (minimum 2 phone)
-- Produce feature graphic (1024×500)
-- Replace draft privacy policy with approved final text and real contact address
+Still required externally:
+- Capture final screenshots (minimum 2 phone) to `docs/screenshots/output/`
 - Host privacy policy at a stable public URL
 - Add hosted URL to Play Console listing
 
 ### Gate 5 - Google Play Console
-Status: not started in repo-verifiable work
+Status: external Console work pending; in-repo inputs are ready
 
-Required:
+In repo:
+- Package name is documented as `com.adaplu.clickdungeon`
+- Version is documented as `1.0.0` / `versionCode=2`
+- Store copy, privacy policy text, launcher icons, and asset specs are present
+- Signing scaffold exists, with secrets kept out of tracked files
+
+Still required in Play Console:
 - Create Play Console app entry
 - Upload signed AAB to internal testing
-- Run test matrix on internal track
 - Complete content rating and store listing metadata
+- Run test matrix on internal track
 
 ### Gate 6 - Firebase Baseline
-Status: mostly complete in code — provisioning pending
+Status: in-repo wiring complete; external Firebase provisioning pending
 
-Done in code:
+Done in repo:
 - Google Services and Crashlytics plugins wired in `build.gradle.kts` (root and app module)
 - `firebase-bom`, `firebase-crashlytics`, `firebase-analytics` dependencies in `app/build.gradle.kts`
 - `FirebaseCrashlytics` initialized in `ClickDungeonApp.java` (disabled in debug, enabled in release)
-- `google-services.json` added to `.gitignore`
+- `google-services.json` is ignored and should remain local-only
 
-Remaining:
-- Create Firebase project for `com.adaplu.clickdungeon` in Firebase Console
-- Download and place `google-services.json` at `app/google-services.json` (local only, never commit)
-- Run release build and verify a non-fatal event appears in Firebase console
+Still required in Firebase Console/local environment:
+- Create Firebase project for `com.adaplu.clickdungeon`
+- Download and place `google-services.json` at `app/google-services.json` locally only
+- Run release build and verify a non-fatal event appears in Firebase Console
 
 ---
 
 ## Ordered Next Steps
 
-1. Finish Gate 4 cleanup work
-   - Replace patch-artifact docs with final draft docs
-   - Produce launcher icon assets
-   - Produce screenshots and feature graphic
-   - Host privacy policy URL
+1. Finish Gate 4 external screenshots and hosting
+   - Capture screenshots on a real device with `.\scripts\capture_play_screenshots.ps1`
+   - Host the privacy policy URL
+   - Add the URL to the Play Console listing
 
 2. Run release smoke test on device
    - New game
@@ -133,15 +152,138 @@ Remaining:
    - Save and continue
    - Boss floor
 
-3. Start Gate 6 only after Gate 4 docs are clean
+3. Complete Gate 5 external Play Console setup
+   - Create app entry
+   - Upload signed AAB to internal testing
+   - Complete listing metadata/content rating
+   - Run internal QA pass
+
+4. Complete Gate 6 external Firebase setup
    - Provision Firebase against `com.adaplu.clickdungeon`
    - Keep `google-services.json` out of git
-   - Wire Crashlytics and validate it
+   - Validate Crashlytics event delivery
 
-4. Complete Gate 5
-   - Internal track upload
-   - Internal QA pass
-   - Production rollout prep
+---
+
+## Release Smoke-Test Runbook
+
+Use this runbook after the current verification lane is green. As of the latest
+doc sync on 2026-04-26, the debug APK builds, `:app:testDebugUnitTest` passes,
+and `:app:lintDebug` passes. Record the device model, Android version, build
+type, APK path, tester, date, and pass/fail notes when completing the smoke.
+
+### Preconditions
+- Use a physical Android device with USB debugging enabled and the screen
+  unlocked.
+- Confirm only one device is attached, or note the target serial:
+  `adb devices`
+- Build the APK under test before installation:
+  - Debug APK: `.\gradlew.bat :app:assembleDebug --no-daemon`
+  - Signed release APK: `.\gradlew.bat :app:assembleRelease --no-daemon`
+- Keep the automated lane green before using manual smoke as release evidence:
+  `.\gradlew.bat :app:testDebugUnitTest :app:lintDebug --no-daemon`
+
+### Install, Clear Data, and Launch
+
+Option A: run the helper from the repo root.
+
+```powershell
+# Default debug APK install
+.\scripts\release_smoke_check.ps1
+
+# Signed release APK install, if produced locally
+.\scripts\release_smoke_check.ps1 -ApkPath app\build\outputs\apk\release\app-release.apk
+
+# If multiple devices are connected
+.\scripts\release_smoke_check.ps1 -DeviceSerial <adb-serial>
+```
+
+Option B: run the ADB commands manually.
+
+```powershell
+adb devices
+adb install -r app\build\outputs\apk\debug\app-debug.apk
+adb shell pm clear com.adaplu.clickdungeon
+adb shell am start -n com.adaplu.clickdungeon/.MainMenuActivity
+```
+
+For a signed release APK, replace the install path with the exact signed APK
+path, for example:
+
+```powershell
+adb install -r app\build\outputs\apk\release\app-release.apk
+```
+
+### Manual Checklist
+
+Mark each item PASS, FAIL, or NOT RUN with notes and screenshots/logcat excerpts
+for any failure.
+
+```text
+Device/build setup
+[ ] App installs without adb errors
+[ ] App data was cleared before the run
+[ ] Main menu launches without crash or ANR
+[ ] Continue is disabled or marked unavailable on a clean install
+
+New game
+[ ] New Game opens save-slot/class flow
+[ ] A class can be selected and starts a run
+[ ] Initial HUD shows floor, HP, gold/platinum, and status area correctly
+
+Board rendering
+[ ] 5x5 board renders with image tiles, not text placeholders
+[ ] Revealing covered tiles updates only the selected tile area visibly
+[ ] Hero marker, terrain/backdrop, loot, keys, stairs, traps, and enemy tiles are legible
+[ ] Rotation is not required; portrait layout remains stable on the test device
+
+Combat
+[ ] Opening an enemy tile shows the combat dialog with player and monster art
+[ ] Attack/defend/potion/flee controls are visible and tappable as applicable
+[ ] At least one attack exchange updates HP and combat summary text correctly
+[ ] Victory path closes cleanly and awards expected loot/XP/gold feedback
+[ ] Loss or flee path is not required unless encountered naturally; record if observed
+
+Shop
+[ ] Main-menu Shop opens and renders item list, prices, stock, and currency
+[ ] Refresh/exit controls work without crash
+[ ] During a run, collect gold and verify an eligible purchase or insufficient-funds message
+[ ] If a merchant appears between floors, verify merchant launch, exit, and return to run
+
+Save and continue
+[ ] Reveal at least one tile or clear one combat, then leave the app via Home/Back
+[ ] Relaunch with `adb shell am start -n com.adaplu.clickdungeon/.MainMenuActivity`
+[ ] Continue is enabled and opens the save-slot flow
+[ ] Continuing restores class, floor, HP/currency, and revealed board state
+
+Boss-floor path
+[ ] If feasible, keep clearing floors until floor 10, the first boss floor
+[ ] Floor 10 shows boss-floor labeling or a boss enemy encounter
+[ ] Boss combat opens with boss labeling/phases if presented
+[ ] Defeating or safely exiting the boss encounter does not crash
+[ ] If not feasible in the smoke window, record NOT RUN with the highest floor reached
+```
+
+### Smoke Result Template
+
+```text
+Date:
+Tester:
+Device model / Android version:
+Build type: debug | signed release
+APK path:
+Git commit:
+Automated lane: debug APK build PASS, testDebugUnitTest PASS, lintDebug PASS
+Smoke result: PASS | FAIL | BLOCKED
+Highest floor reached:
+Boss-floor result: PASS | FAIL | NOT RUN
+Notes:
+```
+
+Screenshot evidence is captured separately with
+`.\scripts\capture_play_screenshots.ps1` and written to
+`docs/screenshots/output/`. The feature graphic is already present at
+`docs/store_assets/feature_graphic.png`.
 
 ---
 
@@ -160,22 +302,26 @@ Gate 2 - Performance
 
 Gate 3 - Release build
 [x] Signing config scaffold
+[x] Signing secrets/local JDK path absent from tracked gradle.properties
 [x] Minify + shrink resources
 [x] versionCode=2 / versionName=1.0.0
+[x] Debug APK build completed
+[x] testDebugUnitTest completed
+[x] lintDebug completed
 [x] bundleRelease completed locally
 [ ] Physical-device smoke test recorded
 
 Gate 4 - Store assets and legal
 [x] Draft store copy added
-[x] Draft privacy policy added
+[x] Privacy policy text added
 [x] Store asset README added
 [x] Store asset validation script added
 [x] Custom launcher icons present in all mipmap densities
 [x] Screenshot spec document created
 [x] Feature graphic spec created
-[x] Privacy policy placeholders replaced
-[ ] Screenshots actually captured on device
-[ ] Feature graphic actually produced
+[x] Feature graphic produced
+[x] English-only v1 locale policy adopted
+[ ] Screenshots captured on device under docs/screenshots/output/
 [ ] Privacy policy hosted at public URL
 [ ] URL added to Play Console listing
 
@@ -201,7 +347,7 @@ Gate 6 - Firebase baseline
 | Risk | Impact | Mitigation |
 |------|--------|------------|
 | Keystore loss after first upload | Critical | Back up keystore and passwords offline immediately |
-| Draft legal/store docs mistaken for final assets | High | Keep Gate 4 status explicit and require review before release |
+| Signing secrets or local paths accidentally committed | High | Keep tracked `gradle.properties` sanitized and place secrets only in local files or CI/console secret stores |
+| Store assets treated as complete before capture/hosting | High | Keep Gate 4 blocked until screenshots and hosted privacy URL are externally verified |
 | Firebase provisioned against wrong package name | High | Use `com.adaplu.clickdungeon` consistently in all setup docs |
-| Default launcher icons shipped by mistake | Medium | Treat icon replacement as a hard release gate |
 | Ranger placeholder art is intentionally retained for launch | Low | Keep dedicated Ranger icon/sprite import on the post-launch content backlog |

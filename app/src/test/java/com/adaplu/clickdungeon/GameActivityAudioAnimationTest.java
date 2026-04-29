@@ -89,7 +89,6 @@ public class GameActivityAudioAnimationTest {
         setField(activity, "playerRow", 2);
         setField(activity, "playerCol", 2);
         setField(activity, "pendingAbilityTargetMode", enumValue(GameActivity.class, "AbilityTargetMode", "WIZARD_FIREBALL"));
-        setField(activity, "nextAbilityAvailableFloor", 1);
         invoke(activity, "renderGrid");
 
         invoke(activity, "handleAbilityTargetSelection", 2, 3);

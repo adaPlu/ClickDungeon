@@ -16,8 +16,18 @@ local.properties
 
 # Release signing — never commit keystores or credential files
 *.jks
+*.jks.b64
 *.keystore
+*.keystore.b64
+*.p12
+*.pem
 keystore.properties
+play-service-account.json
+play-service-account*.json
 
 # Firebase — contains API keys, must not be committed (use CI secrets)
 google-services.json
+
+# Local build-check scratch homes
+/.android-buildcheck/
+/.gradle-home*/

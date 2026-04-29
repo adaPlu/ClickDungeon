@@ -16,6 +16,7 @@ import com.adaplu.clickdungeon.model.Monster;
 import com.adaplu.clickdungeon.model.PlayerClass;
 import com.adaplu.clickdungeon.model.Tile;
 import com.adaplu.clickdungeon.model.TileType;
+import com.adaplu.clickdungeon.util.GameBalance;
 import com.adaplu.clickdungeon.util.InventoryManager;
 import com.google.gson.Gson;
 
@@ -70,6 +71,7 @@ public class GameActivityAbilityTest {
                 PlayerClass.WIZARD,
                 PlayerClass.ABILITY_WIZARD_FIREBALL,
                 System.currentTimeMillis());
+        setField(activity, "pendingAbilityName", PlayerClass.ABILITY_WIZARD_FIREBALL);
         setField(activity, "pendingAbilityTargetMode",
                 enumValue(GameActivity.class, "AbilityTargetMode", "WIZARD_FIREBALL"));
         invoke(activity, "renderGrid");
@@ -100,8 +102,9 @@ public class GameActivityAbilityTest {
 
         assertTrue(resolved);
         assertTrue(trapTile.isRevealed());
-        assertFalse(monsterTile.hasMonster());
-        assertEquals(TileType.EMPTY, monsterTile.getType());
+        assertTrue(monsterTile.hasMonster());
+        assertEquals(4, monsterTile.getMonster().getCurrentHP());
+        assertEquals(TileType.ENEMY, monsterTile.getType());
     }
 
     @Test
@@ -119,8 +122,8 @@ public class GameActivityAbilityTest {
         boolean resolved = (boolean) invoke(activity, "executeWizardChainLightning", 2, 2);
 
         assertTrue(resolved);
-        assertEquals(6, center.getCurrentHP());
-        assertEquals(7, adjacent.getCurrentHP());
+        assertEquals(7, center.getCurrentHP());
+        assertEquals(8, adjacent.getCurrentHP());
     }
 
     @Test
@@ -136,6 +139,25 @@ public class GameActivityAbilityTest {
 
         assertTrue(resolved);
         assertEquals(TileType.EMPTY, trapTile.getType());
+    }
+
+    @Test
+    public void rangerEagleEyeUsesBalanceDamageHook() throws Exception {
+        GameActivity activity = launchWithProfile(PlayerClass.RANGER, 200);
+        CharacterProfile profile = (CharacterProfile) getField(activity, "profile");
+        Tile[][] grid = buildEmptyGrid();
+        Monster monster = new Monster("Bandit", 20, 3, 1, "B");
+        grid[2][3] = new Tile(TileType.ENEMY, monster);
+        setField(activity, "dungeonGrid", grid);
+        setField(activity, "playerRow", 2);
+        setField(activity, "playerCol", 2);
+        invoke(activity, "renderGrid");
+
+        boolean resolved = (boolean) invoke(activity, "executeRangerEagleEye", 2, 3);
+
+        assertTrue(resolved);
+        assertEquals(20 - GameBalance.calculateRangerEagleEyeCritDamage(profile.getTotalAttack()),
+                monster.getCurrentHP());
     }
 
     @Test
@@ -287,6 +309,25 @@ public class GameActivityAbilityTest {
 
         assertTrue(resolved);
         assertTrue(profile.getCurrentHP() > before);
+    }
+
+    @Test
+    public void immediateAbilityUseConsumesAChargeOnSuccessfulResolution() throws Exception {
+        GameActivity activity = launchWithProfile(PlayerClass.WIZARD, 200);
+        CharacterProfile profile = (CharacterProfile) getField(activity, "profile");
+        assertTrue(profile.unlockAbility(PlayerClass.WIZARD, PlayerClass.ABILITY_WIZARD_ARCANE_SHIELD));
+        long now = System.currentTimeMillis();
+        int startingCharges = profile.getAbilityCharges(
+                PlayerClass.WIZARD,
+                PlayerClass.ABILITY_WIZARD_ARCANE_SHIELD,
+                now);
+
+        invoke(activity, "useAbility", PlayerClass.WIZARD.findAbility(PlayerClass.ABILITY_WIZARD_ARCANE_SHIELD));
+
+        assertEquals(startingCharges - 1, profile.getAbilityCharges(
+                PlayerClass.WIZARD,
+                PlayerClass.ABILITY_WIZARD_ARCANE_SHIELD,
+                System.currentTimeMillis()));
     }
 
     @Test

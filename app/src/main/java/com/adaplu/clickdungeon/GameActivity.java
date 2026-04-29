@@ -816,8 +816,11 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
     }
 
     private void finalizeAbilityUse() {
-        if (profile != null && profile.getPlayerClass() != null && !TextUtils.isEmpty(pendingAbilityName)) {
-            profile.consumeAbilityCharge(profile.getPlayerClass(), pendingAbilityName, System.currentTimeMillis());
+        String abilityToConsume = !TextUtils.isEmpty(pendingAbilityName)
+                ? pendingAbilityName
+                : lastUsedAbilityName;
+        if (profile != null && profile.getPlayerClass() != null && !TextUtils.isEmpty(abilityToConsume)) {
+            profile.consumeAbilityCharge(profile.getPlayerClass(), abilityToConsume, System.currentTimeMillis());
         }
         TelemetryManager.logAbilityUsed(
                 lastUsedAbilityName,
@@ -1154,6 +1157,7 @@ public class GameActivity extends AppCompatActivity implements CombatDialogFragm
                 knightShieldStrength,
                 knightShieldRow,
                 knightShieldCol,
+                0,
                 currentTerrain != null ? currentTerrain.name() : null);
     }
 

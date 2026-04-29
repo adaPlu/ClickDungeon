@@ -35,4 +35,6 @@ Dungeon crawler, RPG, offline, roguelite, mobile, single-player, tile-based
 
 ## Localization Notes
 - English copy is the current source text.
+- v1 launch is English-only. Do not add localized Play Store listings until the
+  matching in-app locale resources are complete and lint-clean.
 - Localized store copy can be added later for `es`, `fr`, and `de`.

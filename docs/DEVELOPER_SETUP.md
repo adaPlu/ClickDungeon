@@ -52,10 +52,10 @@ Copy-Item local.properties.example -Destination local.properties
 ### 2. Verify JDK Configuration
 
 ```powershell
-# Open local.properties (or gradle.properties for global)
-# Ensure the JDK path is correct:
-# gradle.properties line should be:
-#   org.gradle.java.home=C:\\Program Files\\Java\\jdk-17.x.x
+# Prefer Android Studio's Gradle JDK selector or JAVA_HOME.
+# If you must pin Gradle's JDK path, put it in your user Gradle properties:
+#   $env:USERPROFILE\.gradle\gradle.properties
+# Never add machine-specific paths to the tracked project gradle.properties file.
 
 # Verify in PowerShell:
 $env:JAVA_HOME = "C:\Program Files\Java\jdk-17.x.x"
@@ -192,7 +192,7 @@ java -version
 - Command: `Remove-Item -Recurse $env:USERPROFILE\.gradle`
 
 **Error**: JDK version mismatch (Java 11 vs 20)
-- **Solution**: Update `gradle.properties` jdk path or use Android Studio's Gradle JDK selector
+- **Solution**: Set `JAVA_HOME`, update your user Gradle `org.gradle.java.home`, or use Android Studio's Gradle JDK selector
 - Check: `java -version` should show JDK 17
 
 **Error**: Android SDK not found
@@ -229,7 +229,7 @@ $env:JAVA_HOME = "C:\Program Files\Java\jdk-17.x.x"
 
 ## Support
 
-- **Build issues**: Check `app/build.gradle.kts` and `gradle.properties` for version alignment
+- **Build issues**: Check `app/build.gradle.kts`, tracked `gradle.properties`, and user Gradle properties for version alignment
 - **Test issues**: Verify JDK 17 in `JAVA_HOME` and check `robolectric.properties`
 - **IDE issues**: Invalidate Android Studio cache: **File > Invalidate Caches**
 

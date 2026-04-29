@@ -114,6 +114,40 @@ before running this step.
 
 ---
 
+## 9. Backend Functions Dependency Check
+
+The backend functions package is configured for the Firebase Node 20 runtime.
+From `backend/functions`, install and verify dependencies with:
+
+```bash
+npm install
+npm audit --omit=dev
+```
+
+Known backend audit state: `npm audit --omit=dev` currently reports 11
+production advisories through Firebase Admin / Google Cloud transitive
+dependencies: 2 low and 9 moderate. The affected packages are
+`@google-cloud/firestore`, `@google-cloud/storage`, `@tootallnate/once`,
+`firebase-admin`, `firebase-functions`, `gaxios`, `google-gax`,
+`http-proxy-agent`, `retry-request`, `teeny-request`, and `uuid`.
+
+Do not run `npm audit fix --force`. npm's forced fix path currently downgrades
+Firebase packages to breaking older majors (`firebase-admin@10.1.0` and
+`firebase-functions@4.9.0`) instead of providing a supported safe update.
+
+During Firebase provisioning, record this as a temporary accepted risk only if
+backend functions are required before Firebase publishes compatible dependency
+range updates. Before deployment, reevaluate by checking for a newer
+`firebase-admin` release with patched Firestore / Storage transitive
+dependencies, then run:
+
+```bash
+npm install --package-lock-only
+npm audit --omit=dev
+```
+
+---
+
 ## Notes
 
 - `google-services.json` contains API keys scoped to this Firebase project.

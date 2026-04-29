@@ -27,6 +27,7 @@
             android:id="@+id/switchAudio"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:minHeight="48dp"
             android:text="@string/settings_audio_label"
             android:textColor="#F6E6C6"
             android:layout_marginBottom="12dp" />
@@ -35,6 +36,7 @@
             android:id="@+id/switchVibration"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:minHeight="48dp"
             android:text="@string/settings_vibration_label"
             android:textColor="#F6E6C6"
             android:layout_marginBottom="12dp" />
@@ -43,6 +45,7 @@
             android:id="@+id/switchColorBlind"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:minHeight="48dp"
             android:text="@string/settings_color_blind_label"
             android:textColor="#F6E6C6" />
 
@@ -59,6 +62,7 @@
             android:id="@+id/switchTutorialHints"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:minHeight="48dp"
             android:text="@string/settings_tutorial_hints_label"
             android:textColor="#F6E6C6" />
 
@@ -75,6 +79,7 @@
             android:id="@+id/switchAudioDiagnostics"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:minHeight="48dp"
             android:text="@string/settings_audio_diagnostics"
             android:textColor="#F6E6C6" />
 
@@ -101,6 +106,7 @@
             android:id="@+id/spinnerDifficulty"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:minHeight="48dp"
             android:spinnerMode="dropdown"
             android:contentDescription="@string/settings_difficulty_spinner_desc" />
 

@@ -60,8 +60,8 @@ public class DungeonGeneratorTest {
         assertEquals(1, boostHealth);
         assertEquals(1, boostAttack);
         assertEquals(1, boostDefense);
-        assertEquals(6, traps);
-        assertEquals(0, empty);
+        assertEquals(5, traps);
+        assertEquals(1, empty);
         assertEquals(21, result.safeTiles);
     }
 
@@ -79,6 +79,6 @@ public class DungeonGeneratorTest {
             }
         }
 
-        assertEquals(1, empty);
+        assertEquals(2, empty);
     }
 }

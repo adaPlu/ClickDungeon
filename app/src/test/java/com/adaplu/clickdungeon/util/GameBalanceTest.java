@@ -99,6 +99,57 @@ public class GameBalanceTest {
     }
 
     @Test
+    public void abilityGeometryHooksMatchCurrentTuning() {
+        assertEquals(3, GameBalance.ABILITY_TARGET_RANGE);
+        assertEquals(1, GameBalance.ABILITY_AREA_RADIUS);
+        assertEquals(1, GameBalance.THIEF_SMOKE_VEIL_CHARGES);
+    }
+
+    @Test
+    public void wizardAbilityHooksMatchCurrentTuning() {
+        assertEquals(4, GameBalance.calculateWizardFireballDamage(1));
+        assertEquals(7, GameBalance.calculateWizardFireballDamage(5));
+        assertEquals(2, GameBalance.calculateWizardFrostNovaDamage(1));
+        assertEquals(5, GameBalance.calculateWizardFrostNovaDamage(5));
+        assertEquals(3, GameBalance.calculateWizardChainLightningPrimaryDamage(1));
+        assertEquals(6, GameBalance.calculateWizardChainLightningPrimaryDamage(5));
+        assertEquals(5, GameBalance.calculateWizardChainLightningChainDamage(6));
+        assertEquals(6, GameBalance.calculateWizardMeteorDamage(1));
+        assertEquals(12, GameBalance.calculateWizardMeteorDamage(5));
+        assertEquals(5, GameBalance.calculateWizardArcaneShieldRestore(1));
+        assertEquals(9, GameBalance.calculateWizardArcaneShieldRestore(5));
+    }
+
+    @Test
+    public void knightAndThiefAbilityHooksMatchCurrentTuning() {
+        assertEquals(4, GameBalance.calculateThiefAmbushDamage(1));
+        assertEquals(7, GameBalance.calculateThiefAmbushDamage(5));
+        assertEquals(4, GameBalance.calculateKnightFortifyHeal(1));
+        assertEquals(8, GameBalance.calculateKnightFortifyHeal(5));
+        assertEquals(6, GameBalance.calculateKnightGuardiansOathHeal(0));
+        assertEquals(8, GameBalance.calculateKnightGuardiansOathHeal(12));
+        assertEquals(6, GameBalance.calculateKnightValiantStrikeDamage(1));
+        assertEquals(12, GameBalance.calculateKnightValiantStrikeDamage(5));
+        assertEquals(6, GameBalance.calculateKnightShieldStrength(12, 1));
+        assertEquals(12, GameBalance.calculateKnightShieldStrength(18, 3));
+    }
+
+    @Test
+    public void rangerAbilityHooksMatchCurrentTuning() {
+        assertEquals(3, GameBalance.calculateRangerPiercingShotDamage(1));
+        assertEquals(6, GameBalance.calculateRangerPiercingShotDamage(5));
+        assertEquals(2, GameBalance.calculateRangerRapidVolleyDamage(1));
+        assertEquals(5, GameBalance.calculateRangerRapidVolleyDamage(5));
+        assertEquals(2, GameBalance.calculateRangerCamouflageHeal(0));
+        assertEquals(3, GameBalance.calculateRangerCamouflageHeal(14));
+        assertEquals(1, GameBalance.calculateRangerNetTrapDamage(1));
+        assertEquals(3, GameBalance.calculateRangerNetTrapDamage(5));
+        assertEquals(4, GameBalance.calculateRangerEagleEyeBaseDamage(1));
+        assertEquals(8, GameBalance.calculateRangerEagleEyeCritDamage(1));
+        assertEquals(14, GameBalance.calculateRangerEagleEyeCritDamage(5));
+    }
+
+    @Test
     public void xpRewardScaleAndTerrainHazardsRampWithFloor() {
         assertTrue(GameBalance.getXpRewardScale(99) > GameBalance.getXpRewardScale(1));
         assertTrue(GameBalance.getTerrainHazardChance(99, 0.15f)

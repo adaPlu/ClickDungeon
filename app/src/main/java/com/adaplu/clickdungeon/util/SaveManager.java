@@ -13,6 +13,8 @@ import com.adaplu.clickdungeon.model.TileType;
 import com.adaplu.clickdungeon.util.DungeonGenerator;
 import com.google.gson.Gson;
 
+import java.util.Map;
+
 /**
  * SaveManager handles the serialization and persistence of game sessions.
  * It supports multi-slot saving (4 slots), background snapshotting to avoid UI lag,
@@ -40,6 +42,7 @@ public class SaveManager {
     private static final String KEY_SHIELD_STRENGTH = "KnightShieldStrength";
     private static final String KEY_SHIELD_ROW = "KnightShieldRow";
     private static final String KEY_SHIELD_COL = "KnightShieldCol";
+    private static final String KEY_ABILITY_READY_FLOOR = "AbilityReadyFloor";
 
     /** Application context to avoid leaking Activities. */
     private final Context context;
@@ -266,6 +269,7 @@ public class SaveManager {
                     prefs.getInt(KEY_SHIELD_STRENGTH, 0),
                     prefs.getInt(KEY_SHIELD_ROW, -1),
                     prefs.getInt(KEY_SHIELD_COL, -1),
+                    prefs.getInt(KEY_ABILITY_READY_FLOOR, 1),
                     null
             );
             return new GameState(profile, floor, prefs.getInt(KEY_GOLD, 0), prefs.getInt(KEY_PLATINUM, 0), dungeonGrid, metadata);
@@ -280,7 +284,7 @@ public class SaveManager {
                 .remove(KEY_PROFILE).remove(KEY_FLOOR).remove(KEY_GRID)
                 .remove(KEY_GOLD).remove(KEY_PLATINUM).remove(KEY_PLAYER_ROW)
                 .remove(KEY_PLAYER_COL).remove(KEY_SHIELD_ACTIVE).remove(KEY_SHIELD_STRENGTH)
-                .remove(KEY_SHIELD_ROW).remove(KEY_SHIELD_COL)
+                .remove(KEY_SHIELD_ROW).remove(KEY_SHIELD_COL).remove(KEY_ABILITY_READY_FLOOR)
                 .apply();
     }
 
@@ -320,18 +324,10 @@ public class SaveManager {
 
         public RunMetadata(int playerRow, int playerCol, boolean knightShieldActive,
                            int knightShieldStrength, int knightShieldRow, int knightShieldCol,
-                           String currentTerrain) {
-            this(playerRow, playerCol, knightShieldActive, knightShieldStrength,
-                    knightShieldRow, knightShieldCol, 1, currentTerrain);
-        }
-
-        public RunMetadata(int playerRow, int playerCol, boolean knightShieldActive,
-                           int knightShieldStrength, int knightShieldRow, int knightShieldCol,
                            int nextAbilityAvailableFloor, String currentTerrain) {
             this.playerRow = playerRow; this.playerCol = playerCol; this.knightShieldActive = knightShieldActive;
             this.knightShieldStrength = knightShieldStrength; this.knightShieldRow = knightShieldRow;
-            this.knightShieldCol = knightShieldCol;
-            this.nextAbilityAvailableFloor = nextAbilityAvailableFloor;
+            this.knightShieldCol = knightShieldCol; this.nextAbilityAvailableFloor = nextAbilityAvailableFloor;
             this.currentTerrain = currentTerrain;
         }
     }
@@ -365,6 +361,7 @@ public class SaveManager {
         if (profile == null) {
             return null;
         }
+        // Use Gson for deep copy of the complex nested map/set structure.
         return gson.fromJson(gson.toJson(profile), CharacterProfile.class);
     }
 

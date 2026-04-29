@@ -31,9 +31,9 @@ transparent borders — export must be flat RGB with no alpha channel.
 ## Background
 
 - Fill the entire canvas with `#1A0A00`.
-- Overlay the **`bg_screen_dungeon`** drawable (stone dungeon texture) scaled to
-  fill the canvas at reduced opacity (~40–55%) so it reads as a texture, not a
-  photo.
+- Use the **`bg_screen_dungeon`** gradient palette as the base treatment.
+- Overlay the committed **`crypt`** dungeon art scaled/cropped to fill the canvas
+  at reduced opacity (~40-55%) so it reads as a texture, not a photo.
 - Apply a subtle vignette: radial gradient from transparent center to
   `#0D0500` at all four edges, ~15% opacity.
 
@@ -41,7 +41,7 @@ transparent borders — export must be flat RGB with no alpha channel.
 
 ## Left Side — Knight Class Icon
 
-- Asset: `icon_knight` drawable (source PNG at `app/src/main/res/drawable/`).
+- Asset: `icon_knight` drawable (source PNG at `app/src/main/res/drawable-nodpi/`).
 - Position: vertically centered, left edge starting at ~40 px from the left
   canvas edge.
 - Size: approximately **180×180 px** (scale proportionally).
@@ -69,7 +69,7 @@ transparent borders — export must be flat RGB with no alpha channel.
 
 ## Right Side — Wizard Class Icon
 
-- Asset: `icon_wizard` drawable (source PNG at `app/src/main/res/drawable/`).
+- Asset: `icon_wizard` drawable (source PNG at `app/src/main/res/drawable-nodpi/`).
 - Position: vertically centered, right edge ending at ~40 px from the right
   canvas edge.
 - Size: approximately **180×180 px** (scale proportionally, match Knight icon
@@ -111,14 +111,14 @@ transparent borders — export must be flat RGB with no alpha channel.
 
 | Step | Status |
 |------|--------|
-| Canvas created at 1024×500 px | PENDING |
-| Background filled `#1A0A00` | PENDING |
-| Stone texture overlay applied at ~50% opacity | PENDING |
-| Vignette gradient applied | PENDING |
-| Knight icon placed left, drop shadow applied | PENDING |
-| Wizard icon placed right, drop shadow applied | PENDING |
-| Logo text set in fantasy font, gold `#FFF3D5` | PENDING |
-| Tagline set below logo | PENDING |
-| Exported as PNG, no alpha | PENDING |
-| File placed at `docs/store_assets/feature_graphic.png` | PENDING |
+| Canvas created at 1024×500 px | DONE |
+| Background filled `#1A0A00` | DONE |
+| Stone texture overlay applied at ~50% opacity | DONE |
+| Vignette gradient applied | DONE |
+| Knight icon placed left, drop shadow applied | DONE |
+| Wizard icon placed right, drop shadow applied | DONE |
+| Logo text set in fantasy font, gold `#FFF3D5` | DONE |
+| Tagline set below logo | DONE |
+| Exported as PNG, no alpha | DONE |
+| File placed at `docs/store_assets/feature_graphic.png` | DONE |
 | Uploaded to Google Play Console | PENDING |

@@ -2,23 +2,25 @@
 
 Reference guide to the project documentation currently maintained in this repository.
 
-**Last Updated**: 2026-03-30  
-**Current Version**: 0.06 | **Status**: late-phase hardening and Track 2 connected-services preparation in progress
+**Last Updated**: 2026-04-26
+**Current Version**: 1.0.0 | **Status**: launch hardening; Track 1 green; Gate 4 screenshots/hosting, Play Console, and Firebase provisioning pending
 
 ---
 
-## 📚 Start Here
+## Start Here
 
 | Document | Purpose |
 |----------|---------|
 | [README.md](../README.md) | Project overview, features, and current status |
-| [DEVELOPER_SETUP.md](DEVELOPER_SETUP.md) | Local environment setup, build, and test commands |
+| [LAUNCH_PLAN.md](LAUNCH_PLAN.md) | Gate-by-gate v1 launch status and next steps |
+| [GATE4_CHECKLIST.md](GATE4_CHECKLIST.md) | Store asset/legal checklist and remaining external blockers |
 | [ROADMAP.md](ROADMAP.md) | Verified feature coverage, gaps, and dependency-ordered phases |
 | [NEXT_PHASE_PLAN.md](NEXT_PHASE_PLAN.md) | Current execution order across Track 1-4 work |
+| [DEVELOPER_SETUP.md](DEVELOPER_SETUP.md) | Local environment setup, build, and test commands |
 
 ---
 
-## 🎮 Architecture & Systems
+## Architecture & Systems
 
 | Document | Purpose |
 |----------|---------|
@@ -30,7 +32,7 @@ Reference guide to the project documentation currently maintained in this reposi
 
 ---
 
-## 🧪 Testing & QA
+## Testing & QA
 
 | Document | Purpose |
 |----------|---------|
@@ -42,7 +44,7 @@ Reference guide to the project documentation currently maintained in this reposi
 
 ---
 
-## ☁️ Connected Services & Release Prep
+## Connected Services & Release Prep
 
 | Document | Purpose |
 |----------|---------|
@@ -52,7 +54,7 @@ Reference guide to the project documentation currently maintained in this reposi
 
 ---
 
-## 📦 Archived Docs
+## Archived Docs
 
 | Document | Status | Note |
 |----------|--------|------|
@@ -60,11 +62,12 @@ Reference guide to the project documentation currently maintained in this reposi
 
 ---
 
-## 📌 Documentation Status
+## Documentation Status
 
-- This index now references only documentation files that are present in the repository.
-- The primary planning docs are `README.md`, `ROADMAP.md`, and `NEXT_PHASE_PLAN.md`.
-- Track 1 support docs (`TRACK1_TRIAGE.md`, `run_online_tests.ps1`) and Track 2 support docs (`FIREBASE_SETUP.md`, `CI_SECRETS.md`) are current as of 2026-03-30.
+- This index references only documentation files that are present in the repository.
+- The primary planning docs are `README.md`, `LAUNCH_PLAN.md`, `ROADMAP.md`, and `NEXT_PHASE_PLAN.md`.
+- Track 1 is green as of 2026-04-26: debug APK builds, `:app:testDebugUnitTest` passes, and `:app:lintDebug` passes.
+- Gate 4 is blocked only by external phone screenshots in `docs/screenshots/output/`, hosted privacy URL, and Play listing URL entry.
+- Gate 5 and Gate 6 are now primarily external Console/Firebase provisioning work; in-repo scaffolding and docs are present.
 
 When adding a new documentation file, update this index at the same time so links remain accurate.
-
