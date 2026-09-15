@@ -1,0 +1,9 @@
+{
+  "name": "ClickDungeon.Platform",
+  "rootNamespace": "ClickDungeon.Platform",
+  "references": [
+    "ClickDungeon.Application",
+    "ClickDungeon.Core",
+    "ClickDungeon.Dungeon"
+  ]
+}

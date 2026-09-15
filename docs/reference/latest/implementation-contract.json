@@ -1,0 +1,47 @@
+{
+  "authority": "primary product source of truth",
+  "precedence": [
+    "reference_art",
+    "approved_gameplay_contracts",
+    "existing_implementation"
+  ],
+  "branding": {
+    "player_facing_title": "ClickDungeon",
+    "runtime_clickdungeon2_forbidden": true,
+    "legacy_reference_branding_is_non_authoritative": true
+  },
+  "core_views": {
+    "title_main_menu": "09-title-main-menu.png",
+    "core_gameplay": "10-core-gameplay.png",
+    "gameplay_and_chest_flow": "08-gameplay-example.png",
+    "game_rules": "04-game-rules-plan.png",
+    "dungeon_tiles_a": "11-dungeon-tiles-a.png",
+    "dungeon_tiles_b": "12-dungeon-tiles-b.png",
+    "monsters_and_bosses": "02-monsters-bosses.png",
+    "items_and_equipment": "01-item-demo.png",
+    "hero_roster": "21-hero-roster.png",
+    "sir_clickington": "16-sir-clickington.png"
+  },
+  "functional_requirements": [
+    "title_navigation",
+    "continue_and_daily_reward",
+    "five_by_five_board",
+    "hud_and_action_row",
+    "tile_trap_key_door_chest_semantics",
+    "hero_identity_and_animation_states",
+    "monster_identity_and_readability",
+    "inventory_rarity_and_equipment_silhouettes",
+    "chest_found_click_key_reward_sequence"
+  ],
+  "completion_gate": [
+    "composition_matches_applicable_reference",
+    "depicted_in_scope_controls_and_states_function",
+    "approved_production_assets_replace_placeholders_when_available"
+  ],
+  "exceptions": [
+    "approved_branding_contract",
+    "deterministic_gameplay_authority",
+    "platform_safe_area_input_and_accessibility_constraints",
+    "phase_scope"
+  ]
+}

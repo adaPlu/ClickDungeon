@@ -5,6 +5,7 @@
     "ClickDungeon.Content",
     "ClickDungeon.Dungeon",
     "ClickDungeon.Combat",
-    "ClickDungeon.Progression"
+    "ClickDungeon.Progression",
+    "ClickDungeon.Save"
   ]
 }
