@@ -1,0 +1,33 @@
+name: Source Validation
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  source-contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate reconstructed source contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m pytest -q scripts/tests
+          python3 scripts/validate_foundation_contracts.py
+          python3 scripts/validate_tile_registry.py
+          python3 scripts/validate_dungeon_contracts.py
+          python3 scripts/validate_combat_contracts.py
+          python3 scripts/validate_hero_contracts.py
+          python3 scripts/validate_enemy_contracts.py
+          python3 scripts/validate_item_reward_contracts.py
+          python3 scripts/validate_gameplay_session_contracts.py
+          python3 scripts/validate_presentation_ui_contracts.py
+          python3 scripts/validate_narrative_contracts.py
+          python3 scripts/validate_production_art.py
+          python3 scripts/validate_animation_reward_contracts.py
+          python3 scripts/validate_recovery_parity.py
+          git diff --check
