@@ -7,6 +7,9 @@ ROOT = Path(__file__).resolve().parents[1]
 PLATFORM_ROOT = ROOT / "Assets/ClickDungeon/Platform"
 INPUT_ROOT = PLATFORM_ROOT / "Input"
 LIFECYCLE_ROOT = PLATFORM_ROOT / "Lifecycle"
+UI_ROOT = ROOT / "Assets/ClickDungeon/UI"
+LAYOUT_ROOT = UI_ROOT / "Layout"
+MENU_ROOT = UI_ROOT / "MainMenu"
 
 REQUIRED_FILES = [
     PLATFORM_ROOT / "ClickDungeon.Platform.asmdef",
@@ -29,6 +32,14 @@ LIFECYCLE_FILES = [
     LIFECYCLE_ROOT / "PlatformLifecycleRequest.cs",
     LIFECYCLE_ROOT / "MobileLifecycleAdapter.cs",
     LIFECYCLE_ROOT / "LifecyclePersistenceCoordinator.cs",
+]
+
+LAYOUT_FILES = [
+    LAYOUT_ROOT / "SafeAreaInsets.cs",
+    LAYOUT_ROOT / "ViewportProfile.cs",
+    LAYOUT_ROOT / "ResponsiveLayoutContract.cs",
+    LAYOUT_ROOT / "CanonicalViewportProfiles.cs",
+    MENU_ROOT / "PlatformMenuPolicy.cs",
 ]
 
 FORBIDDEN_PATTERNS = {
@@ -70,7 +81,7 @@ def require_file(path: Path) -> str:
 
 
 def main() -> None:
-    for path in REQUIRED_FILES + INPUT_FILES + LIFECYCLE_FILES:
+    for path in REQUIRED_FILES + INPUT_FILES + LIFECYCLE_FILES + LAYOUT_FILES:
         require_file(path)
 
     asmdef_text = require_file(PLATFORM_ROOT / "ClickDungeon.Platform.asmdef")
@@ -168,13 +179,39 @@ def main() -> None:
             if re.search(pattern, text):
                 fail(f"{description} found in {path.relative_to(ROOT)}")
 
+    safe_area = require_file(LAYOUT_ROOT / "SafeAreaInsets.cs")
+    for edge in ("Top", "Right", "Bottom", "Left"):
+        if edge not in safe_area:
+            fail(f"SafeAreaInsets is missing {edge}")
+
+    viewport_text = require_file(LAYOUT_ROOT / "CanonicalViewportProfiles.cs")
+    for name in ("Desktop16x9", "Desktop16x10", "Tablet4x3", "Phone19_5x9", "Phone20x9"):
+        if name not in viewport_text:
+            fail(f"canonical viewport profile is missing {name}")
+
+    layout_text = require_file(LAYOUT_ROOT / "ResponsiveLayoutContract.cs")
+    for required in ("BoardColumns = 5", "BoardRows = 5", "PreserveHud", "PreserveActionRow", "CollapseSecondaryPanels"):
+        if required not in layout_text:
+            fail(f"responsive layout contract is missing reference requirement: {required}")
+
+    menu_text = require_file(MENU_ROOT / "PlatformMenuPolicy.cs")
+    for required in ("Play", "Continue", "HeroSelect", "Inventory", "Talents", "Shop", "Settings", "SupportsDesktopQuit", "ShowQuit"):
+        if required not in menu_text:
+            fail(f"platform menu policy is missing {required}")
+    if "Application.Quit" in menu_text:
+        fail("platform menu policy must not directly terminate the application")
+
+    ui_asmdef = require_file(UI_ROOT / "ClickDungeon.UI.asmdef")
+    if "ClickDungeon.Platform" not in ui_asmdef:
+        fail("UI assembly must reference ClickDungeon.Platform for platform menu policy")
+
     for path in PLATFORM_ROOT.rglob("*.cs"):
         text = path.read_text()
         for description, pattern in FORBIDDEN_PATTERNS.items():
             if re.search(pattern, text):
                 fail(f"{description} found in {path.relative_to(ROOT)}")
 
-    print("Platform contracts: PASS (capabilities/input/lifecycle, no gameplay authority or RNG entropy)")
+    print("Platform contracts: PASS (capabilities/input/lifecycle/responsive UI, no gameplay authority or RNG entropy)")
 
 
 if __name__ == "__main__":
