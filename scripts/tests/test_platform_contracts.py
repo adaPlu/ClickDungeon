@@ -4,6 +4,7 @@ import unittest
 
 ROOT = Path(__file__).resolve().parents[2]
 PLATFORM_ROOT = ROOT / "Assets/ClickDungeon/Platform"
+INPUT_ROOT = PLATFORM_ROOT / "Input"
 
 REQUIRED_FILES = [
     PLATFORM_ROOT / "ClickDungeon.Platform.asmdef",
@@ -13,12 +14,27 @@ REQUIRED_FILES = [
     PLATFORM_ROOT / "CanonicalPlatformProfiles.cs",
 ]
 
+INPUT_FILES = [
+    INPUT_ROOT / "PlatformInputAction.cs",
+    INPUT_ROOT / "PlatformInputEvent.cs",
+    INPUT_ROOT / "IPlayerInputAdapter.cs",
+    INPUT_ROOT / "WindowsInputAdapter.cs",
+    INPUT_ROOT / "TouchInputAdapter.cs",
+]
+
 FORBIDDEN_AUTHORITY_PATTERNS = [
     r"\bGrantReward\b",
     r"\bApplyDamage\b",
     r"\bCurrentHp\s*=",
     r"\bUnityEngine\.Random\b",
     r"\bSystem\.Random\b",
+]
+
+INPUT_FORBIDDEN_PATTERNS = [
+    r"\bCombatResolver\b",
+    r"\bRewardGrantService\b",
+    r"\bApplyDamage\b",
+    r"\bCurrentHp\s*=",
 ]
 
 
@@ -83,6 +99,73 @@ class PlatformContractTests(unittest.TestCase):
                 if re.search(pattern, text):
                     violations.append(f"{path.relative_to(ROOT)}: {pattern}")
         self.assertEqual([], violations, "forbidden platform authority detected: " + "; ".join(violations))
+
+    def test_unified_input_contract_files_exist(self):
+        for path in INPUT_FILES:
+            self.assertTrue(path.is_file(), f"missing input contract: {path.relative_to(ROOT)}")
+
+    def test_input_action_vocabulary_covers_desktop_and_touch(self):
+        text = (INPUT_ROOT / "PlatformInputAction.cs").read_text()
+        for action in [
+            "MoveUp",
+            "MoveDown",
+            "MoveLeft",
+            "MoveRight",
+            "SelectCell",
+            "ActivateAction",
+            "Interact",
+            "OpenInventory",
+            "PauseOrCancel",
+        ]:
+            self.assertRegex(text, rf"\b{action}\b")
+
+    def test_input_adapter_translates_only_to_existing_player_command(self):
+        text = (INPUT_ROOT / "IPlayerInputAdapter.cs").read_text()
+        self.assertIn("PlayerCommand", text)
+        self.assertIn("TryTranslate", text)
+        self.assertNotRegex(text, r"\b(?:CombatResolver|RewardGrantService|ApplyDamage)\b")
+
+    def test_windows_adapter_maps_directional_and_action_inputs(self):
+        text = (INPUT_ROOT / "WindowsInputAdapter.cs").read_text()
+        for action in [
+            "MoveUp",
+            "MoveDown",
+            "MoveLeft",
+            "MoveRight",
+            "ActivateAction",
+            "Interact",
+            "OpenInventory",
+            "PauseOrCancel",
+        ]:
+            self.assertRegex(text, rf"\b{action}\b")
+        self.assertIn("PlayerCommand.Move", text)
+        self.assertIn("PlayerCommand.Ability", text)
+        self.assertIn("PlayerCommand.Interact", text)
+
+    def test_touch_adapter_maps_board_and_action_inputs(self):
+        text = (INPUT_ROOT / "TouchInputAdapter.cs").read_text()
+        for action in [
+            "SelectCell",
+            "ActivateAction",
+            "Interact",
+            "OpenInventory",
+            "PauseOrCancel",
+        ]:
+            self.assertRegex(text, rf"\b{action}\b")
+        self.assertIn("PlayerCommand.Move", text)
+        self.assertIn("PlayerCommand.Ability", text)
+        self.assertIn("PlayerCommand.Interact", text)
+
+    def test_input_adapters_do_not_resolve_gameplay(self):
+        violations = []
+        for path in [INPUT_ROOT / "WindowsInputAdapter.cs", INPUT_ROOT / "TouchInputAdapter.cs"]:
+            if not path.is_file():
+                continue
+            text = path.read_text()
+            for pattern in INPUT_FORBIDDEN_PATTERNS:
+                if re.search(pattern, text):
+                    violations.append(f"{path.relative_to(ROOT)}: {pattern}")
+        self.assertEqual([], violations, "input adapter acquired gameplay authority: " + "; ".join(violations))
 
 
 if __name__ == "__main__":
