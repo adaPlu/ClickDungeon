@@ -28,8 +28,8 @@ class PlatformLayoutContractTests(unittest.TestCase):
         layout = (LAYOUT / "ResponsiveLayoutContract.cs").read_text()
         for token in ["BoardColumns", "BoardRows", "PreserveHud", "PreserveActionRow", "CollapseSecondaryPanels"]:
             self.assertIn(token, layout)
-        self.assertIn("BoardColumns = 5", layout)
-        self.assertIn("BoardRows = 5", layout)
+        self.assertIn("BoardColumns { get; } = 5;", layout)
+        self.assertIn("BoardRows { get; } = 5;", layout)
 
     def test_menu_contract_preserves_navigation_and_desktop_quit_policy(self):
         text = (MENU / "PlatformMenuPolicy.cs").read_text()
