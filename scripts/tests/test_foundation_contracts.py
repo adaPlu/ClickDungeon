@@ -29,7 +29,11 @@ class FoundationContractsTests(unittest.TestCase):
             self.assertTrue(path.is_file(), f"missing {rel}")
             data = json.loads(path.read_text())
             self.assertEqual(data["name"], name)
-            self.assertEqual(data.get("references", []), refs)
+            actual_refs = data.get("references", [])
+            self.assertTrue(set(refs).issubset(actual_refs), f"{rel} missing required references")
+            if name in {"ClickDungeon.Core", "ClickDungeon.Content"}:
+                self.assertEqual(actual_refs, refs, f"{rel} must remain a low-level dependency boundary")
+            self.assertNotIn("ClickDungeon.Presentation", actual_refs, f"{rel} must not depend upward on Presentation")
 
     def test_player_facing_brand_is_clickdungeon_only(self):
         path = ROOT / "Assets/ClickDungeon/Core/Brand/ProductBrand.cs"

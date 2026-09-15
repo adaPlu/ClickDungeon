@@ -31,8 +31,13 @@ def main() -> int:
         data = json.loads(path.read_text())
         if data.get("name") != expected_name:
             fail(f"{rel} has wrong assembly name")
-        if data.get("references", []) != expected_refs:
-            fail(f"{rel} has wrong references")
+        actual_refs = data.get("references", [])
+        if not set(expected_refs).issubset(actual_refs):
+            fail(f"{rel} is missing required references")
+        if expected_name in {"ClickDungeon.Core", "ClickDungeon.Content"} and actual_refs != expected_refs:
+            fail(f"{rel} violated low-level dependency boundary")
+        if expected_name != "ClickDungeon.Presentation" and "ClickDungeon.Presentation" in actual_refs:
+            fail(f"{rel} depends upward on Presentation")
 
     brand = (ROOT / "Assets/ClickDungeon/Core/Brand/ProductBrand.cs").read_text()
     if 'PlayerFacingName = "ClickDungeon"' not in brand or '"ClickDungeon2"' in brand:

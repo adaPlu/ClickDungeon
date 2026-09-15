@@ -1,4 +1,10 @@
 {
   "name": "ClickDungeon.Application",
-  "references": ["ClickDungeon.Core", "ClickDungeon.Content"]
+  "references": [
+    "ClickDungeon.Core",
+    "ClickDungeon.Content",
+    "ClickDungeon.Dungeon",
+    "ClickDungeon.Combat",
+    "ClickDungeon.Progression"
+  ]
 }
