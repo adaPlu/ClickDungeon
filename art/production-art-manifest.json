@@ -1,0 +1,1414 @@
+{
+  "schema_version": 1,
+  "product": "ClickDungeon",
+  "generated_from": [
+    "Assets/ClickDungeon/Content/Canonical/CanonicalTiles.cs",
+    "Assets/ClickDungeon/Content/Canonical/CanonicalHeroes.cs",
+    "Assets/ClickDungeon/Content/Canonical/CanonicalEnemies.cs",
+    "Assets/ClickDungeon/Content/Canonical/CanonicalItems.cs",
+    "Assets/ClickDungeon/UI/MainMenu/MainMenuLayoutContract.cs",
+    "Assets/ClickDungeon/UI/Gameplay/GameplayHudContract.cs"
+  ],
+  "assets": [
+    {
+      "asset_id": "art.chest.closed",
+      "category": "Chest",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Chest/closed.png",
+      "source_contract": "chest presentation contract",
+      "required": true
+    },
+    {
+      "asset_id": "art.chest.complete",
+      "category": "Chest",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Chest/complete.png",
+      "source_contract": "chest presentation contract",
+      "required": true
+    },
+    {
+      "asset_id": "art.chest.interaction_begins",
+      "category": "Chest",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Chest/interaction_begins.png",
+      "source_contract": "chest presentation contract",
+      "required": true
+    },
+    {
+      "asset_id": "art.chest.item_collection",
+      "category": "Chest",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Chest/item_collection.png",
+      "source_contract": "chest presentation contract",
+      "required": true
+    },
+    {
+      "asset_id": "art.chest.item_reveal",
+      "category": "Chest",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Chest/item_reveal.png",
+      "source_contract": "chest presentation contract",
+      "required": true
+    },
+    {
+      "asset_id": "art.chest.light_reward_effect",
+      "category": "Chest",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Chest/light_reward_effect.png",
+      "source_contract": "chest presentation contract",
+      "required": true
+    },
+    {
+      "asset_id": "art.chest.opening",
+      "category": "Chest",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Chest/opening.png",
+      "source_contract": "chest presentation contract",
+      "required": true
+    },
+    {
+      "asset_id": "art.chest.reward_presentation",
+      "category": "Chest",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Chest/reward_presentation.png",
+      "source_contract": "chest presentation contract",
+      "required": true
+    },
+    {
+      "asset_id": "art.enemy.armored_boar.attack",
+      "category": "Monsters",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Monsters/armored_boar/attack.png",
+      "source_contract": "CanonicalEnemies.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.enemy.armored_boar.defeat",
+      "category": "Monsters",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Monsters/armored_boar/defeat.png",
+      "source_contract": "CanonicalEnemies.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.enemy.armored_boar.hit",
+      "category": "Monsters",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Monsters/armored_boar/hit.png",
+      "source_contract": "CanonicalEnemies.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.enemy.armored_boar.idle",
+      "category": "Monsters",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Monsters/armored_boar/idle.png",
+      "source_contract": "CanonicalEnemies.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.enemy.armored_boar.spawn",
+      "category": "Monsters",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Monsters/armored_boar/spawn.png",
+      "source_contract": "CanonicalEnemies.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.enemy.bat_swarm_leader.attack",
+      "category": "Monsters",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Monsters/bat_swarm_leader/attack.png",
+      "source_contract": "CanonicalEnemies.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.enemy.bat_swarm_leader.defeat",
+      "category": "Monsters",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Monsters/bat_swarm_leader/defeat.png",
+      "source_contract": "CanonicalEnemies.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.enemy.bat_swarm_leader.hit",
+      "category": "Monsters",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Monsters/bat_swarm_leader/hit.png",
+      "source_contract": "CanonicalEnemies.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.enemy.bat_swarm_leader.idle",
+      "category": "Monsters",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Monsters/bat_swarm_leader/idle.png",
+      "source_contract": "CanonicalEnemies.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.enemy.bat_swarm_leader.spawn",
+      "category": "Monsters",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Monsters/bat_swarm_leader/spawn.png",
+      "source_contract": "CanonicalEnemies.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.enemy.cave_spider.attack",
+      "category": "Monsters",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Monsters/cave_spider/attack.png",
+      "source_contract": "CanonicalEnemies.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.enemy.cave_spider.defeat",
+      "category": "Monsters",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Monsters/cave_spider/defeat.png",
+      "source_contract": "CanonicalEnemies.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.enemy.cave_spider.hit",
+      "category": "Monsters",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Monsters/cave_spider/hit.png",
+      "source_contract": "CanonicalEnemies.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.enemy.cave_spider.idle",
+      "category": "Monsters",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Monsters/cave_spider/idle.png",
+      "source_contract": "CanonicalEnemies.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.enemy.cave_spider.spawn",
+      "category": "Monsters",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Monsters/cave_spider/spawn.png",
+      "source_contract": "CanonicalEnemies.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.enemy.crowned_slime.attack",
+      "category": "Monsters",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Monsters/crowned_slime/attack.png",
+      "source_contract": "CanonicalEnemies.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.enemy.crowned_slime.defeat",
+      "category": "Monsters",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Monsters/crowned_slime/defeat.png",
+      "source_contract": "CanonicalEnemies.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.enemy.crowned_slime.hit",
+      "category": "Monsters",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Monsters/crowned_slime/hit.png",
+      "source_contract": "CanonicalEnemies.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.enemy.crowned_slime.idle",
+      "category": "Monsters",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Monsters/crowned_slime/idle.png",
+      "source_contract": "CanonicalEnemies.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.enemy.crowned_slime.spawn",
+      "category": "Monsters",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Monsters/crowned_slime/spawn.png",
+      "source_contract": "CanonicalEnemies.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.enemy.fire_imp.attack",
+      "category": "Monsters",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Monsters/fire_imp/attack.png",
+      "source_contract": "CanonicalEnemies.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.enemy.fire_imp.defeat",
+      "category": "Monsters",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Monsters/fire_imp/defeat.png",
+      "source_contract": "CanonicalEnemies.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.enemy.fire_imp.hit",
+      "category": "Monsters",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Monsters/fire_imp/hit.png",
+      "source_contract": "CanonicalEnemies.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.enemy.fire_imp.idle",
+      "category": "Monsters",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Monsters/fire_imp/idle.png",
+      "source_contract": "CanonicalEnemies.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.enemy.fire_imp.spawn",
+      "category": "Monsters",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Monsters/fire_imp/spawn.png",
+      "source_contract": "CanonicalEnemies.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.enemy.goblin_brute_king.attack",
+      "category": "Monsters",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Monsters/goblin_brute_king/attack.png",
+      "source_contract": "CanonicalEnemies.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.enemy.goblin_brute_king.defeat",
+      "category": "Monsters",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Monsters/goblin_brute_king/defeat.png",
+      "source_contract": "CanonicalEnemies.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.enemy.goblin_brute_king.hit",
+      "category": "Monsters",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Monsters/goblin_brute_king/hit.png",
+      "source_contract": "CanonicalEnemies.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.enemy.goblin_brute_king.idle",
+      "category": "Monsters",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Monsters/goblin_brute_king/idle.png",
+      "source_contract": "CanonicalEnemies.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.enemy.goblin_brute_king.spawn",
+      "category": "Monsters",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Monsters/goblin_brute_king/spawn.png",
+      "source_contract": "CanonicalEnemies.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.enemy.mimic_chest.attack",
+      "category": "Monsters",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Monsters/mimic_chest/attack.png",
+      "source_contract": "CanonicalEnemies.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.enemy.mimic_chest.defeat",
+      "category": "Monsters",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Monsters/mimic_chest/defeat.png",
+      "source_contract": "CanonicalEnemies.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.enemy.mimic_chest.hit",
+      "category": "Monsters",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Monsters/mimic_chest/hit.png",
+      "source_contract": "CanonicalEnemies.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.enemy.mimic_chest.idle",
+      "category": "Monsters",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Monsters/mimic_chest/idle.png",
+      "source_contract": "CanonicalEnemies.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.enemy.mimic_chest.spawn",
+      "category": "Monsters",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Monsters/mimic_chest/spawn.png",
+      "source_contract": "CanonicalEnemies.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.enemy.skeleton_warrior.attack",
+      "category": "Monsters",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Monsters/skeleton_warrior/attack.png",
+      "source_contract": "CanonicalEnemies.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.enemy.skeleton_warrior.defeat",
+      "category": "Monsters",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Monsters/skeleton_warrior/defeat.png",
+      "source_contract": "CanonicalEnemies.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.enemy.skeleton_warrior.hit",
+      "category": "Monsters",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Monsters/skeleton_warrior/hit.png",
+      "source_contract": "CanonicalEnemies.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.enemy.skeleton_warrior.idle",
+      "category": "Monsters",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Monsters/skeleton_warrior/idle.png",
+      "source_contract": "CanonicalEnemies.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.enemy.skeleton_warrior.spawn",
+      "category": "Monsters",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Monsters/skeleton_warrior/spawn.png",
+      "source_contract": "CanonicalEnemies.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.enemy.spooky_spellbook.attack",
+      "category": "Monsters",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Monsters/spooky_spellbook/attack.png",
+      "source_contract": "CanonicalEnemies.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.enemy.spooky_spellbook.defeat",
+      "category": "Monsters",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Monsters/spooky_spellbook/defeat.png",
+      "source_contract": "CanonicalEnemies.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.enemy.spooky_spellbook.hit",
+      "category": "Monsters",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Monsters/spooky_spellbook/hit.png",
+      "source_contract": "CanonicalEnemies.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.enemy.spooky_spellbook.idle",
+      "category": "Monsters",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Monsters/spooky_spellbook/idle.png",
+      "source_contract": "CanonicalEnemies.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.enemy.spooky_spellbook.spawn",
+      "category": "Monsters",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Monsters/spooky_spellbook/spawn.png",
+      "source_contract": "CanonicalEnemies.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.enemy.theater_curtain_demon.attack",
+      "category": "Bosses",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Bosses/theater_curtain_demon/attack.png",
+      "source_contract": "CanonicalEnemies.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.enemy.theater_curtain_demon.defeat",
+      "category": "Bosses",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Bosses/theater_curtain_demon/defeat.png",
+      "source_contract": "CanonicalEnemies.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.enemy.theater_curtain_demon.hit",
+      "category": "Bosses",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Bosses/theater_curtain_demon/hit.png",
+      "source_contract": "CanonicalEnemies.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.enemy.theater_curtain_demon.idle",
+      "category": "Bosses",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Bosses/theater_curtain_demon/idle.png",
+      "source_contract": "CanonicalEnemies.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.enemy.theater_curtain_demon.spawn",
+      "category": "Bosses",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Bosses/theater_curtain_demon/spawn.png",
+      "source_contract": "CanonicalEnemies.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.hero.dawnward.attack",
+      "category": "Heroes",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Heroes/dawnward/attack.png",
+      "source_contract": "CanonicalHeroes.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.hero.dawnward.defeat",
+      "category": "Heroes",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Heroes/dawnward/defeat.png",
+      "source_contract": "CanonicalHeroes.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.hero.dawnward.gameplay_chibi",
+      "category": "Heroes",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Heroes/dawnward/gameplay_chibi.png",
+      "source_contract": "CanonicalHeroes.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.hero.dawnward.hit",
+      "category": "Heroes",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Heroes/dawnward/hit.png",
+      "source_contract": "CanonicalHeroes.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.hero.dawnward.idle",
+      "category": "Heroes",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Heroes/dawnward/idle.png",
+      "source_contract": "CanonicalHeroes.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.hero.dawnward.master_pose",
+      "category": "Heroes",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Heroes/dawnward/master_pose.png",
+      "source_contract": "CanonicalHeroes.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.hero.dawnward.portrait_hud",
+      "category": "Heroes",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Heroes/dawnward/portrait_hud.png",
+      "source_contract": "CanonicalHeroes.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.hero.dawnward.roster_icon",
+      "category": "Heroes",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Heroes/dawnward/roster_icon.png",
+      "source_contract": "CanonicalHeroes.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.hero.dawnward.victory",
+      "category": "Heroes",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Heroes/dawnward/victory.png",
+      "source_contract": "CanonicalHeroes.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.hero.emberwisp.attack",
+      "category": "Heroes",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Heroes/emberwisp/attack.png",
+      "source_contract": "CanonicalHeroes.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.hero.emberwisp.defeat",
+      "category": "Heroes",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Heroes/emberwisp/defeat.png",
+      "source_contract": "CanonicalHeroes.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.hero.emberwisp.gameplay_chibi",
+      "category": "Heroes",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Heroes/emberwisp/gameplay_chibi.png",
+      "source_contract": "CanonicalHeroes.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.hero.emberwisp.hit",
+      "category": "Heroes",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Heroes/emberwisp/hit.png",
+      "source_contract": "CanonicalHeroes.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.hero.emberwisp.idle",
+      "category": "Heroes",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Heroes/emberwisp/idle.png",
+      "source_contract": "CanonicalHeroes.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.hero.emberwisp.master_pose",
+      "category": "Heroes",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Heroes/emberwisp/master_pose.png",
+      "source_contract": "CanonicalHeroes.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.hero.emberwisp.portrait_hud",
+      "category": "Heroes",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Heroes/emberwisp/portrait_hud.png",
+      "source_contract": "CanonicalHeroes.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.hero.emberwisp.roster_icon",
+      "category": "Heroes",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Heroes/emberwisp/roster_icon.png",
+      "source_contract": "CanonicalHeroes.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.hero.emberwisp.victory",
+      "category": "Heroes",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Heroes/emberwisp/victory.png",
+      "source_contract": "CanonicalHeroes.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.hero.gearspark.attack",
+      "category": "Heroes",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Heroes/gearspark/attack.png",
+      "source_contract": "CanonicalHeroes.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.hero.gearspark.defeat",
+      "category": "Heroes",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Heroes/gearspark/defeat.png",
+      "source_contract": "CanonicalHeroes.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.hero.gearspark.gameplay_chibi",
+      "category": "Heroes",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Heroes/gearspark/gameplay_chibi.png",
+      "source_contract": "CanonicalHeroes.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.hero.gearspark.hit",
+      "category": "Heroes",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Heroes/gearspark/hit.png",
+      "source_contract": "CanonicalHeroes.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.hero.gearspark.idle",
+      "category": "Heroes",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Heroes/gearspark/idle.png",
+      "source_contract": "CanonicalHeroes.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.hero.gearspark.master_pose",
+      "category": "Heroes",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Heroes/gearspark/master_pose.png",
+      "source_contract": "CanonicalHeroes.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.hero.gearspark.portrait_hud",
+      "category": "Heroes",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Heroes/gearspark/portrait_hud.png",
+      "source_contract": "CanonicalHeroes.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.hero.gearspark.roster_icon",
+      "category": "Heroes",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Heroes/gearspark/roster_icon.png",
+      "source_contract": "CanonicalHeroes.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.hero.gearspark.victory",
+      "category": "Heroes",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Heroes/gearspark/victory.png",
+      "source_contract": "CanonicalHeroes.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.hero.ironheart.attack",
+      "category": "Heroes",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Heroes/ironheart/attack.png",
+      "source_contract": "CanonicalHeroes.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.hero.ironheart.defeat",
+      "category": "Heroes",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Heroes/ironheart/defeat.png",
+      "source_contract": "CanonicalHeroes.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.hero.ironheart.gameplay_chibi",
+      "category": "Heroes",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Heroes/ironheart/gameplay_chibi.png",
+      "source_contract": "CanonicalHeroes.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.hero.ironheart.hit",
+      "category": "Heroes",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Heroes/ironheart/hit.png",
+      "source_contract": "CanonicalHeroes.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.hero.ironheart.idle",
+      "category": "Heroes",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Heroes/ironheart/idle.png",
+      "source_contract": "CanonicalHeroes.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.hero.ironheart.master_pose",
+      "category": "Heroes",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Heroes/ironheart/master_pose.png",
+      "source_contract": "CanonicalHeroes.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.hero.ironheart.portrait_hud",
+      "category": "Heroes",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Heroes/ironheart/portrait_hud.png",
+      "source_contract": "CanonicalHeroes.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.hero.ironheart.roster_icon",
+      "category": "Heroes",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Heroes/ironheart/roster_icon.png",
+      "source_contract": "CanonicalHeroes.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.hero.ironheart.victory",
+      "category": "Heroes",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Heroes/ironheart/victory.png",
+      "source_contract": "CanonicalHeroes.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.hero.lightbringer.attack",
+      "category": "Heroes",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Heroes/lightbringer/attack.png",
+      "source_contract": "CanonicalHeroes.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.hero.lightbringer.defeat",
+      "category": "Heroes",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Heroes/lightbringer/defeat.png",
+      "source_contract": "CanonicalHeroes.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.hero.lightbringer.gameplay_chibi",
+      "category": "Heroes",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Heroes/lightbringer/gameplay_chibi.png",
+      "source_contract": "CanonicalHeroes.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.hero.lightbringer.hit",
+      "category": "Heroes",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Heroes/lightbringer/hit.png",
+      "source_contract": "CanonicalHeroes.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.hero.lightbringer.idle",
+      "category": "Heroes",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Heroes/lightbringer/idle.png",
+      "source_contract": "CanonicalHeroes.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.hero.lightbringer.master_pose",
+      "category": "Heroes",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Heroes/lightbringer/master_pose.png",
+      "source_contract": "CanonicalHeroes.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.hero.lightbringer.portrait_hud",
+      "category": "Heroes",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Heroes/lightbringer/portrait_hud.png",
+      "source_contract": "CanonicalHeroes.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.hero.lightbringer.roster_icon",
+      "category": "Heroes",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Heroes/lightbringer/roster_icon.png",
+      "source_contract": "CanonicalHeroes.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.hero.lightbringer.victory",
+      "category": "Heroes",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Heroes/lightbringer/victory.png",
+      "source_contract": "CanonicalHeroes.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.hero.rageclaw.attack",
+      "category": "Heroes",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Heroes/rageclaw/attack.png",
+      "source_contract": "CanonicalHeroes.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.hero.rageclaw.defeat",
+      "category": "Heroes",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Heroes/rageclaw/defeat.png",
+      "source_contract": "CanonicalHeroes.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.hero.rageclaw.gameplay_chibi",
+      "category": "Heroes",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Heroes/rageclaw/gameplay_chibi.png",
+      "source_contract": "CanonicalHeroes.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.hero.rageclaw.hit",
+      "category": "Heroes",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Heroes/rageclaw/hit.png",
+      "source_contract": "CanonicalHeroes.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.hero.rageclaw.idle",
+      "category": "Heroes",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Heroes/rageclaw/idle.png",
+      "source_contract": "CanonicalHeroes.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.hero.rageclaw.master_pose",
+      "category": "Heroes",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Heroes/rageclaw/master_pose.png",
+      "source_contract": "CanonicalHeroes.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.hero.rageclaw.portrait_hud",
+      "category": "Heroes",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Heroes/rageclaw/portrait_hud.png",
+      "source_contract": "CanonicalHeroes.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.hero.rageclaw.roster_icon",
+      "category": "Heroes",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Heroes/rageclaw/roster_icon.png",
+      "source_contract": "CanonicalHeroes.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.hero.rageclaw.victory",
+      "category": "Heroes",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Heroes/rageclaw/victory.png",
+      "source_contract": "CanonicalHeroes.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.hero.shadowcut.attack",
+      "category": "Heroes",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Heroes/shadowcut/attack.png",
+      "source_contract": "CanonicalHeroes.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.hero.shadowcut.defeat",
+      "category": "Heroes",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Heroes/shadowcut/defeat.png",
+      "source_contract": "CanonicalHeroes.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.hero.shadowcut.gameplay_chibi",
+      "category": "Heroes",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Heroes/shadowcut/gameplay_chibi.png",
+      "source_contract": "CanonicalHeroes.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.hero.shadowcut.hit",
+      "category": "Heroes",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Heroes/shadowcut/hit.png",
+      "source_contract": "CanonicalHeroes.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.hero.shadowcut.idle",
+      "category": "Heroes",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Heroes/shadowcut/idle.png",
+      "source_contract": "CanonicalHeroes.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.hero.shadowcut.master_pose",
+      "category": "Heroes",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Heroes/shadowcut/master_pose.png",
+      "source_contract": "CanonicalHeroes.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.hero.shadowcut.portrait_hud",
+      "category": "Heroes",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Heroes/shadowcut/portrait_hud.png",
+      "source_contract": "CanonicalHeroes.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.hero.shadowcut.roster_icon",
+      "category": "Heroes",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Heroes/shadowcut/roster_icon.png",
+      "source_contract": "CanonicalHeroes.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.hero.shadowcut.victory",
+      "category": "Heroes",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Heroes/shadowcut/victory.png",
+      "source_contract": "CanonicalHeroes.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.hero.sir_clickington.attack",
+      "category": "Heroes",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Heroes/sir_clickington/attack.png",
+      "source_contract": "CanonicalHeroes.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.hero.sir_clickington.defeat",
+      "category": "Heroes",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Heroes/sir_clickington/defeat.png",
+      "source_contract": "CanonicalHeroes.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.hero.sir_clickington.gameplay_chibi",
+      "category": "Heroes",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Heroes/sir_clickington/gameplay_chibi.png",
+      "source_contract": "CanonicalHeroes.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.hero.sir_clickington.hit",
+      "category": "Heroes",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Heroes/sir_clickington/hit.png",
+      "source_contract": "CanonicalHeroes.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.hero.sir_clickington.idle",
+      "category": "Heroes",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Heroes/sir_clickington/idle.png",
+      "source_contract": "CanonicalHeroes.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.hero.sir_clickington.master_pose",
+      "category": "Heroes",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Heroes/sir_clickington/master_pose.png",
+      "source_contract": "CanonicalHeroes.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.hero.sir_clickington.portrait_hud",
+      "category": "Heroes",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Heroes/sir_clickington/portrait_hud.png",
+      "source_contract": "CanonicalHeroes.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.hero.sir_clickington.roster_icon",
+      "category": "Heroes",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Heroes/sir_clickington/roster_icon.png",
+      "source_contract": "CanonicalHeroes.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.hero.sir_clickington.victory",
+      "category": "Heroes",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Heroes/sir_clickington/victory.png",
+      "source_contract": "CanonicalHeroes.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.hero.windsong.attack",
+      "category": "Heroes",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Heroes/windsong/attack.png",
+      "source_contract": "CanonicalHeroes.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.hero.windsong.defeat",
+      "category": "Heroes",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Heroes/windsong/defeat.png",
+      "source_contract": "CanonicalHeroes.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.hero.windsong.gameplay_chibi",
+      "category": "Heroes",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Heroes/windsong/gameplay_chibi.png",
+      "source_contract": "CanonicalHeroes.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.hero.windsong.hit",
+      "category": "Heroes",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Heroes/windsong/hit.png",
+      "source_contract": "CanonicalHeroes.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.hero.windsong.idle",
+      "category": "Heroes",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Heroes/windsong/idle.png",
+      "source_contract": "CanonicalHeroes.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.hero.windsong.master_pose",
+      "category": "Heroes",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Heroes/windsong/master_pose.png",
+      "source_contract": "CanonicalHeroes.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.hero.windsong.portrait_hud",
+      "category": "Heroes",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Heroes/windsong/portrait_hud.png",
+      "source_contract": "CanonicalHeroes.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.hero.windsong.roster_icon",
+      "category": "Heroes",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Heroes/windsong/roster_icon.png",
+      "source_contract": "CanonicalHeroes.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.hero.windsong.victory",
+      "category": "Heroes",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Heroes/windsong/victory.png",
+      "source_contract": "CanonicalHeroes.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.item.accessory.amulet_ruby.icon",
+      "category": "Items",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Items/amulet_ruby.png",
+      "source_contract": "CanonicalItems.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.item.accessory.ring_sapphire.icon",
+      "category": "Items",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Items/ring_sapphire.png",
+      "source_contract": "CanonicalItems.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.item.armor.boots_of_swiftness.icon",
+      "category": "Items",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Items/boots_of_swiftness.png",
+      "source_contract": "CanonicalItems.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.item.armor.crown_of_kings.icon",
+      "category": "Items",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Items/crown_of_kings.png",
+      "source_contract": "CanonicalItems.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.item.armor.void_plate.icon",
+      "category": "Items",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Items/void_plate.png",
+      "source_contract": "CanonicalItems.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.item.consumable.arcane_scroll.icon",
+      "category": "Items",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Items/scroll_arcane.png",
+      "source_contract": "CanonicalItems.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.item.consumable.bomb.icon",
+      "category": "Items",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Items/bomb.png",
+      "source_contract": "CanonicalItems.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.item.consumable.health_potion.icon",
+      "category": "Items",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Items/potion_health.png",
+      "source_contract": "CanonicalItems.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.item.consumable.ration.icon",
+      "category": "Items",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Items/food_ration.png",
+      "source_contract": "CanonicalItems.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.item.currency.gem.icon",
+      "category": "Items",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Items/currency_gem.png",
+      "source_contract": "CanonicalItems.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.item.currency.gold.icon",
+      "category": "Items",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Items/currency_gold.png",
+      "source_contract": "CanonicalItems.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.item.key.dungeon.icon",
+      "category": "Items",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Items/key_dungeon.png",
+      "source_contract": "CanonicalItems.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.item.key.royal.icon",
+      "category": "Items",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Items/key_royal.png",
+      "source_contract": "CanonicalItems.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.item.offhand.aegis_of_dawn.icon",
+      "category": "Items",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Items/aegis_of_dawn.png",
+      "source_contract": "CanonicalItems.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.item.quest.ancient_seal.icon",
+      "category": "Items",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Items/quest_ancient_seal.png",
+      "source_contract": "CanonicalItems.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.item.quest.chest_token.icon",
+      "category": "Items",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Items/chest_token.png",
+      "source_contract": "CanonicalItems.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.item.relic.sun_emblem.icon",
+      "category": "Items",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Items/relic_sun_emblem.png",
+      "source_contract": "CanonicalItems.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.item.utility.rope.icon",
+      "category": "Items",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Items/utility_rope.png",
+      "source_contract": "CanonicalItems.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.item.weapon.celestial_staff.icon",
+      "category": "Items",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Items/celestial_staff.png",
+      "source_contract": "CanonicalItems.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.item.weapon.dragonslayer.icon",
+      "category": "Items",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Items/dragonslayer.png",
+      "source_contract": "CanonicalItems.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.tile.chest_closed",
+      "category": "Tiles",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Tiles/tile_chest_closed.png",
+      "source_contract": "CanonicalTiles.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.tile.chest_open",
+      "category": "Tiles",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Tiles/tile_chest_open.png",
+      "source_contract": "CanonicalTiles.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.tile.door_locked",
+      "category": "Tiles",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Tiles/tile_door_locked.png",
+      "source_contract": "CanonicalTiles.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.tile.door_open",
+      "category": "Tiles",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Tiles/tile_door_open.png",
+      "source_contract": "CanonicalTiles.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.tile.floor_cracked",
+      "category": "Tiles",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Tiles/tile_floor_cracked.png",
+      "source_contract": "CanonicalTiles.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.tile.floor_moss",
+      "category": "Tiles",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Tiles/tile_floor_moss.png",
+      "source_contract": "CanonicalTiles.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.tile.floor_stone",
+      "category": "Tiles",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Tiles/tile_floor_stone.png",
+      "source_contract": "CanonicalTiles.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.tile.fountain_heal",
+      "category": "Tiles",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Tiles/tile_fountain_heal.png",
+      "source_contract": "CanonicalTiles.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.tile.key",
+      "category": "Tiles",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Tiles/tile_key.png",
+      "source_contract": "CanonicalTiles.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.tile.lava",
+      "category": "Tiles",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Tiles/tile_lava.png",
+      "source_contract": "CanonicalTiles.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.tile.pressure_plate",
+      "category": "Tiles",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Tiles/tile_pressure_plate.png",
+      "source_contract": "CanonicalTiles.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.tile.shadow",
+      "category": "Tiles",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Tiles/tile_shadow.png",
+      "source_contract": "CanonicalTiles.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.tile.stair_down",
+      "category": "Tiles",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Tiles/tile_stair_down.png",
+      "source_contract": "CanonicalTiles.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.tile.stair_down_locked",
+      "category": "Tiles",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Tiles/tile_stair_down_locked.png",
+      "source_contract": "CanonicalTiles.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.tile.stair_up",
+      "category": "Tiles",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Tiles/tile_stair_up.png",
+      "source_contract": "CanonicalTiles.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.tile.stair_up_locked",
+      "category": "Tiles",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Tiles/tile_stair_up_locked.png",
+      "source_contract": "CanonicalTiles.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.tile.teleport",
+      "category": "Tiles",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Tiles/tile_teleport.png",
+      "source_contract": "CanonicalTiles.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.tile.torch",
+      "category": "Tiles",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Tiles/tile_torch.png",
+      "source_contract": "CanonicalTiles.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.tile.trap_bomb",
+      "category": "Tiles",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Tiles/tile_trap_bomb.png",
+      "source_contract": "CanonicalTiles.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.tile.trap_pit",
+      "category": "Tiles",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Tiles/tile_trap_pit.png",
+      "source_contract": "CanonicalTiles.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.tile.trap_spike",
+      "category": "Tiles",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Tiles/tile_trap_spike.png",
+      "source_contract": "CanonicalTiles.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.tile.wall",
+      "category": "Tiles",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Tiles/tile_wall.png",
+      "source_contract": "CanonicalTiles.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.tile.wall_corner",
+      "category": "Tiles",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Tiles/tile_wall_corner.png",
+      "source_contract": "CanonicalTiles.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.tile.water",
+      "category": "Tiles",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Tiles/tile_water.png",
+      "source_contract": "CanonicalTiles.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.ui.gameplay.action_button",
+      "category": "UI",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/UI/gameplay_action_button.png",
+      "source_contract": "MainMenuLayoutContract.cs + GameplayHudContract.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.ui.gameplay.hud_frame",
+      "category": "UI",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/UI/gameplay_hud_frame.png",
+      "source_contract": "MainMenuLayoutContract.cs + GameplayHudContract.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.ui.gameplay.selected_cell",
+      "category": "UI",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/UI/selected_cell_highlight.png",
+      "source_contract": "MainMenuLayoutContract.cs + GameplayHudContract.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.ui.hero_select.card",
+      "category": "UI",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/UI/hero_select_card.png",
+      "source_contract": "MainMenuLayoutContract.cs + GameplayHudContract.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.ui.main.bottom_nav",
+      "category": "UI",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/UI/main_bottom_nav.png",
+      "source_contract": "MainMenuLayoutContract.cs + GameplayHudContract.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.ui.main.continue_panel",
+      "category": "UI",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/UI/continue_panel.png",
+      "source_contract": "MainMenuLayoutContract.cs + GameplayHudContract.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.ui.main.daily_reward_panel",
+      "category": "UI",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/UI/daily_reward_panel.png",
+      "source_contract": "MainMenuLayoutContract.cs + GameplayHudContract.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.ui.main.hero_panel",
+      "category": "UI",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/UI/main_hero_panel.png",
+      "source_contract": "MainMenuLayoutContract.cs + GameplayHudContract.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.ui.title.background",
+      "category": "UI",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/UI/main_menu_background.png",
+      "source_contract": "MainMenuLayoutContract.cs + GameplayHudContract.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.ui.title.logo",
+      "category": "UI",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/UI/clickdungeon_logo.png",
+      "source_contract": "MainMenuLayoutContract.cs + GameplayHudContract.cs",
+      "required": true
+    },
+    {
+      "asset_id": "art.vfx.heal",
+      "category": "VFX",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/VFX/heal.png",
+      "source_contract": "presentation cue contract",
+      "required": true
+    },
+    {
+      "asset_id": "art.vfx.hit",
+      "category": "VFX",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/VFX/hit.png",
+      "source_contract": "presentation cue contract",
+      "required": true
+    },
+    {
+      "asset_id": "art.vfx.reward_burst",
+      "category": "VFX",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/VFX/reward_burst.png",
+      "source_contract": "presentation cue contract",
+      "required": true
+    },
+    {
+      "asset_id": "art.vfx.shield_aura",
+      "category": "VFX",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/VFX/shield_aura.png",
+      "source_contract": "presentation cue contract",
+      "required": true
+    },
+    {
+      "asset_id": "art.vfx.slash",
+      "category": "VFX",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/VFX/slash.png",
+      "source_contract": "presentation cue contract",
+      "required": true
+    },
+    {
+      "asset_id": "art.vfx.teleport",
+      "category": "VFX",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/VFX/teleport.png",
+      "source_contract": "presentation cue contract",
+      "required": true
+    },
+    {
+      "asset_id": "art.vfx.victory",
+      "category": "VFX",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/VFX/victory.png",
+      "source_contract": "presentation cue contract",
+      "required": true
+    }
+  ]
+}
