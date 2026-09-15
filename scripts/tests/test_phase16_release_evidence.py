@@ -6,6 +6,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "scripts"))
 
 from release_evidence import GateResult, GateStatus, ReleaseEvidenceReport
+from validate_phase16_readiness import classify_unity_metadata, resolve_head_sha
 
 
 def test_gate_status_vocabulary_is_exact():
@@ -50,3 +51,30 @@ def test_any_fail_makes_report_unsuccessful_but_blocked_does_not_become_pass():
     assert blocked.is_release_clean is False
     assert failed.has_failures is True
     assert failed.is_release_clean is False
+
+
+def test_unity_metadata_is_blocked_until_all_authentic_files_exist(tmp_path):
+    result = classify_unity_metadata(tmp_path)
+    assert result.gate == "unity_metadata"
+    assert result.status is GateStatus.BLOCKED
+    assert "ProjectSettings/ProjectVersion.txt" in result.detail
+
+
+def test_unity_metadata_passes_only_when_all_required_files_exist(tmp_path):
+    required = [
+        "ProjectSettings/ProjectVersion.txt",
+        "Packages/manifest.json",
+        "Packages/packages-lock.json",
+    ]
+    for relative in required:
+        path = tmp_path / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("{}\n")
+    result = classify_unity_metadata(tmp_path)
+    assert result.status is GateStatus.PASS
+
+
+def test_github_sha_wins_over_git_lookup(monkeypatch):
+    sha = "0123456789abcdef0123456789abcdef01234567"
+    monkeypatch.setenv("GITHUB_SHA", sha)
+    assert resolve_head_sha(ROOT) == sha
