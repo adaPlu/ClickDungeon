@@ -82,12 +82,13 @@
   },
   {
     "order": 10,
-    "canonical_file": "10-main-hero-roster.png",
+    "canonical_file": "10-core-gameplay.png",
     "source_upload": "main(9).png",
     "sha256": "6c63e71151eea7e2aae9c032bb9f7b79685af349fab7648b5204adb1a9828797",
     "width": 1672,
     "height": 941,
-    "authority": "user-supplied product/art reference"
+    "authority": "user-supplied product/art reference",
+    "role": "core gameplay screen"
   },
   {
     "order": 11,
@@ -178,5 +179,15 @@
     "width": 1536,
     "height": 1024,
     "authority": "user-supplied product/art reference"
+  },
+  {
+    "order": 21,
+    "canonical_file": "21-hero-roster.png",
+    "source_upload": "ClassesDemoArt(4).png",
+    "sha256": "18acf6fb858e16cca1cfa71f32ddac271766b7714d5e878e7cc58d4416e4c212",
+    "width": 1448,
+    "height": 1086,
+    "authority": "user-supplied product/art reference",
+    "role": "canonical eight-class hero roster and animation library"
   }
 ]
