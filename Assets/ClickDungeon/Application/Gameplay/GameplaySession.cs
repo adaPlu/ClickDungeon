@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using ClickDungeon.Combat;
 using ClickDungeon.Dungeon.Interaction;
 using ClickDungeon.Dungeon.Runtime;
@@ -37,7 +38,10 @@ namespace ClickDungeon.Application.Gameplay
         private readonly IEnemyTurnPhase enemyTurns;
         private readonly IRewardSource rewardSource;
         private readonly RewardGrantService rewardGrantService;
+        private readonly int runSeed;
 
+        public int FloorIndex { get; }
+        public int ChestOrdinal { get; private set; }
         public FloorCoordinate PlayerPosition { get; private set; }
 
         public GameplaySession(
@@ -49,7 +53,9 @@ namespace ClickDungeon.Application.Gameplay
             IPlayerCombatPhase playerCombat,
             IEnemyTurnPhase enemyTurns,
             IRewardSource rewardSource,
-            RewardGrantService rewardGrantService)
+            RewardGrantService rewardGrantService,
+            int runSeed = 0,
+            int floorIndex = 0)
         {
             this.floor = floor ?? throw new ArgumentNullException(nameof(floor));
             this.player = player ?? throw new ArgumentNullException(nameof(player));
@@ -59,6 +65,8 @@ namespace ClickDungeon.Application.Gameplay
             this.enemyTurns = enemyTurns ?? throw new ArgumentNullException(nameof(enemyTurns));
             this.rewardSource = rewardSource ?? throw new ArgumentNullException(nameof(rewardSource));
             this.rewardGrantService = rewardGrantService ?? throw new ArgumentNullException(nameof(rewardGrantService));
+            this.runSeed = runSeed;
+            FloorIndex = floorIndex;
             if (!floor.IsInBounds(initialPlayerPosition)) throw new ArgumentOutOfRangeException(nameof(initialPlayerPosition));
             PlayerPosition = initialPlayerPosition;
         }
@@ -144,6 +152,52 @@ namespace ClickDungeon.Application.Gameplay
                 if (!rewardGrantService.Grant(rewards[i])) continue;
                 events.Add(new GameplayTurnEvent(GameplayTurnPhase.Reward, "RewardGranted", rewards[i].TransactionId));
             }
+        }
+
+        public bool TryCommitChestReward(
+            ChestInteractionState chest,
+            string itemInstanceId,
+            ClickDungeon.Core.Content.ContentId itemDefinitionId,
+            int quantity,
+            ClickDungeon.Core.Content.ContentId? currencyId,
+            long currencyAmount,
+            out ChestRewardEvent rewardEvent)
+        {
+            if (chest == null) throw new ArgumentNullException(nameof(chest));
+            rewardEvent = default;
+            if (!chest.IsReadyToCommit) return false;
+
+            var chestId = BuildChestId(runSeed, FloorIndex, ChestOrdinal);
+            var transactionId = BuildChestTransactionId(runSeed, FloorIndex, ChestOrdinal);
+            var chestGrant = new RewardGrant(
+                transactionId,
+                itemInstanceId,
+                itemDefinitionId,
+                quantity,
+                currencyId,
+                currencyAmount);
+
+            if (!rewardGrantService.Grant(chestGrant)) return false;
+            rewardEvent = new ChestRewardEvent(
+                chestId,
+                transactionId,
+                itemDefinitionId,
+                quantity,
+                currencyId,
+                currencyAmount);
+            chest.MarkRewardCommitted();
+            ChestOrdinal++;
+            return true;
+        }
+
+        private static string BuildChestId(int runSeed, int floorIndex, int chestOrdinal)
+        {
+            return string.Format(CultureInfo.InvariantCulture, "chest:{0}:{1}:{2}", runSeed, floorIndex, chestOrdinal);
+        }
+
+        private static string BuildChestTransactionId(int runSeed, int floorIndex, int chestOrdinal)
+        {
+            return string.Format(CultureInfo.InvariantCulture, "reward:chest:{0}:{1}:{2}", runSeed, floorIndex, chestOrdinal);
         }
 
         private static void AppendCombatEvents(
