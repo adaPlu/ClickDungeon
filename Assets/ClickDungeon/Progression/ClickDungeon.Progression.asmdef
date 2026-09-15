@@ -1,0 +1,4 @@
+{
+  "name": "ClickDungeon.Progression",
+  "references": ["ClickDungeon.Core", "ClickDungeon.Content"]
+}
