@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
+import os
 from pathlib import Path
 import re
 import sys
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(
+    os.environ.get("CLICKDUNGEON_VALIDATION_ROOT", str(Path(__file__).resolve().parents[1]))
+).resolve()
 BUILD = ROOT / "Assets/ClickDungeon/Platform/Build"
 CANONICAL = BUILD / "CanonicalBuildTargets.cs"
 TARGET = BUILD / "BuildTargetContract.cs"
