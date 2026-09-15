@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
+import os
 from pathlib import Path
 import re
 import sys
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(
+    os.environ.get("CLICKDUNGEON_VALIDATION_ROOT", str(Path(__file__).resolve().parents[1]))
+).resolve()
 PLATFORM_ROOT = ROOT / "Assets/ClickDungeon/Platform"
 INPUT_ROOT = PLATFORM_ROOT / "Input"
 LIFECYCLE_ROOT = PLATFORM_ROOT / "Lifecycle"
