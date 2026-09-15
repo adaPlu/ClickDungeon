@@ -5,6 +5,7 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 PLATFORM_ROOT = ROOT / "Assets/ClickDungeon/Platform"
+INPUT_ROOT = PLATFORM_ROOT / "Input"
 
 REQUIRED_FILES = [
     PLATFORM_ROOT / "ClickDungeon.Platform.asmdef",
@@ -14,12 +15,27 @@ REQUIRED_FILES = [
     PLATFORM_ROOT / "CanonicalPlatformProfiles.cs",
 ]
 
+INPUT_FILES = [
+    INPUT_ROOT / "PlatformInputAction.cs",
+    INPUT_ROOT / "PlatformInputEvent.cs",
+    INPUT_ROOT / "IPlayerInputAdapter.cs",
+    INPUT_ROOT / "WindowsInputAdapter.cs",
+    INPUT_ROOT / "TouchInputAdapter.cs",
+]
+
 FORBIDDEN_PATTERNS = {
     "reward authority": r"\bGrantReward\b",
     "damage authority": r"\bApplyDamage\b",
     "direct HP mutation": r"\bCurrentHp\s*=",
     "Unity RNG entropy": r"\bUnityEngine\.Random\b",
     "system RNG entropy": r"\bSystem\.Random\b",
+}
+
+INPUT_FORBIDDEN_PATTERNS = {
+    "combat resolver authority": r"\bCombatResolver\b",
+    "reward service authority": r"\bRewardGrantService\b",
+    "damage resolution": r"\bApplyDamage\b",
+    "direct HP mutation": r"\bCurrentHp\s*=",
 }
 
 
@@ -35,8 +51,13 @@ def require_file(path: Path) -> str:
 
 
 def main() -> None:
-    for path in REQUIRED_FILES:
+    for path in REQUIRED_FILES + INPUT_FILES:
         require_file(path)
+
+    asmdef_text = require_file(PLATFORM_ROOT / "ClickDungeon.Platform.asmdef")
+    for assembly in ("ClickDungeon.Application", "ClickDungeon.Core", "ClickDungeon.Dungeon"):
+        if assembly not in asmdef_text:
+            fail(f"platform assembly must reference {assembly}")
 
     enum_text = require_file(PLATFORM_ROOT / "RuntimePlatformId.cs")
     for token in ("Unknown", "Windows", "Android", "IOS"):
@@ -73,13 +94,41 @@ def main() -> None:
         if expected not in normalized:
             fail(f"canonical {platform} capability profile does not match contract")
 
+    actions_text = require_file(INPUT_ROOT / "PlatformInputAction.cs")
+    for action in (
+        "MoveUp",
+        "MoveDown",
+        "MoveLeft",
+        "MoveRight",
+        "SelectCell",
+        "ActivateAction",
+        "Interact",
+        "OpenInventory",
+        "PauseOrCancel",
+    ):
+        if not re.search(rf"\b{action}\b", actions_text):
+            fail(f"PlatformInputAction is missing {action}")
+
+    interface_text = require_file(INPUT_ROOT / "IPlayerInputAdapter.cs")
+    if "TryTranslate" not in interface_text or "PlayerCommand" not in interface_text:
+        fail("IPlayerInputAdapter must translate platform events to PlayerCommand")
+
+    for adapter_name in ("WindowsInputAdapter.cs", "TouchInputAdapter.cs"):
+        adapter_path = INPUT_ROOT / adapter_name
+        adapter_text = require_file(adapter_path)
+        if "PlayerCommand" not in adapter_text:
+            fail(f"{adapter_name} must target PlayerCommand")
+        for description, pattern in INPUT_FORBIDDEN_PATTERNS.items():
+            if re.search(pattern, adapter_text):
+                fail(f"{description} found in {adapter_path.relative_to(ROOT)}")
+
     for path in PLATFORM_ROOT.rglob("*.cs"):
         text = path.read_text()
         for description, pattern in FORBIDDEN_PATTERNS.items():
             if re.search(pattern, text):
                 fail(f"{description} found in {path.relative_to(ROOT)}")
 
-    print("Platform contracts: PASS (foundation/capabilities, no gameplay authority or RNG entropy)")
+    print("Platform contracts: PASS (capabilities/input translation, no gameplay authority or RNG entropy)")
 
 
 if __name__ == "__main__":
