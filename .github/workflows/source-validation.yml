@@ -33,4 +33,5 @@ jobs:
           python3 scripts/validate_animation_reward_contracts.py
           python3 scripts/validate_save_progression_contracts.py
           python3 scripts/validate_recovery_parity.py
+          python3 scripts/validate_platform_contracts.py
           git diff --check
