@@ -1,0 +1,4 @@
+{
+  "name": "ClickDungeon.Combat",
+  "references": ["ClickDungeon.Core"]
+}
