@@ -36,3 +36,14 @@ jobs:
           python3 scripts/validate_platform_contracts.py
           python3 scripts/validate_platform_build_contracts.py
           git diff --check
+      - name: Record Phase 16 source readiness
+        if: always()
+        shell: bash
+        run: python3 scripts/validate_phase16_readiness.py || true
+      - name: Upload Phase 16 source readiness
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase16-source-readiness
+          path: build/phase16/source-readiness.json
+          if-no-files-found: error
