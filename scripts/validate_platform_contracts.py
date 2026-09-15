@@ -6,6 +6,7 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 PLATFORM_ROOT = ROOT / "Assets/ClickDungeon/Platform"
 INPUT_ROOT = PLATFORM_ROOT / "Input"
+LIFECYCLE_ROOT = PLATFORM_ROOT / "Lifecycle"
 
 REQUIRED_FILES = [
     PLATFORM_ROOT / "ClickDungeon.Platform.asmdef",
@@ -23,6 +24,13 @@ INPUT_FILES = [
     INPUT_ROOT / "TouchInputAdapter.cs",
 ]
 
+LIFECYCLE_FILES = [
+    LIFECYCLE_ROOT / "AppLifecycleEvent.cs",
+    LIFECYCLE_ROOT / "PlatformLifecycleRequest.cs",
+    LIFECYCLE_ROOT / "MobileLifecycleAdapter.cs",
+    LIFECYCLE_ROOT / "LifecyclePersistenceCoordinator.cs",
+]
+
 FORBIDDEN_PATTERNS = {
     "reward authority": r"\bGrantReward\b",
     "damage authority": r"\bApplyDamage\b",
@@ -38,6 +46,17 @@ INPUT_FORBIDDEN_PATTERNS = {
     "direct HP mutation": r"\bCurrentHp\s*=",
 }
 
+LIFECYCLE_FORBIDDEN_PATTERNS = {
+    "reward transaction authority": r"\bRewardTransaction\b",
+    "combat resolver authority": r"\bCombatResolver\b",
+    "damage resolution": r"\bApplyDamage\b",
+    "direct HP mutation": r"\bCurrentHp\s*=",
+    "profile save DTO coupling": r"\bProfileSave\b",
+    "run save DTO coupling": r"\bRunSave\b",
+    "save repository coupling": r"\bSaveRepository\b",
+    "direct process termination": r"\bApplication\.Quit\b",
+}
+
 
 def fail(message: str) -> None:
     print(f"PLATFORM CONTRACT ERROR: {message}", file=sys.stderr)
@@ -51,7 +70,7 @@ def require_file(path: Path) -> str:
 
 
 def main() -> None:
-    for path in REQUIRED_FILES + INPUT_FILES:
+    for path in REQUIRED_FILES + INPUT_FILES + LIFECYCLE_FILES:
         require_file(path)
 
     asmdef_text = require_file(PLATFORM_ROOT / "ClickDungeon.Platform.asmdef")
@@ -122,13 +141,40 @@ def main() -> None:
             if re.search(pattern, adapter_text):
                 fail(f"{description} found in {adapter_path.relative_to(ROOT)}")
 
+    lifecycle_events = require_file(LIFECYCLE_ROOT / "AppLifecycleEvent.cs")
+    for event_name in ("Paused", "Backgrounded", "Resumed", "SystemBack"):
+        if not re.search(rf"\b{event_name}\b", lifecycle_events):
+            fail(f"AppLifecycleEvent is missing {event_name}")
+
+    lifecycle_requests = require_file(LIFECYCLE_ROOT / "PlatformLifecycleRequest.cs")
+    for request_name in ("None", "AutosaveCheckpoint", "PauseOrCancel"):
+        if not re.search(rf"\b{request_name}\b", lifecycle_requests):
+            fail(f"PlatformLifecycleRequest is missing {request_name}")
+
+    lifecycle_adapter = require_file(LIFECYCLE_ROOT / "MobileLifecycleAdapter.cs")
+    for token in ("Paused", "Backgrounded", "Resumed", "SystemBack", "AutosaveCheckpoint", "PauseOrCancel"):
+        if token not in lifecycle_adapter:
+            fail(f"MobileLifecycleAdapter does not route {token}")
+
+    lifecycle_coordinator = require_file(LIFECYCLE_ROOT / "LifecyclePersistenceCoordinator.cs")
+    if "GameSessionPersistenceOrchestrator" not in lifecycle_coordinator:
+        fail("LifecyclePersistenceCoordinator must use the existing application persistence boundary")
+    if "OnLifecyclePauseOrBackground" not in lifecycle_coordinator:
+        fail("LifecyclePersistenceCoordinator must request the lifecycle autosave checkpoint")
+
+    for path in (LIFECYCLE_ROOT / "MobileLifecycleAdapter.cs", LIFECYCLE_ROOT / "LifecyclePersistenceCoordinator.cs"):
+        text = require_file(path)
+        for description, pattern in LIFECYCLE_FORBIDDEN_PATTERNS.items():
+            if re.search(pattern, text):
+                fail(f"{description} found in {path.relative_to(ROOT)}")
+
     for path in PLATFORM_ROOT.rglob("*.cs"):
         text = path.read_text()
         for description, pattern in FORBIDDEN_PATTERNS.items():
             if re.search(pattern, text):
                 fail(f"{description} found in {path.relative_to(ROOT)}")
 
-    print("Platform contracts: PASS (capabilities/input translation, no gameplay authority or RNG entropy)")
+    print("Platform contracts: PASS (capabilities/input/lifecycle, no gameplay authority or RNG entropy)")
 
 
 if __name__ == "__main__":
