@@ -1,0 +1,4 @@
+{
+  "name": "ClickDungeon.Presentation",
+  "references": ["ClickDungeon.Core", "ClickDungeon.Content", "ClickDungeon.Application"]
+}
