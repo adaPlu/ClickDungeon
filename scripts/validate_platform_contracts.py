@@ -190,7 +190,13 @@ def main() -> None:
             fail(f"canonical viewport profile is missing {name}")
 
     layout_text = require_file(LAYOUT_ROOT / "ResponsiveLayoutContract.cs")
-    for required in ("BoardColumns = 5", "BoardRows = 5", "PreserveHud", "PreserveActionRow", "CollapseSecondaryPanels"):
+    for required in (
+        "BoardColumns { get; } = 5;",
+        "BoardRows { get; } = 5;",
+        "PreserveHud",
+        "PreserveActionRow",
+        "CollapseSecondaryPanels",
+    ):
         if required not in layout_text:
             fail(f"responsive layout contract is missing reference requirement: {required}")
 
