@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Reconstruct the lost greenfield `Clickd` Unity source tree from the approved design and supplied reference art, re-establish the previously verified architecture through Animation / Chest Rewards / VFX, and create a durable Git checkpoint before any new feature phase begins.
+**Goal:** Reconstruct the lost greenfield `Clicked` Unity source tree from the approved design and supplied reference art, re-establish the previously verified architecture through Animation / Chest Rewards / VFX, and create a durable Git checkpoint before any new feature phase begins.
 
 **Architecture:** Rebuild the same dependency spine: immutable definition data → mutable runtime state → deterministic simulation → application orchestration → presentation intents → Unity-facing adapters. Because Unity is not installed in this execution environment, every task must provide Unity-independent source-contract validation now and clearly mark Unity compile/EditMode/PlayMode/build validation as blocked rather than claiming it passed.
 
@@ -12,7 +12,7 @@
 
 ## Global Constraints
 
-- Repository: `Clickd`; player-facing title: `ClickDungeon`.
+- Repository: `Clicked`; player-facing title: `ClickDungeon`.
 - Player-facing/runtime content must not display `ClickDungeon2`; legacy-logo reference sheets may exist only as non-runtime art references.
 - Target platforms remain Windows, Android, and iOS.
 - Launch board is deterministic 5×5.

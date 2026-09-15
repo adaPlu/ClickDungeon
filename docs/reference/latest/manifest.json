@@ -1,0 +1,182 @@
+[
+  {
+    "order": 1,
+    "canonical_file": "01-item-demo.png",
+    "source_upload": "ItemDemoArt(4).png",
+    "sha256": "4edf2a0f9665d2fd4f14b67dd1eb19308384ae97b174e193b6649f5ea6f126a6",
+    "width": 1448,
+    "height": 1086,
+    "authority": "user-supplied product/art reference"
+  },
+  {
+    "order": 2,
+    "canonical_file": "02-monsters-bosses.png",
+    "source_upload": "3Bosses8Monters(10).png",
+    "sha256": "5e719e76f6605b3987a48cb652237302df60c340f6dad2e79fdc9dcf9f351750",
+    "width": 1448,
+    "height": 1086,
+    "authority": "user-supplied product/art reference"
+  },
+  {
+    "order": 3,
+    "canonical_file": "03-lightbringer.png",
+    "source_upload": "LightBringer(6).png",
+    "sha256": "da7e5e717c5f9e8742b00fb041867c0d8a8432964adda586e48edbdca9d80eda",
+    "width": 1086,
+    "height": 1448,
+    "authority": "user-supplied product/art reference"
+  },
+  {
+    "order": 4,
+    "canonical_file": "04-game-rules-plan.png",
+    "source_upload": "PLAN(10).png",
+    "sha256": "1461fe552d876904fec97a4b49fe1fb4182430a41ad9191ae8361ae08476e144",
+    "width": 1448,
+    "height": 1086,
+    "authority": "user-supplied product/art reference"
+  },
+  {
+    "order": 5,
+    "canonical_file": "05-ironheart.png",
+    "source_upload": "Iornheart(6).png",
+    "sha256": "4cf1869414b8c2c4ac876424ecc72771e93670cb829317139175cf8b8c43b44e",
+    "width": 1122,
+    "height": 1402,
+    "authority": "user-supplied product/art reference"
+  },
+  {
+    "order": 6,
+    "canonical_file": "06-emberwisp.png",
+    "source_upload": "Emberwisp(5).png",
+    "sha256": "56668ccff4173db6574b839c4dee892217570c76afac05fe6c06bbdadfad8015",
+    "width": 1122,
+    "height": 1402,
+    "authority": "user-supplied product/art reference"
+  },
+  {
+    "order": 7,
+    "canonical_file": "07-shadowcut.png",
+    "source_upload": "Shadowcut(5).png",
+    "sha256": "d9ead80f97de3080d161d38c484843bd8e5d6468f2951e914338deffc69d0f56",
+    "width": 1122,
+    "height": 1402,
+    "authority": "user-supplied product/art reference"
+  },
+  {
+    "order": 8,
+    "canonical_file": "08-gameplay-example.png",
+    "source_upload": "Gameplay example(9).png",
+    "sha256": "d3866a2de10e4ab88e92f3b5f1ee526f9f98959ac0c024bda3a1dc7d8ed382b5",
+    "width": 1448,
+    "height": 1086,
+    "authority": "user-supplied product/art reference"
+  },
+  {
+    "order": 9,
+    "canonical_file": "09-title-main-menu.png",
+    "source_upload": "title(20260915-143817).png",
+    "sha256": "1c3a7cd5dd1c885120643d4f335085ba3d22b1d26c50cad15d82585ecc6c8688",
+    "width": 1672,
+    "height": 941,
+    "authority": "user-supplied product/art reference"
+  },
+  {
+    "order": 10,
+    "canonical_file": "10-main-hero-roster.png",
+    "source_upload": "main(9).png",
+    "sha256": "6c63e71151eea7e2aae9c032bb9f7b79685af349fab7648b5204adb1a9828797",
+    "width": 1672,
+    "height": 941,
+    "authority": "user-supplied product/art reference"
+  },
+  {
+    "order": 11,
+    "canonical_file": "11-dungeon-tiles-a.png",
+    "source_upload": "Codex Image Sep 6, 2026, 07_05_26 PM(20260915-143817).png",
+    "sha256": "2a693b0d95b56fc737449dda0b82f09b6f770bede71921da3b1855025b8ae4f9",
+    "width": 1536,
+    "height": 1024,
+    "authority": "user-supplied product/art reference"
+  },
+  {
+    "order": 12,
+    "canonical_file": "12-dungeon-tiles-b.png",
+    "source_upload": "Codex Image Sep 6, 2026, 07_05_20 PM(20260915-143820).png",
+    "sha256": "d136821bf5f957512efef1b7b2f293474e5b2ba62dbec46631cc0319439ebbb0",
+    "width": 1536,
+    "height": 1024,
+    "authority": "user-supplied product/art reference"
+  },
+  {
+    "order": 13,
+    "canonical_file": "13-rageclaw.png",
+    "source_upload": "RageClawDetailsAnimations(6).png",
+    "sha256": "fad4f34a650723a80efbe61b9e6798b282d095fef74147bedb7defaaa78078f9",
+    "width": 1024,
+    "height": 1536,
+    "authority": "user-supplied product/art reference"
+  },
+  {
+    "order": 14,
+    "canonical_file": "14-gearspark.png",
+    "source_upload": "GearsparkDetailsAnimations(6).png",
+    "sha256": "59e8e9253a298963bc60748f26f6cd61f4d54310c9fbc6a70d120edaf7633f1b",
+    "width": 1024,
+    "height": 1536,
+    "authority": "user-supplied product/art reference"
+  },
+  {
+    "order": 15,
+    "canonical_file": "15-windsong.png",
+    "source_upload": "WindsongDetailsAnimations(5).png",
+    "sha256": "87a829ae79ce3914dc604f824de35207698bb4cd81cfaa9a80fb37cb464ea8ef",
+    "width": 1024,
+    "height": 1536,
+    "authority": "user-supplied product/art reference"
+  },
+  {
+    "order": 16,
+    "canonical_file": "16-sir-clickington.png",
+    "source_upload": "SirClickingtonDetailsAnimations(6).png",
+    "sha256": "1fae93b62696c298bf01427aa851d73b6e76328a6d3b002aa208cbc9e8cefcfd",
+    "width": 1086,
+    "height": 1448,
+    "authority": "user-supplied product/art reference"
+  },
+  {
+    "order": 17,
+    "canonical_file": "17-armor.png",
+    "source_upload": "Armor(4).png",
+    "sha256": "f0dbfcabd41ec4fb0235614e953674bdc915e77489881e7a2d2cd6fb80e1c19b",
+    "width": 1536,
+    "height": 1024,
+    "authority": "user-supplied product/art reference"
+  },
+  {
+    "order": 18,
+    "canonical_file": "18-shields-boots.png",
+    "source_upload": "Shield and Boots(4).png",
+    "sha256": "6be69842e4661eb1a059373d26fe87ccb099ad029c8296bb7cada98e62479a4e",
+    "width": 1536,
+    "height": 1024,
+    "authority": "user-supplied product/art reference"
+  },
+  {
+    "order": 19,
+    "canonical_file": "19-swords-wands.png",
+    "source_upload": "Swords and Wands(4).png",
+    "sha256": "9c29769109c6be82b6232b7846c40275761b7bce63b1ff4276c758930a82b790",
+    "width": 1536,
+    "height": 1024,
+    "authority": "user-supplied product/art reference"
+  },
+  {
+    "order": 20,
+    "canonical_file": "20-rings-necklaces.png",
+    "source_upload": "Rings and Necklaces(4).png",
+    "sha256": "a262de270f6c1b260dd39b5125f081f82ca25619e589ccdb67ac2f8838076f3c",
+    "width": 1536,
+    "height": 1024,
+    "authority": "user-supplied product/art reference"
+  }
+]
