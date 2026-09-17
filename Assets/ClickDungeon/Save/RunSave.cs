@@ -43,6 +43,29 @@ namespace ClickDungeon.Save
         public List<StatusEffectSave> Statuses { get; set; } = new List<StatusEffectSave>();
     }
 
+    public sealed class EncounterChestSave
+    {
+        public int Index { get; set; }
+        public string TransactionId { get; set; } = string.Empty;
+        public bool Unlocked { get; set; }
+        public bool Claimed { get; set; }
+    }
+
+    public sealed class EncounterRoomSave
+    {
+        public string RoomId { get; set; } = string.Empty;
+        public int ParentFloorIndex { get; set; }
+        public CoordinateSave Doorway { get; set; } = new CoordinateSave();
+        public string DoorKind { get; set; } = string.Empty;
+        public bool DoorOpened { get; set; }
+        public ulong RoomSeed { get; set; }
+        public bool Cleared { get; set; }
+        public string RewardMode { get; set; } = string.Empty;
+        public string RewardTier { get; set; } = string.Empty;
+        public List<EnemyStateSave> Monsters { get; set; } = new List<EnemyStateSave>();
+        public List<EncounterChestSave> Chests { get; set; } = new List<EncounterChestSave>();
+    }
+
     public sealed class TileRuntimeStateSave
     {
         public int X { get; set; }
@@ -84,6 +107,7 @@ namespace ClickDungeon.Save
         public List<TileRuntimeStateSave> TileStates { get; set; } = new List<TileRuntimeStateSave>();
         public List<string> CommittedRewardTransactionIds { get; set; } = new List<string>();
         public List<ObjectiveStateSave> Objectives { get; set; } = new List<ObjectiveStateSave>();
+        public List<EncounterRoomSave> EncounterRooms { get; set; } = new List<EncounterRoomSave>();
         public RunProgressionSave RunProgression { get; set; } = new RunProgressionSave();
     }
 }
