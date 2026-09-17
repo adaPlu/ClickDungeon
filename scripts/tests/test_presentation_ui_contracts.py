@@ -57,6 +57,14 @@ class PresentationUiContractsTests(unittest.TestCase):
         self.assertIn("PresentationIntent", text)
         self.assertIn("Project", text)
 
+    def test_chest_presentation_phase_enum_is_comma_separated(self):
+        text = self.read("Assets/ClickDungeon/Presentation/Chest/ChestPresentationPhase.cs")
+        for token in (
+            "Closed,", "InteractionBegins,", "Opening,", "LightRewardEffect,",
+            "ItemReveal,", "RewardPresentation,", "ItemCollection,",
+        ):
+            self.assertIn(token, text)
+
     def test_presentation_has_no_gameplay_reward_or_health_authority(self):
         root = ROOT / "Assets/ClickDungeon/Presentation"
         text = "\n".join(p.read_text() for p in root.rglob("*.cs")) if root.exists() else ""
