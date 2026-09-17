@@ -16,6 +16,7 @@ namespace ClickDungeon.Dungeon.Runtime
         public FloorCoordinate Start { get; set; }
         public FloorCoordinate Exit { get; set; }
         public IReadOnlyList<FloorLink> Links => links;
+        public EncounterRoomLayout EncounterRoom { get; private set; }
 
         public FloorState(int floorIndex, ContentId baseTerrain)
         {
@@ -35,5 +36,12 @@ namespace ClickDungeon.Dungeon.Runtime
         }
 
         public void AddLink(FloorLink link) => links.Add(link);
+
+        public void SetEncounterRoom(EncounterRoomLayout room)
+        {
+            if (room == null) throw new ArgumentNullException(nameof(room));
+            if (EncounterRoom != null) throw new InvalidOperationException("Floor already has an encounter room.");
+            EncounterRoom = room;
+        }
     }
 }
