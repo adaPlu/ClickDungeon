@@ -37,6 +37,8 @@
     <Compile Include="../../Assets/ClickDungeon/Progression/CurrencyState.cs" />
     <Compile Include="../../Assets/ClickDungeon/Progression/LootResolver.cs" />
 
+    <Compile Include="../../Assets/ClickDungeon/Save/*.cs" />
     <Compile Include="../../Assets/ClickDungeon/Application/Gameplay/*.cs" />
+    <Compile Include="../../Assets/ClickDungeon/Application/Persistence/EncounterRoomSaveMapper.cs" />
   </ItemGroup>
 </Project>
