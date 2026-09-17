@@ -12,8 +12,10 @@
     <Compile Include="../../Assets/ClickDungeon/Core/Content/ContentId.cs" />
     <Compile Include="../../Assets/ClickDungeon/Content/Definitions/TileDefinition.cs" />
     <Compile Include="../../Assets/ClickDungeon/Content/Definitions/EnemyDefinition.cs" />
+    <Compile Include="../../Assets/ClickDungeon/Content/Definitions/ItemDefinition.cs" />
     <Compile Include="../../Assets/ClickDungeon/Content/Canonical/CanonicalTiles.cs" />
     <Compile Include="../../Assets/ClickDungeon/Content/Canonical/CanonicalEnemies.cs" />
+    <Compile Include="../../Assets/ClickDungeon/Content/Canonical/CanonicalItems.cs" />
 
     <Compile Include="../../Assets/ClickDungeon/Dungeon/FloorCell.cs" />
     <Compile Include="../../Assets/ClickDungeon/Dungeon/Runtime/*.cs" />
@@ -33,6 +35,7 @@
     <Compile Include="../../Assets/ClickDungeon/Progression/RewardLedger.cs" />
     <Compile Include="../../Assets/ClickDungeon/Progression/InventoryState.cs" />
     <Compile Include="../../Assets/ClickDungeon/Progression/CurrencyState.cs" />
+    <Compile Include="../../Assets/ClickDungeon/Progression/LootResolver.cs" />
 
     <Compile Include="../../Assets/ClickDungeon/Application/Gameplay/*.cs" />
   </ItemGroup>
