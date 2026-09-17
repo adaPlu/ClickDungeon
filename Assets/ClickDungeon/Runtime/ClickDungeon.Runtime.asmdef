@@ -1,0 +1,7 @@
+{
+  "name": "ClickDungeon.Runtime",
+  "references": [
+    "ClickDungeon.Core",
+    "ClickDungeon.Dungeon"
+  ]
+}
