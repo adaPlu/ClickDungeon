@@ -18,6 +18,7 @@ EXPECTED = {
     "tile.key": "Content",
     "tile.chest_closed": "Content",
     "tile.chest_open": "Content",
+    "tile.door_closed": "Structure",
     "tile.door_locked": "Structure",
     "tile.door_open": "Structure",
     "tile.torch": "Content",
@@ -37,13 +38,14 @@ class TileRegistryContractsTests(unittest.TestCase):
         self.assertTrue((ROOT / "Assets/ClickDungeon/Content/Definitions/TileDefinition.cs").is_file())
         self.assertTrue((ROOT / "Assets/ClickDungeon/Dungeon/ClickDungeon.Dungeon.asmdef").is_file())
 
-    def test_exact_24_canonical_tile_ids_and_layers(self):
+    def test_exact_25_canonical_tile_ids_and_layers(self):
         path = ROOT / "Assets/ClickDungeon/Content/Canonical/CanonicalTiles.cs"
         self.assertTrue(path.is_file(), "CanonicalTiles.cs is missing")
         text = path.read_text()
         found = dict(re.findall(r'Add\("([a-z0-9_.]+)",\s*"[^"]+",\s*TileLayer\.([A-Za-z]+)', text))
         self.assertEqual(found, EXPECTED)
-        self.assertEqual(len(found), 24)
+        self.assertEqual(len(found), 25)
+        self.assertIn('Art/Runtime/Tiles/tile_door_closed.png', text)
 
     def test_floor_cell_has_independent_render_state_layers(self):
         path = ROOT / "Assets/ClickDungeon/Dungeon/FloorCell.cs"
@@ -58,7 +60,7 @@ class TileRegistryContractsTests(unittest.TestCase):
         self.assertTrue(path.is_file())
         text = path.read_text()
         sprite_paths = re.findall(r'"(Art/Runtime/Tiles/[^"]+\.png)"', text)
-        self.assertEqual(len(sprite_paths), 24)
+        self.assertEqual(len(sprite_paths), 25)
         self.assertEqual(len(sprite_paths), len(set(sprite_paths)))
 
 
