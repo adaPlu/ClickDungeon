@@ -11,11 +11,15 @@
   <ItemGroup>
     <Compile Include="../../Assets/ClickDungeon/Core/Content/ContentId.cs" />
     <Compile Include="../../Assets/ClickDungeon/Content/Definitions/TileDefinition.cs" />
+    <Compile Include="../../Assets/ClickDungeon/Content/Definitions/EnemyDefinition.cs" />
     <Compile Include="../../Assets/ClickDungeon/Content/Canonical/CanonicalTiles.cs" />
+    <Compile Include="../../Assets/ClickDungeon/Content/Canonical/CanonicalEnemies.cs" />
 
     <Compile Include="../../Assets/ClickDungeon/Dungeon/FloorCell.cs" />
     <Compile Include="../../Assets/ClickDungeon/Dungeon/Runtime/*.cs" />
     <Compile Include="../../Assets/ClickDungeon/Dungeon/Generation/DeterministicRng.cs" />
+    <Compile Include="../../Assets/ClickDungeon/Dungeon/Generation/EncounterRoomGenerator.cs" />
+    <Compile Include="../../Assets/ClickDungeon/Dungeon/Generation/EncounterRoomValidator.cs" />
     <Compile Include="../../Assets/ClickDungeon/Dungeon/Generation/DungeonGenerator.cs" />
     <Compile Include="../../Assets/ClickDungeon/Dungeon/Interaction/SpecialTileResolver.cs" />
 
