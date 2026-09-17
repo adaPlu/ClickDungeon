@@ -1,7 +1,9 @@
 {
   "name": "ClickDungeon.Editor",
   "references": [
-    "ClickDungeon.Runtime"
+    "ClickDungeon.Runtime",
+    "ClickDungeon.Core",
+    "ClickDungeon.Platform"
   ],
   "includePlatforms": [
     "Editor"
