@@ -36,7 +36,7 @@ namespace ClickDungeon.Save
                 store,
                 codec,
                 new SaveMigrationRegistry<ProfileSave>(),
-                new SaveMigrationRegistry<RunSave>(),
+                CreateRunMigrations(),
                 new SaveMigrationRegistry<SettingsSave>())
         {
         }
@@ -104,6 +104,13 @@ namespace ClickDungeon.Save
             SaveValidator.ValidateSettings(migrated);
             save = migrated;
             return true;
+        }
+
+        private static SaveMigrationRegistry<RunSave> CreateRunMigrations()
+        {
+            var migrations = new SaveMigrationRegistry<RunSave>();
+            migrations.Register(new RunSaveV1ToV2Migration());
+            return migrations;
         }
     }
 }
