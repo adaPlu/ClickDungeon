@@ -1,0 +1,46 @@
+name: Phase 16 Generated Art Sync
+
+on:
+  push:
+    branches:
+      - new
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync-generated-art:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: new
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Regenerate deterministic manifest and extracted art when available
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/build_production_art_manifest.py
+          if [ -f scripts/extract_dungeon_tiles.py ]; then
+            python3 -m pip install --disable-pip-version-check Pillow
+            python3 scripts/extract_dungeon_tiles.py
+          fi
+      - name: Commit generated outputs when changed
+        shell: bash
+        run: |
+          set -euo pipefail
+          git add art/production-art-manifest.json
+          if [ -d Assets/ClickDungeon/Art/Runtime/Tiles ]; then git add Assets/ClickDungeon/Art/Runtime/Tiles; fi
+          if [ -d Assets/ClickDungeon/Art/Runtime/Chest ]; then git add Assets/ClickDungeon/Art/Runtime/Chest; fi
+          if git diff --cached --quiet; then
+            echo "generated outputs already current"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "build: sync deterministic phase 16 generated art"
+          git push origin HEAD:new
