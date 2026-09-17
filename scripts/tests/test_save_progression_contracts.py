@@ -31,9 +31,26 @@ class SaveProgressionContractsTests(unittest.TestCase):
             "GenerationVersion", "RunSeed", "HeroId", "FloorIndex", "Board",
             "PlayerPosition", "PlayerHealth", "PlayerResource", "Inventory",
             "Statuses", "Enemies", "TileStates", "CommittedRewardTransactionIds",
-            "Objectives", "RunProgression",
+            "Objectives", "RunProgression", "EncounterRooms",
         ):
             self.assertIn(token, text)
+
+    def test_run_schema_v2_persists_encounter_rooms(self):
+        schema = self.read("Assets/ClickDungeon/Save/SaveSchema.cs")
+        run = self.read("Assets/ClickDungeon/Save/RunSave.cs")
+        self.assertIn("RunVersion = 2", schema)
+        for token in (
+            "EncounterRoomSave", "EncounterRooms", "DoorKind", "DoorOpened",
+            "RoomSeed", "Monsters", "Cleared", "RewardMode", "RewardTier", "Chests",
+        ):
+            self.assertIn(token, run)
+
+    def test_v1_to_v2_migration_is_registered(self):
+        migration = self.read("Assets/ClickDungeon/Save/RunSaveV1ToV2Migration.cs")
+        repository = self.read("Assets/ClickDungeon/Save/SaveRepository.cs")
+        for token in ("FromVersion => 1", "ToVersion => 2", "EncounterRooms"):
+            self.assertIn(token, migration)
+        self.assertIn("RunSaveV1ToV2Migration", repository)
 
     def test_profile_save_owns_persistent_hero_and_account_progression(self):
         text = self.read("Assets/ClickDungeon/Save/ProfileSave.cs")
