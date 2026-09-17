@@ -1138,6 +1138,13 @@
       "required": true
     },
     {
+      "asset_id": "art.tile.door_closed",
+      "category": "Tiles",
+      "relative_path": "Assets/ClickDungeon/Art/Runtime/Tiles/tile_door_closed.png",
+      "source_contract": "CanonicalTiles.cs",
+      "required": true
+    },
+    {
       "asset_id": "art.tile.door_locked",
       "category": "Tiles",
       "relative_path": "Assets/ClickDungeon/Art/Runtime/Tiles/tile_door_locked.png",
