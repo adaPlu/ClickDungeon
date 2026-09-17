@@ -20,8 +20,20 @@ namespace ClickDungeon.Dungeon.Generation
                 Exit = new FloorCoordinate(FloorState.Width - 1, rng.NextInt(0, FloorState.Height))
             };
 
-            // The initial backbone is an unobstructed Manhattan route. Later placement may add optional content
-            // only if FloorValidator still proves the floor valid.
+            // The initial backbone is an unobstructed Manhattan route. Optional encounter-room placement may
+            // add one doorway only after Start/Exit exist so doorway validation can preserve that route.
+            var encounterGenerator = new EncounterRoomGenerator();
+            var encounterRoom = encounterGenerator.TryGenerate(runSeed, floor, generationVersion);
+            if (encounterRoom != null)
+            {
+                new EncounterRoomValidator().Validate(floor, encounterRoom);
+                floor.CellAt(encounterRoom.Doorway).Structure = ContentId.Parse(
+                    encounterRoom.DoorKind == EncounterDoorKind.Locked
+                        ? "tile.door_locked"
+                        : "tile.door_closed");
+                floor.SetEncounterRoom(encounterRoom);
+            }
+
             return floor;
         }
 
