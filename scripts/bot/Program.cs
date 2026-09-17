@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using ClickDungeon.Application.Gameplay;
+using ClickDungeon.Application.Persistence;
 using ClickDungeon.Combat;
 using ClickDungeon.Core.Content;
 using ClickDungeon.Dungeon.Generation;
@@ -13,6 +14,8 @@ internal static class Program
 {
     private const ulong BaseSeed = 0xC1C1D00D5EED1234UL;
     private const ulong SeedStep = 0x9E3779B97F4A7C15UL;
+    private const int EncounterFloorIndex = 2;
+    private const int GenerationVersion = 1;
 
     private static int Main(string[] args)
     {
@@ -20,6 +23,10 @@ internal static class Program
         {
             var runs = ParseRuns(args);
             var totalTurns = 0;
+            var roomCount = 0;
+            var closedCount = 0;
+            var lockedCount = 0;
+            var roomRewardCount = 0;
 
             for (var i = 0; i < runs; i++)
             {
@@ -28,12 +35,31 @@ internal static class Program
                 var replay = PlayOne(seed);
 
                 Require(first.Digest == replay.Digest, $"seed {seed:X16} replay diverged");
+                Require(first.Rooms == replay.Rooms && first.Closed == replay.Closed &&
+                        first.Locked == replay.Locked && first.RoomRewards == replay.RoomRewards,
+                    $"seed {seed:X16} encounter metrics diverged on replay");
+
                 totalTurns += first.Turns;
+                roomCount += first.Rooms;
+                closedCount += first.Closed;
+                lockedCount += first.Locked;
+                roomRewardCount += first.RoomRewards;
             }
 
+            if (closedCount == 0)
+                Accumulate(FindSupplementalRoom(EncounterDoorKind.Closed), ref roomCount, ref closedCount, ref lockedCount, ref roomRewardCount);
+            if (lockedCount == 0)
+                Accumulate(FindSupplementalRoom(EncounterDoorKind.Locked), ref roomCount, ref closedCount, ref lockedCount, ref roomRewardCount);
+
+            Require(roomCount > 0, "bot soak did not exercise any generated encounter room");
+            Require(closedCount > 0, "bot soak did not exercise a closed encounter-room door");
+            Require(lockedCount > 0, "bot soak did not exercise a locked encounter-room door");
+            Require(roomRewardCount > 0, "bot soak did not commit any encounter-room reward");
+
             Console.WriteLine(
-                $"BOT_SOAK_PASS runs={runs} turns={totalTurns} " +
-                "determinism=PASS reward_idempotency=PASS chest_idempotency=PASS");
+                $"BOT_SOAK_PASS runs={runs} turns={totalTurns} rooms={roomCount} closed={closedCount} " +
+                $"locked={lockedCount} room_rewards={roomRewardCount} determinism=PASS " +
+                "reward_idempotency=PASS chest_idempotency=PASS room_idempotency=PASS");
             return 0;
         }
         catch (Exception ex)
@@ -58,7 +84,7 @@ internal static class Program
 
     private static RunResult PlayOne(ulong seed)
     {
-        var floor = new DungeonGenerator().Generate(seed, 1, 1);
+        var floor = new DungeonGenerator().Generate(seed, 1, GenerationVersion);
         Require(floor.Start.X == 0, "generated start must be on the left edge");
         Require(floor.Exit.X == FloorState.Width - 1, "generated exit must be on the right edge");
         Require(floor.IsInBounds(floor.Start) && floor.IsInBounds(floor.Exit), "generated endpoints must be in bounds");
@@ -190,7 +216,182 @@ internal static class Program
         digest.Append(";gold=").Append(currency.GetBalance(goldId));
         digest.Append(";turns=").Append(turns);
 
-        return new RunResult(digest.ToString(), turns);
+        var room = ExerciseEncounterRoom(seed);
+        digest.Append(room.Digest);
+
+        return new RunResult(
+            digest.ToString(),
+            turns,
+            room.Rooms,
+            room.Closed,
+            room.Locked,
+            room.RoomRewards);
+    }
+
+    private static RoomResult ExerciseEncounterRoom(ulong seed)
+    {
+        var floor = new DungeonGenerator().Generate(seed, EncounterFloorIndex, GenerationVersion);
+        var layout = floor.EncounterRoom;
+        if (layout == null) return RoomResult.Empty;
+
+        var replayFloor = new DungeonGenerator().Generate(seed, EncounterFloorIndex, GenerationVersion);
+        Require(replayFloor.EncounterRoom != null, "generated encounter room disappeared on deterministic replay");
+        RequireSameLayout(layout, replayFloor.EncounterRoom);
+
+        var room = new EncounterRoomRuntimeState(layout, floor);
+        var inventory = new InventoryState();
+        var currency = new CurrencyState();
+        var ledger = new RewardLedger();
+        var grants = new RewardGrantService(ledger, inventory, currency);
+        var player = new CombatantState("hero.room_bot", 100, new CombatStats(10, 4, 7));
+        var session = new GameplaySession(
+            floor,
+            player,
+            floor.Start,
+            new BotTraversalPolicy(),
+            new SpecialTileResolver(),
+            new NoOpPlayerCombatPhase(),
+            new NoOpEnemyTurnPhase(),
+            new NoOpRewardSource(),
+            grants,
+            runSeed: (int)(seed & 0x7FFFFFFF),
+            floorIndex: EncounterFloorIndex);
+
+        if (layout.DoorKind == EncounterDoorKind.Locked)
+        {
+            Require(!session.TryOpenEncounterRoomDoor(room, inventory), "locked encounter door opened without a key");
+            inventory.Add("encounter-key", ContentId.Parse("item.key.dungeon"), 2);
+            Require(session.TryOpenEncounterRoomDoor(room, inventory), "locked encounter door did not open with a Dungeon Key");
+            Require(inventory.GetRequired("encounter-key").Quantity == 1, "locked encounter door did not consume exactly one key");
+            Require(session.TryOpenEncounterRoomDoor(room, inventory), "already-open locked encounter door was not idempotent");
+            Require(inventory.GetRequired("encounter-key").Quantity == 1, "re-entering locked room consumed another key");
+        }
+        else
+        {
+            Require(session.TryOpenEncounterRoomDoor(room, inventory), "closed encounter door did not open freely");
+            Require(session.TryOpenEncounterRoomDoor(room, inventory), "already-open closed encounter door was not idempotent");
+        }
+
+        Require(room.IsDoorOpen, "encounter door state did not become open");
+        Require(floor.CellAt(layout.Doorway).Structure?.Value == "tile.door_open", "parent-floor door sprite state did not become open");
+        Require(!session.TryClaimEncounterRoomChest(room, 0, out _), "sealed encounter chest was claimable before room clear");
+
+        Require(room.Monsters.Count >= 3 && room.Monsters.Count <= 5, "generated room monster count escaped 3-5 contract");
+        Require(session.RecordEncounterRoomMonsterDefeated(room, room.Monsters[0].EntityId), "first room monster defeat was not recorded");
+        Require(!room.IsCleared, "room cleared before all monsters were defeated");
+
+        var partialSave = EncounterRoomSaveMapper.ToSave(room);
+        room = EncounterRoomSaveMapper.FromSave(partialSave, layout);
+        Require(room.IsDoorOpen, "mid-fight re-entry lost open-door state");
+        Require(room.Monsters[0].IsDefeated, "mid-fight re-entry respawned a defeated monster");
+        Require(!room.IsCleared, "mid-fight re-entry incorrectly cleared the room");
+        for (var chestIndex = 0; chestIndex < room.Chests.Count; chestIndex++)
+            Require(!room.Chests[chestIndex].IsUnlocked, "mid-fight re-entry unsealed a reward chest");
+
+        for (var i = 0; i < room.Monsters.Count; i++)
+        {
+            if (room.Monsters[i].IsDefeated) continue;
+            Require(session.RecordEncounterRoomMonsterDefeated(room, room.Monsters[i].EntityId), "room monster defeat was not recorded");
+        }
+
+        Require(room.IsCleared, "last room monster did not clear the room");
+        var rewardCount = 0;
+        var rewardDigest = new StringBuilder();
+        for (var chestIndex = 0; chestIndex < room.Chests.Count; chestIndex++)
+        {
+            Require(room.Chests[chestIndex].IsUnlocked, "cleared room reward chest remained sealed");
+            Require(session.TryClaimEncounterRoomChest(room, chestIndex, out var reward), "encounter-room reward claim failed");
+            Require(reward.TransactionId == room.Chests[chestIndex].TransactionId, "encounter reward transaction ID changed");
+            rewardDigest.Append('|').Append(reward.TransactionId).Append(':').Append(reward.ItemDefinitionId.Value).Append(':').Append(reward.ItemQuantity);
+            rewardCount++;
+            Require(!session.TryClaimEncounterRoomChest(room, chestIndex, out _), "same encounter chest claimed more than once");
+        }
+
+        var clearedSave = EncounterRoomSaveMapper.ToSave(room);
+        var reentered = EncounterRoomSaveMapper.FromSave(clearedSave, layout);
+        Require(reentered.IsCleared, "cleared room did not stay cleared after re-entry");
+        for (var i = 0; i < reentered.Monsters.Count; i++)
+            Require(reentered.Monsters[i].IsDefeated, "cleared-room re-entry respawned a monster");
+        for (var chestIndex = 0; chestIndex < reentered.Chests.Count; chestIndex++)
+        {
+            Require(reentered.Chests[chestIndex].IsUnlocked, "cleared-room re-entry resealed a chest");
+            Require(reentered.Chests[chestIndex].IsClaimed, "cleared-room re-entry lost claimed chest state");
+        }
+
+        var staleRoom = new EncounterRoomRuntimeState(layout);
+        staleRoom.MarkDoorOpen();
+        for (var i = 0; i < staleRoom.Monsters.Count; i++)
+            Require(staleRoom.TryMarkMonsterDefeated(staleRoom.Monsters[i].EntityId), "stale-room setup could not defeat monster");
+        staleRoom.MarkClearedAndUnlockChests();
+        for (var chestIndex = 0; chestIndex < staleRoom.Chests.Count; chestIndex++)
+            Require(!session.TryClaimEncounterRoomChest(staleRoom, chestIndex, out _), "reward ledger allowed a stale-save duplicate room grant");
+
+        var digest = new StringBuilder();
+        digest.Append(";room=").Append(layout.RoomId);
+        digest.Append(";door=").Append(layout.DoorKind);
+        digest.Append(";doorway=").Append(layout.Doorway.X).Append(',').Append(layout.Doorway.Y);
+        digest.Append(";roomseed=").Append(layout.RoomSeed.ToString("X16"));
+        digest.Append(";mode=").Append(layout.RewardMode);
+        digest.Append(";tier=").Append(layout.RewardTier);
+        for (var i = 0; i < layout.Monsters.Count; i++)
+        {
+            var monster = layout.Monsters[i];
+            digest.Append(";m=").Append(monster.EntityId).Append(':').Append(monster.DefinitionId.Value)
+                .Append('@').Append(monster.Position.X).Append(',').Append(monster.Position.Y);
+        }
+        digest.Append(";rewards=").Append(rewardCount).Append(rewardDigest);
+
+        return new RoomResult(
+            digest.ToString(),
+            rooms: 1,
+            closed: layout.DoorKind == EncounterDoorKind.Closed ? 1 : 0,
+            locked: layout.DoorKind == EncounterDoorKind.Locked ? 1 : 0,
+            roomRewards: rewardCount);
+    }
+
+    private static RoomResult FindSupplementalRoom(EncounterDoorKind requiredKind)
+    {
+        for (ulong seed = 1; seed <= 100000; seed++)
+        {
+            var floor = new DungeonGenerator().Generate(seed, EncounterFloorIndex, GenerationVersion);
+            if (floor.EncounterRoom == null || floor.EncounterRoom.DoorKind != requiredKind) continue;
+            var first = ExerciseEncounterRoom(seed);
+            var replay = ExerciseEncounterRoom(seed);
+            Require(first.Digest == replay.Digest, $"supplemental {requiredKind} room seed {seed} replay diverged");
+            return first;
+        }
+        throw new InvalidOperationException($"could not find deterministic supplemental {requiredKind} encounter-room seed");
+    }
+
+    private static void RequireSameLayout(EncounterRoomLayout expected, EncounterRoomLayout actual)
+    {
+        Require(expected.RoomId == actual.RoomId, "encounter room ID changed on replay");
+        Require(expected.FloorIndex == actual.FloorIndex, "encounter room floor changed on replay");
+        Require(expected.Doorway == actual.Doorway, "encounter room doorway changed on replay");
+        Require(expected.DoorKind == actual.DoorKind, "encounter room door kind changed on replay");
+        Require(expected.RoomSeed == actual.RoomSeed, "encounter room seed changed on replay");
+        Require(expected.RewardMode == actual.RewardMode, "encounter room reward mode changed on replay");
+        Require(expected.RewardTier == actual.RewardTier, "encounter room reward tier changed on replay");
+        Require(expected.Monsters.Count == actual.Monsters.Count, "encounter room monster count changed on replay");
+        for (var i = 0; i < expected.Monsters.Count; i++)
+        {
+            Require(expected.Monsters[i].EntityId == actual.Monsters[i].EntityId, "encounter monster ID changed on replay");
+            Require(expected.Monsters[i].DefinitionId == actual.Monsters[i].DefinitionId, "encounter monster definition changed on replay");
+            Require(expected.Monsters[i].Position == actual.Monsters[i].Position, "encounter monster position changed on replay");
+        }
+    }
+
+    private static void Accumulate(
+        RoomResult room,
+        ref int roomCount,
+        ref int closedCount,
+        ref int lockedCount,
+        ref int roomRewardCount)
+    {
+        roomCount += room.Rooms;
+        closedCount += room.Closed;
+        lockedCount += room.Locked;
+        roomRewardCount += room.RoomRewards;
     }
 
     private static void DecorateExercisePath(FloorState floor)
@@ -343,6 +544,21 @@ internal static class Program
         }
     }
 
+    private sealed class NoOpPlayerCombatPhase : IPlayerCombatPhase
+    {
+        public IReadOnlyList<CombatEvent> Resolve(PlayerCommand command) => Array.Empty<CombatEvent>();
+    }
+
+    private sealed class NoOpEnemyTurnPhase : IEnemyTurnPhase
+    {
+        public IReadOnlyList<CombatEvent> Resolve() => Array.Empty<CombatEvent>();
+    }
+
+    private sealed class NoOpRewardSource : IRewardSource
+    {
+        public IReadOnlyList<RewardGrant> Resolve() => Array.Empty<RewardGrant>();
+    }
+
     private sealed class RepeatingCombatRewardSource : IRewardSource
     {
         private readonly CombatantState enemy;
@@ -372,15 +588,43 @@ internal static class Program
         public bool RewardGranted { get; set; }
     }
 
+    private sealed class RoomResult
+    {
+        public static readonly RoomResult Empty = new RoomResult(";room=none", 0, 0, 0, 0);
+
+        public string Digest { get; }
+        public int Rooms { get; }
+        public int Closed { get; }
+        public int Locked { get; }
+        public int RoomRewards { get; }
+
+        public RoomResult(string digest, int rooms, int closed, int locked, int roomRewards)
+        {
+            Digest = digest;
+            Rooms = rooms;
+            Closed = closed;
+            Locked = locked;
+            RoomRewards = roomRewards;
+        }
+    }
+
     private sealed class RunResult
     {
         public string Digest { get; }
         public int Turns { get; }
+        public int Rooms { get; }
+        public int Closed { get; }
+        public int Locked { get; }
+        public int RoomRewards { get; }
 
-        public RunResult(string digest, int turns)
+        public RunResult(string digest, int turns, int rooms, int closed, int locked, int roomRewards)
         {
             Digest = digest;
             Turns = turns;
+            Rooms = rooms;
+            Closed = closed;
+            Locked = locked;
+            RoomRewards = roomRewards;
         }
     }
 }
