@@ -12,7 +12,7 @@ namespace ClickDungeon.Dungeon.Generation
             var seed = MixSeed(runSeed, floorIndex, generationVersion);
             var rng = new DeterministicRng(seed);
             // Touch the canonical registry so generation fails during integration if stone content disappears.
-            if (CanonicalTiles.All.Count != 24) throw new InvalidOperationException("Canonical tile registry is incomplete.");
+            if (CanonicalTiles.All.Count != 25) throw new InvalidOperationException("Canonical tile registry is incomplete.");
             var stone = ContentId.Parse("tile.floor_stone");
             var floor = new FloorState(floorIndex, stone)
             {
