@@ -24,10 +24,22 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          python3 -m pip install --disable-pip-version-check pytest
           python3 scripts/build_production_art_manifest.py
           if [ -f scripts/extract_dungeon_tiles.py ]; then
             python3 -m pip install --disable-pip-version-check Pillow
             python3 scripts/extract_dungeon_tiles.py
+          fi
+      - name: Verify generated-art contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m pytest -q scripts/tests/test_tile_registry_contracts.py scripts/tests/test_production_art_contracts.py
+          python3 scripts/validate_tile_registry.py
+          python3 scripts/validate_production_art.py
+          if [ -f scripts/tests/test_dungeon_tile_extraction.py ]; then
+            python3 -m pytest -q scripts/tests/test_dungeon_tile_extraction.py
+            python3 scripts/extract_dungeon_tiles.py --check
           fi
       - name: Commit generated outputs when changed
         shell: bash
