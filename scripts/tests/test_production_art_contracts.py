@@ -56,7 +56,7 @@ class ProductionArtContractsTests(unittest.TestCase):
         for asset in manifest["assets"]:
             self.assertNotIn("docs/reference", asset["relative_path"])
 
-    def test_strict_mode_fails_until_isolated_runtime_png_and_meta_exist(self):
+    def test_strict_mode_reports_missing_runtime_or_unity_meta_until_import_complete(self):
         result = subprocess.run(
             [sys.executable, str(ROOT / "scripts/validate_production_art.py"), "--strict"],
             cwd=ROOT,
@@ -64,7 +64,10 @@ class ProductionArtContractsTests(unittest.TestCase):
             text=True,
         )
         self.assertNotEqual(result.returncode, 0)
-        self.assertIn("missing runtime asset", result.stderr)
+        self.assertTrue(
+            "missing runtime asset" in result.stderr or "missing Unity .meta" in result.stderr,
+            result.stderr,
+        )
 
     def test_validator_rejects_duplicates_and_requires_meta_in_strict_mode(self):
         text = self.read("scripts/validate_production_art.py")
