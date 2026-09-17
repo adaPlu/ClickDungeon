@@ -1,6 +1,7 @@
 using System;
 using ClickDungeon.Application.Gameplay;
 using ClickDungeon.Core.Content;
+using ClickDungeon.Progression;
 using ClickDungeon.Save;
 
 namespace ClickDungeon.Application.Persistence
@@ -21,6 +22,32 @@ namespace ClickDungeon.Application.Persistence
             var result = session.ResolveTurn(command);
             autosave.Request(AutosaveReason.ResolvedTurn);
             return result;
+        }
+
+        public bool TryOpenEncounterRoomDoor(EncounterRoomRuntimeState room, InventoryState inventory)
+        {
+            if (room == null) throw new ArgumentNullException(nameof(room));
+            var wasOpen = room.IsDoorOpen;
+            var opened = session.TryOpenEncounterRoomDoor(room, inventory);
+            if (opened && !wasOpen) autosave.Request(AutosaveReason.ResolvedTurn);
+            return opened;
+        }
+
+        public bool RecordEncounterRoomMonsterDefeated(EncounterRoomRuntimeState room, string entityId)
+        {
+            var changed = session.RecordEncounterRoomMonsterDefeated(room, entityId);
+            if (changed) autosave.Request(AutosaveReason.ResolvedTurn);
+            return changed;
+        }
+
+        public bool TryClaimEncounterRoomChest(
+            EncounterRoomRuntimeState room,
+            int chestIndex,
+            out RewardGrant reward)
+        {
+            var committed = session.TryClaimEncounterRoomChest(room, chestIndex, out reward);
+            if (committed) autosave.Request(AutosaveReason.RewardCommitted);
+            return committed;
         }
 
         public bool TryCommitChestReward(
