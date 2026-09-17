@@ -12,7 +12,7 @@ namespace ClickDungeon.Content.Canonical
 
         private static IReadOnlyList<TileDefinition> Build()
         {
-            var items = new List<TileDefinition>(24);
+            var items = new List<TileDefinition>(25);
             Add("tile.floor_stone", "Stone Floor", TileLayer.BaseTerrain, "Art/Runtime/Tiles/tile_floor_stone.png", items);
             Add("tile.trap_pit", "Pit Trap", TileLayer.Content, "Art/Runtime/Tiles/tile_trap_pit.png", items);
             Add("tile.trap_bomb", "Bomb Trap", TileLayer.Content, "Art/Runtime/Tiles/tile_trap_bomb.png", items);
@@ -26,6 +26,7 @@ namespace ClickDungeon.Content.Canonical
             Add("tile.key", "Key", TileLayer.Content, "Art/Runtime/Tiles/tile_key.png", items);
             Add("tile.chest_closed", "Closed Chest", TileLayer.Content, "Art/Runtime/Tiles/tile_chest_closed.png", items);
             Add("tile.chest_open", "Open Chest", TileLayer.Content, "Art/Runtime/Tiles/tile_chest_open.png", items);
+            Add("tile.door_closed", "Closed Door", TileLayer.Structure, "Art/Runtime/Tiles/tile_door_closed.png", items);
             Add("tile.door_locked", "Locked Door", TileLayer.Structure, "Art/Runtime/Tiles/tile_door_locked.png", items);
             Add("tile.door_open", "Open Door", TileLayer.Structure, "Art/Runtime/Tiles/tile_door_open.png", items);
             Add("tile.torch", "Torch", TileLayer.Content, "Art/Runtime/Tiles/tile_torch.png", items);
