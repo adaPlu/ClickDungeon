@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using ClickDungeon.Combat;
+using ClickDungeon.Core.Content;
 using ClickDungeon.Dungeon.Interaction;
 using ClickDungeon.Dungeon.Runtime;
 using ClickDungeon.Progression;
@@ -38,6 +39,7 @@ namespace ClickDungeon.Application.Gameplay
         private readonly IEnemyTurnPhase enemyTurns;
         private readonly IRewardSource rewardSource;
         private readonly RewardGrantService rewardGrantService;
+        private readonly EncounterRoomService encounterRoomService = new EncounterRoomService();
         private readonly int runSeed;
 
         public int FloorIndex { get; }
@@ -152,6 +154,27 @@ namespace ClickDungeon.Application.Gameplay
                 if (!rewardGrantService.Grant(rewards[i])) continue;
                 events.Add(new GameplayTurnEvent(GameplayTurnPhase.Reward, "RewardGranted", rewards[i].TransactionId));
             }
+        }
+
+        public bool TryOpenEncounterRoomDoor(EncounterRoomRuntimeState room, InventoryState inventory)
+        {
+            var opened = encounterRoomService.TryOpenDoor(room, inventory);
+            if (opened)
+                floor.CellAt(room.Layout.Doorway).Structure = ContentId.Parse("tile.door_open");
+            return opened;
+        }
+
+        public bool RecordEncounterRoomMonsterDefeated(EncounterRoomRuntimeState room, string entityId)
+        {
+            return encounterRoomService.RecordMonsterDefeated(room, entityId);
+        }
+
+        public bool TryClaimEncounterRoomChest(
+            EncounterRoomRuntimeState room,
+            int chestIndex,
+            out RewardGrant reward)
+        {
+            return encounterRoomService.TryClaimChest(room, chestIndex, rewardGrantService, out reward);
         }
 
         public bool TryCommitChestReward(
