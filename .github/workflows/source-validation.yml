@@ -36,6 +36,11 @@ jobs:
           python3 scripts/validate_platform_contracts.py
           python3 scripts/validate_platform_build_contracts.py
           git diff --check
+      - name: Verify deterministic dungeon tile extraction
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/extract_dungeon_tiles.py --check
       - name: Run deterministic C# gameplay bot soak
         shell: bash
         run: |
