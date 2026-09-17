@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "sources": {
+    "a": "docs/reference/latest/11-dungeon-tiles-a.png",
+    "b": "docs/reference/latest/12-dungeon-tiles-b.png"
+  },
+  "tiles": [
+    {"output":"tile_floor_stone.png","source":"b","box":[15,159,179,326]},
+    {"output":"tile_trap_pit.png","source":"b","box":[207,159,373,326]},
+    {"output":"tile_trap_bomb.png","source":"b","box":[397,159,563,326]},
+    {"output":"tile_trap_spike.png","source":"b","box":[588,159,755,326]},
+    {"output":"tile_stair_up.png","source":"b","box":[779,159,945,326]},
+    {"output":"tile_stair_up_locked.png","source":"b","box":[969,159,1135,326]},
+    {"output":"tile_stair_down.png","source":"b","box":[1159,159,1325,326]},
+    {"output":"tile_stair_down_locked.png","source":"b","box":[1349,159,1514,326]},
+    {"output":"tile_wall.png","source":"b","box":[16,428,169,579]},
+    {"output":"tile_wall_corner.png","source":"b","box":[188,428,341,579]},
+    {"output":"tile_key.png","source":"b","box":[356,428,509,579]},
+    {"output":"tile_chest_closed.png","source":"b","box":[522,428,675,579]},
+    {"output":"tile_chest_open.png","source":"b","box":[694,428,847,579]},
+    {"output":"tile_door_locked.png","source":"b","box":[862,428,1015,579]},
+    {"output":"tile_door_open.png","source":"b","box":[1041,428,1194,579]},
+    {"output":"tile_torch.png","source":"b","box":[1220,428,1363,579]},
+    {"output":"tile_floor_cracked.png","source":"b","box":[22,678,173,823]},
+    {"output":"tile_floor_moss.png","source":"b","box":[196,678,347,823]},
+    {"output":"tile_water.png","source":"b","box":[371,678,525,823]},
+    {"output":"tile_lava.png","source":"b","box":[544,678,693,823]},
+    {"output":"tile_shadow.png","source":"b","box":[718,678,871,823]},
+    {"output":"tile_pressure_plate.png","source":"b","box":[894,678,1033,823]},
+    {"output":"tile_teleport.png","source":"b","box":[1088,678,1236,823]},
+    {"output":"tile_fountain_heal.png","source":"b","box":[1310,678,1490,823]},
+    {"output":"tile_door_closed.png","source":"a","box":[405,552,554,731]}
+  ]
+}
