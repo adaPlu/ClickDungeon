@@ -18,6 +18,7 @@ EXPECTED = {
     "tile.key": "Content",
     "tile.chest_closed": "Content",
     "tile.chest_open": "Content",
+    "tile.door_closed": "Structure",
     "tile.door_locked": "Structure",
     "tile.door_open": "Structure",
     "tile.torch": "Content",
@@ -43,8 +44,8 @@ def main():
     if found != EXPECTED:
         fail(f"canonical IDs/layers drifted: {found}")
     sprite_paths = re.findall(r'"(Art/Runtime/Tiles/[^"]+\.png)"', text)
-    if len(sprite_paths) != 24 or len(set(sprite_paths)) != 24:
-        fail("runtime sprite contract paths must be 24 unique values")
+    if len(sprite_paths) != 25 or len(set(sprite_paths)) != 25:
+        fail("runtime sprite contract paths must be 25 unique values")
     floor = (ROOT / "Assets/ClickDungeon/Dungeon/FloorCell.cs").read_text()
     for token in ("BaseTerrain", "Structure", "Content", "Actor", "StateOverlay"):
         if token not in floor:
