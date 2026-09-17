@@ -1,0 +1,15 @@
+{
+  "name": "ClickDungeon.EditModeTests",
+  "references": [
+    "ClickDungeon.Runtime",
+    "ClickDungeon.Core",
+    "ClickDungeon.Dungeon",
+    "ClickDungeon.UI"
+  ],
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ]
+}

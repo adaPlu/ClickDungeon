@@ -1,0 +1,9 @@
+{
+  "name": "ClickDungeon.PlayModeTests",
+  "references": [
+    "ClickDungeon.Runtime"
+  ],
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ]
+}
