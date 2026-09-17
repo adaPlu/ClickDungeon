@@ -1,0 +1,395 @@
+name: Phase 16 Release Validation
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  checks: write
+
+jobs:
+  source-contracts:
+    if: github.event_name == 'workflow_dispatch' || github.head_ref == 'new'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install source dependencies
+        run: python3 -m pip install --disable-pip-version-check pytest Pillow
+      - name: Run authoritative source gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m pytest -q scripts/tests
+          python3 scripts/validate_foundation_contracts.py
+          python3 scripts/validate_tile_registry.py
+          python3 scripts/validate_dungeon_contracts.py
+          python3 scripts/validate_combat_contracts.py
+          python3 scripts/validate_hero_contracts.py
+          python3 scripts/validate_enemy_contracts.py
+          python3 scripts/validate_item_reward_contracts.py
+          python3 scripts/validate_gameplay_session_contracts.py
+          python3 scripts/validate_presentation_ui_contracts.py
+          python3 scripts/validate_narrative_contracts.py
+          python3 scripts/validate_production_art.py
+          python3 scripts/validate_animation_reward_contracts.py
+          python3 scripts/validate_save_progression_contracts.py
+          python3 scripts/validate_recovery_parity.py
+          python3 scripts/validate_platform_contracts.py
+          python3 scripts/validate_platform_build_contracts.py
+          python3 scripts/validate_unity_project_contracts.py
+          python3 scripts/validate_runtime_smoke_contracts.py
+          python3 scripts/extract_dungeon_tiles.py --check
+          dotnet run --project scripts/bot/ClickDungeon.BotSoak.csproj --configuration Release -- --runs 50
+          git diff --check
+      - name: Record source readiness
+        if: always()
+        run: python3 scripts/validate_phase16_readiness.py || true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: phase16-source-readiness
+          path: build/phase16/source-readiness.json
+          if-no-files-found: error
+
+  unity-tests:
+    needs: source-contracts
+    runs-on: ubuntu-latest
+    env:
+      UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+      UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+      UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - id: unity-version
+        name: Read exact Unity version
+        shell: bash
+        run: |
+          version=$(sed -n 's/^m_EditorVersion: //p' ProjectSettings/ProjectVersion.txt)
+          test -n "$version"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+      - name: Require authorized Unity license
+        shell: bash
+        run: |
+          if [ -z "${UNITY_LICENSE:-}" ]; then
+            echo "::error::Unity validation BLOCKED: UNITY_LICENSE is not configured"
+            exit 1
+          fi
+      - name: Snapshot pre-Unity state
+        shell: bash
+        run: |
+          mkdir -p build/phase16/unity-tests
+          git status --porcelain=v1 > build/phase16/unity-tests/pre-status.txt
+          git diff --binary > build/phase16/unity-tests/pre-diff.patch
+      - id: editmode
+        name: Unity EditMode tests
+        uses: game-ci/unity-test-runner@v4
+        with:
+          projectPath: .
+          unityVersion: ${{ steps.unity-version.outputs.version }}
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+          testMode: EditMode
+          artifactsPath: build/phase16/unity-tests/editmode
+          coverageEnabled: false
+      - id: playmode
+        name: Unity PlayMode tests
+        uses: game-ci/unity-test-runner@v4
+        with:
+          projectPath: .
+          unityVersion: ${{ steps.unity-version.outputs.version }}
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+          testMode: PlayMode
+          artifactsPath: build/phase16/unity-tests/playmode
+          coverageEnabled: false
+      - name: Normalize Unity result names
+        if: always()
+        shell: bash
+        run: |
+          edit=$(find build/phase16/unity-tests/editmode -type f -name '*.xml' | head -n 1 || true)
+          play=$(find build/phase16/unity-tests/playmode -type f -name '*.xml' | head -n 1 || true)
+          test -n "$edit" && cp "$edit" build/phase16/unity-tests/editmode-results.xml
+          test -n "$play" && cp "$play" build/phase16/unity-tests/playmode-results.xml
+      - name: Post-Unity mutation guard
+        if: always()
+        shell: bash
+        run: |
+          git status --porcelain=v1
+          git diff --exit-code
+          git diff --check
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: phase16-unity-tests
+          path: |
+            build/phase16/unity-tests/editmode-results.xml
+            build/phase16/unity-tests/playmode-results.xml
+            build/phase16/unity-tests/**/*.log
+            build/phase16/unity-tests/pre-status.txt
+            build/phase16/unity-tests/pre-diff.patch
+          if-no-files-found: warn
+
+  windows-release:
+    needs: unity-tests
+    runs-on: windows-latest
+    env:
+      UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+      UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+      UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - id: windows-unity-version
+        name: Read exact Unity version
+        shell: pwsh
+        run: |
+          $line = Select-String -Path ProjectSettings/ProjectVersion.txt -Pattern '^m_EditorVersion:'
+          $version = ($line.Line -split ':', 2)[1].Trim()
+          if (-not $version) { throw 'Unity version missing' }
+          "version=$version" >> $env:GITHUB_OUTPUT
+      - name: Require authorized Unity license
+        shell: pwsh
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:UNITY_LICENSE)) {
+            Write-Error 'Windows release BLOCKED: UNITY_LICENSE is not configured'
+            exit 1
+          }
+      - name: Snapshot pre-build state
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force build/phase16 | Out-Null
+          git status --porcelain=v1 | Set-Content build/phase16/windows-pre-status.txt
+          git diff --binary | Set-Content build/phase16/windows-pre-diff.patch
+      - name: Build Windows x64
+        uses: game-ci/unity-builder@v4
+        with:
+          projectPath: .
+          unityVersion: ${{ steps.windows-unity-version.outputs.version }}
+          targetPlatform: StandaloneWindows64
+          buildMethod: ClickDungeon.Editor.ReleaseBuild.BuildWindows
+          allowDirtyBuild: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Inspect Windows artifact
+        shell: pwsh
+        run: |
+          python scripts/inspect_release_artifacts.py --target windows --root build/phase16/windows --sha $env:GITHUB_SHA --out build/phase16/windows-artifact.json
+      - name: Run Windows built-player smoke
+        shell: pwsh
+        run: ./scripts/run_windows_smoke.ps1
+      - name: Post-build mutation guard
+        if: always()
+        shell: pwsh
+        run: |
+          git status --porcelain=v1
+          git diff --exit-code
+          git diff --check
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: phase16-windows-release
+          path: |
+            build/phase16/windows/
+            build/phase16/windows-artifact.json
+            build/phase16/windows-smoke.json
+            build/phase16/windows-player.log
+            build/phase16/windows-pre-status.txt
+            build/phase16/windows-pre-diff.patch
+          if-no-files-found: warn
+
+  android-release:
+    needs: unity-tests
+    runs-on: ubuntu-latest
+    env:
+      UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+      UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+      UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - id: android-unity-version
+        name: Read exact Unity version
+        shell: bash
+        run: |
+          version=$(sed -n 's/^m_EditorVersion: //p' ProjectSettings/ProjectVersion.txt)
+          test -n "$version"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+      - name: Require authorized Unity license
+        shell: bash
+        run: |
+          if [ -z "${UNITY_LICENSE:-}" ]; then
+            echo "::error::Android release BLOCKED: UNITY_LICENSE is not configured"
+            exit 1
+          fi
+      - name: Snapshot pre-build state
+        shell: bash
+        run: |
+          mkdir -p build/phase16
+          git status --porcelain=v1 > build/phase16/android-pre-status.txt
+          git diff --binary > build/phase16/android-pre-diff.patch
+      - name: Build Android APK
+        uses: game-ci/unity-builder@v4
+        with:
+          projectPath: .
+          unityVersion: ${{ steps.android-unity-version.outputs.version }}
+          targetPlatform: Android
+          buildMethod: ClickDungeon.Editor.ReleaseBuild.BuildAndroidApk
+          allowDirtyBuild: false
+      - name: Build Android AAB
+        uses: game-ci/unity-builder@v4
+        with:
+          projectPath: .
+          unityVersion: ${{ steps.android-unity-version.outputs.version }}
+          targetPlatform: Android
+          buildMethod: ClickDungeon.Editor.ReleaseBuild.BuildAndroidAab
+          allowDirtyBuild: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Inspect Android artifacts
+        shell: bash
+        run: |
+          python3 scripts/inspect_release_artifacts.py --target android-apk --root build/phase16/android-apk --sha "$GITHUB_SHA" --out build/phase16/android-apk-evidence.json
+          python3 scripts/inspect_release_artifacts.py --target android-aab --root build/phase16/android-aab --sha "$GITHUB_SHA" --out build/phase16/android-aab-evidence.json
+      - name: Post-build mutation guard
+        if: always()
+        shell: bash
+        run: |
+          git status --porcelain=v1
+          git diff --exit-code
+          git diff --check
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: phase16-android-release
+          path: |
+            build/phase16/android-apk/ClickDungeon.apk
+            build/phase16/android-aab/ClickDungeon.aab
+            build/phase16/android-apk-evidence.json
+            build/phase16/android-aab-evidence.json
+            build/phase16/android-pre-status.txt
+            build/phase16/android-pre-diff.patch
+          if-no-files-found: warn
+
+  ios-export:
+    needs: unity-tests
+    runs-on: macos-latest
+    env:
+      UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+      UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+      UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - id: ios-unity-version
+        name: Read exact Unity version
+        shell: bash
+        run: |
+          version=$(sed -n 's/^m_EditorVersion: //p' ProjectSettings/ProjectVersion.txt)
+          test -n "$version"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+      - name: Require authorized Unity license
+        shell: bash
+        run: |
+          if [ -z "${UNITY_LICENSE:-}" ]; then
+            echo "::error::iOS export BLOCKED: UNITY_LICENSE is not configured"
+            exit 1
+          fi
+      - name: Snapshot pre-build state
+        shell: bash
+        run: |
+          mkdir -p build/phase16
+          git status --porcelain=v1 > build/phase16/ios-pre-status.txt
+          git diff --binary > build/phase16/ios-pre-diff.patch
+      - name: Export iOS Xcode project
+        uses: game-ci/unity-builder@v4
+        with:
+          projectPath: .
+          unityVersion: ${{ steps.ios-unity-version.outputs.version }}
+          targetPlatform: iOS
+          buildMethod: ClickDungeon.Editor.ReleaseBuild.ExportIos
+          allowDirtyBuild: false
+          cacheUnityInstallationOnMac: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Inspect iOS export
+        shell: bash
+        run: |
+          python3 scripts/inspect_release_artifacts.py --target ios --root build/phase16/ios --sha "$GITHUB_SHA" --out build/phase16/ios-evidence.json
+      - name: Post-build mutation guard
+        if: always()
+        shell: bash
+        run: |
+          git status --porcelain=v1
+          git diff --exit-code
+          git diff --check
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: phase16-ios-export
+          path: |
+            build/phase16/ios/
+            build/phase16/ios-evidence.json
+            build/phase16/ios-pre-status.txt
+            build/phase16/ios-pre-diff.patch
+          if-no-files-found: warn
+
+  release-evidence:
+    if: always()
+    needs: [source-contracts, unity-tests, windows-release, android-release, ios-export]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          path: build/phase16/collected
+          merge-multiple: true
+      - name: Assemble exact-SHA release evidence
+        shell: bash
+        env:
+          SOURCE_RESULT: ${{ needs.source-contracts.result }}
+          UNITY_RESULT: ${{ needs.unity-tests.result }}
+          WINDOWS_RESULT: ${{ needs.windows-release.result }}
+          ANDROID_RESULT: ${{ needs.android-release.result }}
+          IOS_RESULT: ${{ needs.ios-export.result }}
+        run: |
+          mkdir -p build/phase16
+          python3 - <<'PY'
+          import json, os
+          jobs = {
+              "source-contracts": os.environ["SOURCE_RESULT"],
+              "unity-tests": os.environ["UNITY_RESULT"],
+              "windows-release": os.environ["WINDOWS_RESULT"],
+              "android-release": os.environ["ANDROID_RESULT"],
+              "ios-export": os.environ["IOS_RESULT"],
+          }
+          report = {
+              "schema_version": 1,
+              "sha": os.environ["GITHUB_SHA"],
+              "status": "PASS" if all(v == "success" for v in jobs.values()) else "FAIL",
+              "jobs": jobs,
+              "note": "A non-success Unity/platform job is never represented as PASS; inspect job logs to distinguish repository FAIL from external BLOCKED prerequisites.",
+          }
+          with open("build/phase16/release-evidence.json", "w", encoding="utf-8") as handle:
+              json.dump(report, handle, indent=2)
+              handle.write("\n")
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: phase16-release-evidence
+          path: build/phase16/release-evidence.json
+          if-no-files-found: error
