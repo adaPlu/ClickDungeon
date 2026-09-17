@@ -56,6 +56,35 @@ namespace ClickDungeon.Progression
             return true;
         }
 
+        public bool TryRemoveDefinition(ContentId definitionId, int quantity)
+        {
+            if (quantity <= 0) return false;
+
+            var matches = new List<InventoryEntry>();
+            var total = 0;
+            foreach (var entry in entries.Values)
+            {
+                if (entry.DefinitionId != definitionId) continue;
+                matches.Add(entry);
+                total = checked(total + entry.Quantity);
+            }
+
+            if (total < quantity) return false;
+            matches.Sort((left, right) => StringComparer.Ordinal.Compare(left.InstanceId, right.InstanceId));
+
+            var remaining = quantity;
+            for (var i = 0; i < matches.Count && remaining > 0; i++)
+            {
+                var entry = matches[i];
+                var take = Math.Min(entry.Quantity, remaining);
+                if (!Remove(entry.InstanceId, take))
+                    throw new InvalidOperationException("Inventory changed during deterministic definition removal.");
+                remaining -= take;
+            }
+
+            return remaining == 0;
+        }
+
         public InventoryEntry GetRequired(string instanceId)
         {
             if (!entries.TryGetValue(instanceId, out var entry)) throw new KeyNotFoundException($"Unknown item instance: {instanceId}");
