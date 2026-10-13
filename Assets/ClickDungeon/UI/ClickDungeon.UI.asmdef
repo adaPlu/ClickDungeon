@@ -1,8 +1,0 @@
-{
-  "name": "ClickDungeon.UI",
-  "references": [
-    "ClickDungeon.Core",
-    "ClickDungeon.Content",
-    "ClickDungeon.Platform"
-  ]
-}
