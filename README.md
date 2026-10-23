@@ -152,3 +152,7 @@ each took a picture already in the repository, and every one is a **placeholder 
 
 `tools/art-slicer/slice_references.py` is how real art gets in: add a rect to `slices.json` against a reference
 sheet, slice, then **ClickDungeon → Art → Rebuild Art Catalog**.
+
+## License
+
+**License:** Proprietary commercial software — all rights reserved. No general source-code, asset-reuse, or commercial license is granted by this public repository. See [LICENSE](LICENSE). Third-party components remain under their own licenses.
